@@ -2,8 +2,30 @@
   Index.css will contain all the global variables.
   Do not write page-specific or component-specific CSS here.   
 */
+
 @import "tailwindcss";
 
 :root {
     font-family: ui-sans-serif,system-ui,sans-serif;
+}
+
+@theme {
+    --animate-blob-1: blob 13s infinite;
+    --animate-blob-2: blob 11s infinite;
+    --animate-blob-3: blob 17s infinite;
+    @keyframes blob {
+      0%{
+        transform: translate(0px, 0px) scale(1);
+      }
+      33%{
+        transform: translate(30px, -50px) scale(1.1);
+      }
+      66%{
+        transform: translate(-20px, 20px) scale(0.9);
+      }
+      100%{
+        transform: translate(0px, 0px) scale(1);
+      }
+    }
+
 }
