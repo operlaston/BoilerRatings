@@ -68,7 +68,7 @@ function Auth() {
             Password
           </lable>
           <div className=" relative">
-            <Lock className="absolute left-3 top-1/4 text-gray-400 dark:text-gray-500 h-5 w-5" />
+            <Lock className={(!isLogin? `top-3/16`:`top-1/4`) + ` absolute left-3  text-gray-400 dark:text-gray-500 h-5 w-5`} />
             <input
               id="password"
               type="password"
@@ -88,7 +88,7 @@ function Auth() {
           {
             !isLogin && (
               <div className=" relative">
-                <RotateCcw className="absolute left-3 top-1/4 text-gray-400 dark:text-gray-500 h-5 w-5" />
+                <RotateCcw className="absolute left-3 top-3/16 text-gray-400 dark:text-gray-500 h-5 w-5" />
                 <input
                   id="password"
                   type="password"
