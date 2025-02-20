@@ -23,6 +23,21 @@ function Auth() {
       return;
     }
     //TODO: Verify password is strong enough and display according error message
+    if (password.length < 8) {
+      setError(`Password not secure enough. Password must include:
+        At least 8 characters
+        An uppercase letter, lowercase letter, and number
+        Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+    }
+    const hasUpper = [A-Z].test(password)
+    const hasLower = [a-z].test(password)
+    const hasNumber = [0-9].test(password)
+    if (!(hasUpper && hasLower && hasNumber)) {
+      setError(`Password not secure enough. Password must include:
+        At least 8 characters
+        An uppercase letter, lowercase letter, and number
+        Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+    }
 
     if (!isLogin && (retype != password)) {
       setError("Passwords do not match.");
