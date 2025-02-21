@@ -13,5 +13,5 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('failed to connect to database: ' + err)
   })
 
-app.use()
+
 mongoose.connection.close()
