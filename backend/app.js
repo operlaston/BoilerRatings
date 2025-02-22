@@ -3,6 +3,8 @@ require('dotenv').config()
 const cors = require('cors')
 const express = require('express')
 const mongoose = require('mongoose')
+const usersRouter = require('./controllers/users')
+const majorsRouter = require('./controllers/majors')
 const app = express()
 
 // connect to database
@@ -16,6 +18,9 @@ mongoose.connect(process.env.MONGODB_URI)
 
 app.use(cors())
 app.use(express.json())
+
+app.use('/api/users', usersRouter)
+app.use('/api/majors', majorsRouter)
 
 
 module.exports = app
