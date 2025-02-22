@@ -1,8 +1,9 @@
 // imports
 require('dotenv').config()
+const cors = require('cors')
 const express = require('express')
-const app = express()
 const mongoose = require('mongoose')
+const app = express()
 
 // connect to database
 mongoose.connect(process.env.MONGODB_URI)
@@ -13,5 +14,8 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('failed to connect to database: ' + err)
   })
 
-app.use()
-mongoose.connection.close()
+app.use(cors())
+app.use(express.json())
+
+
+module.exports = app
