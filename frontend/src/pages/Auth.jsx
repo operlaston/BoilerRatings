@@ -71,9 +71,9 @@ function Auth() {
           {isLogin ? "Welcome back" : "Create an account"}
         </h1>
         <form onSubmit={handleSubmit}>
-          <lable htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email
-          </lable>
+          </label>
           <div className="mb-4 relative">
             <Mail className="absolute left-3 top-1/4 text-gray-400 dark:text-gray-500 h-5 w-5" />
             <input
@@ -86,9 +86,9 @@ function Auth() {
             />
           </div>
 
-          <lable htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Password
-          </lable>
+          </label>
           <div className=" relative">
             <Lock className={(!isLogin? `top-3/16`:`top-1/4`) + ` absolute left-3  text-gray-400 dark:text-gray-500 h-5 w-5`} />
             <input
