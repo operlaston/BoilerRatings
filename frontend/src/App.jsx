@@ -5,6 +5,8 @@ import { Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding'
+import ReviewPage from "./pages/ReviewPage.jsx";
+
 
 function App() {
   return (
@@ -19,11 +21,12 @@ function App() {
 
         {/* Route for the login page */}
         <Route path="/login" element={<Auth />} />
-
+        
         {/* Route for the onboarding page */}
         <Route path="/onboarding" element={<Onboarding />} />
 
-
+        {/* Route for the review page */}
+        <Route path="/reviews" element={<ReviewPage />} />
       </Routes>
     </Router>
   );
