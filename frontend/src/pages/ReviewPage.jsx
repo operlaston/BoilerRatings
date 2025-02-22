@@ -1,3 +1,4 @@
+import StarRating from "../assets/StarRating.jsx"
 const ReviewPage = () => {
   // Temporary mock data - replace with real data later
   const mockReviews = [
@@ -69,6 +70,18 @@ const ReviewPage = () => {
               <p className="text-gray-600 dark:text-gray-300">{review.text}</p>
             </div>
           ))}
+
+          <div className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm">
+            {/* Add a review  */}
+            <div className="flex justify-between items-start mb-2">
+              <h3 className="font-medium text-gray-900 dark:text-white">
+                Add a review:
+              </h3>
+              <div className="flex items-center space-x-1">
+                <StarRating  />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
