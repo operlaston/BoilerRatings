@@ -5,7 +5,9 @@ import { Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding'
-import ReviewPage from "./pages/ReviewPage.jsx";
+import ReviewPage from "./pages/ReviewPage";
+import DegreePlanner from "./pages/DegreePlanner";
+
 
 
 function App() {
@@ -14,6 +16,10 @@ function App() {
       <Link to="/">Home</Link>
       <Link to="/login">Login</Link>
       <Link to="/onboarding">On-boarding</Link>
+      <Link to="/reviews">Reviews</Link>
+      <Link to="/degree">Degree</Link>
+
+
 
       <Routes>
         {/* Route for the home page */}
@@ -27,6 +33,8 @@ function App() {
 
         {/* Route for the review page */}
         <Route path="/reviews" element={<ReviewPage />} />
+
+        <Route path="/degree" element={<DegreePlanner />} />
       </Routes>
     </Router>
   );
