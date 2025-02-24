@@ -56,7 +56,7 @@ function Auth({user, setUser}) {
       setError("Passwords do not match.");
       return;
     }
-    setError("");
+    // setError("");
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -72,16 +72,12 @@ function Auth({user, setUser}) {
     event.preventDefault()
     try {
       const loggedInUser = await login(email, password)
-      if (loggedInUser.error != null) {
-        console.log("incorrect email or password")
-      }
-      else {
-        setUser(loggedInUser)
-        navigate('/')
-      }
+      setUser(loggedInUser)
+      navigate('/')
     }
     catch (e) {
-      console.log("an error occurred while logging in", e)
+      setError("Incorrect username or password.")
+      console.log("error occurred while logging in", e)
     }
   }
 
@@ -126,9 +122,9 @@ function Auth({user, setUser}) {
           </div>
           {
             !isLogin && (
-              <lable htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Retype Password
-              </lable>
+              </label>
             )
           }
           {
@@ -149,7 +145,7 @@ function Auth({user, setUser}) {
           {isLogin && <button className="mb-4 justify-end text-sm text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">
             Forgot password?
           </button>}
-          {error && <p className="text-red-500 dark:text-red-300 text-md text-center mt-1">{error}</p>}
+          {error && <p className="text-red-500 dark:text-red-300 text-md text-center mt-1 pb-6">{error}</p>}
           <button type="Submit" className="cursor-pointer w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center">
             {isLoading ? (
               <Loader2 className="animate-spin h-6 w-6" />
