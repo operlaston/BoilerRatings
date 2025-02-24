@@ -1,5 +1,5 @@
 // src/App.js
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Home from './pages/Home';
@@ -11,6 +11,8 @@ import DegreePlanner from "./pages/DegreePlanner";
 
 
 function App() {
+  const [user, setUser] = useState(null)
+
   return (
     <Router>
       <Link to="/">Home</Link>
@@ -26,7 +28,7 @@ function App() {
         <Route path="/" element={<Home />} />
 
         {/* Route for the login page */}
-        <Route path="/login" element={<Auth />} />
+        <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
         
         {/* Route for the onboarding page */}
         <Route path="/onboarding" element={<Onboarding />} />
