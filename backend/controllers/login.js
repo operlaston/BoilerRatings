@@ -2,18 +2,18 @@ const loginRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 
-// client should send an object with a username field and password field
+// client should send an object with an email field and password field
 loginRouter.post('/', async (req, res) => {
   const userCredentials = req.body
-  const username = userCredentials.username
+  const userEmail = userCredentials.email
   try {
-    const user = await User.findOne({username})
+    const user = await User.findOne({email: userEmail})
     if (user === null) {
-      res.status(401).json({"error": "username doesn't exist"})
+      res.status(401).json({"error": "email doesn't exist"})
       return
     }
     if (await bcrypt.compare(userCredentials.password, user.passwordHash)) {
-      console.log("Login success:", username)
+      console.log("Login success:", userEmail)
       res.status(200).json({
         id: user.id,
         username: user.username,
@@ -31,7 +31,7 @@ loginRouter.post('/', async (req, res) => {
     }
   }
   catch (err) {
-    console.log("Login failed:", username, err)
+    console.log("Login failed:", err)
     res.status(400).json({"error": "bad request"})
   }
 })

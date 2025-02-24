@@ -9,10 +9,10 @@ usersRouter.post('/', async (req, res) => {
     // search db for major
     const majorId = (await Major.findOne({name: major})).id
 
-    const duplicateUser = await User.findOne({username})
+    const duplicateUser = await User.findOne({email})
     if (duplicateUser !== null) {
-      console.log("username exists already")
-      res.status(409).json({"error": "username already exists"})
+      console.log("email exists already")
+      res.status(409).json({"error": "email already exists"})
       return
     }
 
