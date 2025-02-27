@@ -13,6 +13,10 @@ const courseSchema = new mongoose.Schema({
     enjoyment: Number,
     numReviews: Number,
     recommended: Number,
+    reviews: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
     prerequisites: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
