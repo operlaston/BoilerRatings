@@ -43,7 +43,7 @@ const reviewSchema = new mongoose.Schema({
   instructor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Instructor",
-    required: true,
+    required: false,
   },
   likes: {
     type: Number,

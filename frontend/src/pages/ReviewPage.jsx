@@ -4,9 +4,15 @@ import { Loader2 } from "lucide-react";
 
 const ReviewPage = () => {
   // Declare all states inside the component
-  const [reviewText, setReviewText] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [rating, setRating] = useState(0);
+  const [reviewData, setReviewData] = useState({
+    semesterTaken: "",
+    reviewContent: "",
+    recommend: false,
+    difficulty: 0,
+    enjoyment: 0, // This was previously called "rating"
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const [lastReview, setReview] = useState("");
 
   // Temporary mock data - replace with real data later
@@ -119,7 +125,7 @@ const ReviewPage = () => {
                   Add a review:
                 </h3>
                 <div className="flex items-center space-x-1">
-                  <StarRating />
+                  <StarRating onRatingChange={setRating} />
                 </div>
               </div>
 
@@ -127,10 +133,12 @@ const ReviewPage = () => {
                 value={reviewText}
                 onChange={(e) => setReviewText(e.target.value)}
                 placeholder="Leave a review here"
-                claReview submsName="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-               bg-white/90 dark:bg-gray-800/80 placeholder-gray-400 dark:placeholder-gray-500
-               focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white
-               resize-none transition-all duration-200"
+                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
+                bg-white/90 dark:bg-gray-800/80 
+                placeholder-gray-400 dark:placeholder-gray-100 
+                focus:outline-none focus:ring-2 focus:ring-orange-500 
+                text-gray-900 dark:text-gray-200 
+                resize-none transition-all duration-200"
                 rows={4}
                 required
                 disabled={isLoading}
@@ -138,7 +146,9 @@ const ReviewPage = () => {
 
               <button
                 type="submit"
-                disabled={isLoading || rating === 0}
+                disabled={
+                  isLoading || rating === 0 || reviewText.trim().length < 20
+                }
                 className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors 
                disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2"
