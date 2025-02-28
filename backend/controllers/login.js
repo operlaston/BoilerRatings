@@ -9,7 +9,7 @@ loginRouter.post('/', async (req, res) => {
   try {
     const user = await User.findOne({email: userEmail})
     if (user === null) {
-      res.status(401).json({"error": "email doesn't exist"})
+      res.status(401).json({"error": "email is not registered"})
       return
     }
     if (await bcrypt.compare(userCredentials.password, user.passwordHash)) {
