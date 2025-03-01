@@ -15,7 +15,7 @@ function Home() {
 
   return (
     <div className="p-8 text-xl bg-gray-900 min-h-screen text-white">
-      <div className="pb-8">
+      <div className="pb-8 text-2xl">
         <input
           type='text'
           placeholder='Search for a course'

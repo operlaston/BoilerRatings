@@ -1,9 +1,13 @@
 const Course = ({name, number, credits, enjoyment, difficulty, recommended, numReviews, requirements}) => {
   return (
-    <div className="bg-gray-800 text-white py-3 px-5 rounded-lg cursor-pointer
-      border-white border-solid border-1 hover:scale-102 transition-all
+    <div className="bg-gray-800 text-white py-4 px-5 rounded-lg cursor-pointer
+      hover:scale-102 transition-all
     ">
-      <div>{number}: {name}</div>
+      <div
+        className="text-3xl font-bold pb-2"
+      >
+        {number}: {name}
+      </div>
       <div>Credits: {credits}</div>
       <div>Enjoyment: {enjoyment} | Difficulty: {difficulty}</div>
       <div>Recommended: {recommended*100}%</div>
