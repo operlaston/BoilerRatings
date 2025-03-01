@@ -16,6 +16,7 @@ const StarRating = ({ onRatingChange }) => {
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
+            type="button"
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             onClick={() => handleClick(star)}

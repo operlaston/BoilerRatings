@@ -76,7 +76,7 @@ function Auth({user, setUser}) {
       navigate('/')
     }
     catch (e) {
-      setError("Incorrect username or password.")
+      setError(e.response.data.error)
       console.log("error occurred while logging in", e)
     }
   }
