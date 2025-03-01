@@ -15,11 +15,13 @@ function App() {
 
   return (
     <Router>
-      <Link to="/">Home</Link>
-      <Link to="/login">Login</Link>
-      <Link to="/onboarding">On-boarding</Link>
-      <Link to="/reviews">Reviews</Link>
-      <Link to="/degree">Degree</Link>
+      <div className="flex gap-x-4 text-xl">
+        <Link to="/">Home</Link>
+        <Link to="/login">Login</Link>
+        <Link to="/onboarding">On-boarding</Link>
+        <Link to="/reviews">Reviews</Link>
+        <Link to="/degree">Degree</Link>
+      </div>
 
 
 
