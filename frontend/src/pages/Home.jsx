@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Course from '../components/Course';
+import { getCourses } from '../services/courses';
 
 
 const placeholderRequirements = [
@@ -8,9 +9,20 @@ const placeholderRequirements = [
 ]
 
 function Home() {
+  const [courses, setCourses] = useState([])
+
 
   useEffect(() => {
-
+    const retrieveCourses = async () => {
+      try {
+        const listOfCourses = await getCourses()
+        setCourses(listOfCourses)
+      }
+      catch (e) {
+        console.log('Could not retrieve list of courses', e)
+      }
+    }
+    // retrieveCourses()
   }, []) 
 
   return (
