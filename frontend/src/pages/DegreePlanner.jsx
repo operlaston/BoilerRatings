@@ -33,14 +33,88 @@ const initialSemesters = [
 
 export default function DegreePlanner() {
   const [courses, setCourses] = useState(INITIAL_CLASSES);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSemester, setSelectedSemester] = useState("Fall 2025");
+
+  const availableCourses = [
+    { courseAlias: "CS 180" },
+    { courseAlias: "CS 193" },
+    { courseAlias: "CS 240" },
+    { courseAlias: "CS 250" },
+    { courseAlias: "CS 251" },
+    { courseAlias: "CS 252" },
+    { courseAlias: "MA 161" },
+    { courseAlias: "MA 162" },
+    { courseAlias: "MA 261" },
+    { courseAlias: "MA 265" },
+    { courseAlias: "STAT 350" },
+  ];
+
+  const filteredCourses = availableCourses.filter((course) =>
+    course.courseAlias.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleAddCourse = (courseAlias) => {
+    if (!courses.some((c) => c.courseAlias === courseAlias)) {
+      setCourses([...courses, {courseID: courses.length, courseAlias, semester: selectedSemester }]);
+    }
+  };
+
   return (
+    <div>
     <div className="flex flex-row">
       { 
         initialSemesters.map((s) => {
-          return <Semester key= {s.id} semester={s.semester} id={s.id} courses={courses} setCourses={setCourses} />;
+          return <Semester key={s.id} semester={s.semester} id={s.id} courses={courses} setCourses={setCourses} />;
         })
       }
     </div>
+    <div className="flex flex-col space-y-4">
+      {/* Search Bar */}
+      <div className="flex space-x-2">
+        <input
+          type="text"
+          placeholder="Search for a course..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="p-2 border rounded w-64"
+        />
+        {/* Semester Selection Dropdown */}
+        <select
+          value={selectedSemester}
+          onChange={(e) => setSelectedSemester(e.target.value)}
+          className="p-2 border rounded"
+        >
+          {initialSemesters.map((s) => (
+            <option key={s.id} value={s.semester}>
+              {s.semester}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Search Results */}
+      <div className="bg-gray-100 p-2 rounded">
+        {filteredCourses.map((course) => (
+          <button
+            key={course.courseAlias}
+            onClick={() => handleAddCourse(course.courseAlias)}
+            className="block w-full text-left p-1 hover:bg-gray-200"
+          >
+            {course.courseAlias}
+          </button>
+        ))}
+      </div>
+
+      {/* Render Semesters */}
+      <div className="flex flex-row">
+        {initialSemesters.map((s) => (
+          <Semester key={s.id} semester={s.semester} id={s.id} courses={courses} setCourses={setCourses} />
+        ))}
+      </div>
+    </div>
+  </div>
+     
   );
 }
 
