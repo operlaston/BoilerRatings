@@ -8,8 +8,8 @@ courseRouter.get('/:id', async (req, res) => {
         .populate({
             path: 'reviews',
             populate: {
-                path: 'instructor',
-                select: 'instructorName gpa rmp'
+                path: 'user',
+                select: 'username email'
             }
         })
         .populate('prerequisites', 'courseName courseNumber')
