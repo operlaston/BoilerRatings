@@ -4,7 +4,7 @@ const Course = ({name, number, credits, enjoyment, difficulty, recommended, numR
       hover:scale-102 transition-all
     ">
       <div
-        className="text-3xl font-bold pb-2"
+        className="text-2xl font-bold pb-1"
       >
         {number}: {name}
       </div>
