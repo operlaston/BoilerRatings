@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import Course from '../components/Course';
+import Course from '../components/CourseCard';
 import { getCourses } from '../services/courses';
 
 
@@ -26,7 +26,7 @@ function Home() {
   }, []) 
 
   return (
-    <div className="p-8 bg-gray-900 min-h-screen text-white">
+    <div className="p-20 bg-gray-900 min-h-screen text-white">
       <div className="pb-8 text-xl">
         <input
           type='text'

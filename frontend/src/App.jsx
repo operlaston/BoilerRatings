@@ -7,7 +7,7 @@ import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding'
 import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
-
+import CourseInfo from './pages/Course';
 
 
 function App() {
@@ -21,6 +21,7 @@ function App() {
         <Link to="/onboarding">On-boarding</Link>
         <Link to="/reviews">Reviews</Link>
         <Link to="/degree">Degree</Link>
+        <Link to="/course">Course</Link>
       </div>
 
 
@@ -39,6 +40,9 @@ function App() {
         <Route path="/reviews" element={<ReviewPage />} />
 
         <Route path="/degree" element={<DegreePlanner />} />
+
+        <Route path="/course" element={<CourseInfo />} />
+
       </Routes>
     </Router>
   );
