@@ -24,9 +24,9 @@ degreePlanRouter.put('/:id', async (req, res) => {
             return res.status(401).json({error: 'No degree plan'})
         }
         const updatePlan = await DegreePlan.findByIdAndUpdate(id, updated, {new: true, runValidators: true})
-        res.status(200).json(updatedPlan)
+        res.status(200).json(updatePlan)
     } catch (error) {
-        console.lob('Failed to updated Degree Plan:', error)
+        console.log('Failed to updated Degree Plan:', error)
         res.status(400).json({error: 'Bad Request'})
     }
 })
