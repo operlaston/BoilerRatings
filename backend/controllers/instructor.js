@@ -12,7 +12,7 @@ instructorRouter.post('/', async (req, res) =>{
     }
 })
 
-instructorRouter.put(':/id/courses', async (req, res) => {
+instructorRouter.put('/:id/courses', async (req, res) => {
     const {courseId} = req.body
     try {
         const course = await Course.findById(courseId)
