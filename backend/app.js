@@ -9,6 +9,8 @@ const loginRouter = require('./controllers/login')
 const reviewRouter = require('./controllers/review')
 const courseRouter = require('./controllers/course')
 const { requestLogger, unknownEndpoint } = require('./utils/middleware')
+const degreePlanRouter = require('./controllers/degreeplan')
+const instructorRouter = require('./controllers/instructor')
 const app = express()
 
 // connect to database
@@ -27,10 +29,13 @@ app.use(requestLogger)
 app.use('/api/users', usersRouter)
 app.use('/api/majors', majorsRouter)
 app.use('/api/login', loginRouter)
-app.use('./api/reviews', reviewRouter)
-app.use('./api/courses', courseRouter)
+app.use('/api/reviews', reviewRouter)
+app.use('/api/courses', courseRouter)
+app.use('/api/degreeplan', degreePlanRouter)
+app.use('/api/instructor', instructorRouter)
 
 app.use(unknownEndpoint)
+
 
 
 module.exports = app
