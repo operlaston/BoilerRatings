@@ -9,10 +9,22 @@ const courseSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Instructor'
     }],
-    difficulty: Number,
-    enjoyment: Number,
-    numReviews: Number,
-    recommended: Number,
+    difficulty: {
+        type: Number,
+        default: 0
+    },
+    enjoyment: {
+        type: Number,
+        default: 0
+    },
+    numReviews: {
+        type: Number,
+        default: 0
+    },
+    recommended: {
+        type: Number,
+        default: 0
+    },
     reviews: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
