@@ -1,6 +1,7 @@
 const reviewRouter = require('express').Router()
 const User = require('../models/user')
-const Review = require('../models/user')
+const Review = require('../models/review')
+const Course = require('../models/course')
 
 reviewRouter.get('/:id', async (req, res) => {
     try {
@@ -36,7 +37,7 @@ reviewRouter.post('/', async (req, res) => {
             $set: {
                 difficulty: (courseExists.difficulty * courseExists.numReviews + review.difficulty) / (courseExists.numReviews + 1),
                 enjoyment: (courseExists.enjoyment * courseExists.numReviews + review.enjoyment) / (courseExists.numReviews + 1),
-                recommended: review.recommended ? courseExists.recommended + 1: courseExists.recommended
+                recommended: review.recommended === true ? courseExists.recommended + 1: courseExists.recommended
             }
         })
         await User.findByIdAndUpdate(user, {$push: {reviews: savedReview._id}})
