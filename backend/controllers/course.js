@@ -23,4 +23,16 @@ courseRouter.get('/:id', async (req, res) => {
     }
 })
 
+courseRouter.post('/', async (req,res) => {
+    const course = new Course(req.body)
+
+    try {
+        const savedCourse = await course.save()
+        res.status(201).json(savedCourse)
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({error: 'Invalid Course Data'})
+    }
+})
+
 module.exports = courseRouter
