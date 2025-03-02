@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
-import Course from '../components/Course';
+import React, { useEffect, useState } from 'react';
+import Course from '../components/CourseCard';
+import { getCourses } from '../services/courses';
 
 
 const placeholderRequirements = [
@@ -8,14 +9,25 @@ const placeholderRequirements = [
 ]
 
 function Home() {
+  const [courses, setCourses] = useState([])
+
 
   useEffect(() => {
-
+    const retrieveCourses = async () => {
+      try {
+        const listOfCourses = await getCourses()
+        setCourses(listOfCourses)
+      }
+      catch (e) {
+        console.log('Could not retrieve list of courses', e)
+      }
+    }
+    // retrieveCourses()
   }, []) 
 
   return (
-    <div className="p-8 text-xl bg-gray-900 min-h-screen text-white">
-      <div className="pb-8 text-2xl">
+    <div className="p-20 bg-gray-900 min-h-screen text-white">
+      <div className="pb-8 text-xl">
         <input
           type='text'
           placeholder='Search for a course'
