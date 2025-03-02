@@ -1,6 +1,6 @@
 const courseRouter = require('express').Router()
 const { populate } = require('../models/review')
-const Course = require('../models/user')
+const Course = require('../models/course')
 
 courseRouter.get('/:id', async (req, res) => {
     try {
