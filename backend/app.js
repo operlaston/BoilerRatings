@@ -31,8 +31,8 @@ app.use('/api/majors', majorsRouter)
 app.use('/api/login', loginRouter)
 app.use('/api/reviews', reviewRouter)
 app.use('/api/courses', courseRouter)
-app.use('/api/degreeplan', degreePlanRouter)
-app.use('/api/instructor', instructorRouter)
+app.use('/api/degreeplans', degreePlanRouter)
+app.use('/api/instructors', instructorRouter)
 
 app.use(unknownEndpoint)
 
