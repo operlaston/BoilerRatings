@@ -1,13 +1,19 @@
 import React, { useState } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
-function Auth() {
+import { useNavigate } from "react-router-dom";
+import { login } from '../services/login'
+
+function Auth({user, setUser}) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [retype, setRetype] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const handleSubmit = (e) => {
+
+  const navigate = useNavigate()
+
+  const handleSignUp = (e) => {
     e.preventDefault();
     if (!email) {
       setError("Please fill in your email.");
@@ -50,17 +56,31 @@ function Auth() {
       setError("Passwords do not match.");
       return;
     }
-    setError("");
+    // setError("");
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
     }, 1500);
 
     //NOTE: Whoever hooks up the login, can also setError to wrong credentials
-    if (false) {
-      setError("Credentials incorrect. Please try again");
-    }
+    // if (false) {
+    //   setError("Credentials incorrect. Please try again");
+    // }
   };
+
+  const handleLogin = async (event) => {
+    event.preventDefault()
+    try {
+      const loggedInUser = await login(email, password)
+      setUser(loggedInUser)
+      navigate('/')
+    }
+    catch (e) {
+      setError(e.response.data.error)
+      console.log("error occurred while logging in", e)
+    }
+  }
+
   return (
     <div className="w-full h-screen flex items-center justify-center p-4 dark:bg-gray-900">
       <div className={`absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1 ease-in-out duration-150  ${isLogin?"-translate-x-full":"translate-x-2/3 -translate-y-1/4"}`}></div>
@@ -70,7 +90,7 @@ function Auth() {
         <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center dark:text-white">
           {isLogin ? "Welcome back" : "Create an account"}
         </h1>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={isLogin ? handleLogin : handleSignUp}>
           <label htmlFor="email" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Email
           </label>
@@ -102,9 +122,9 @@ function Auth() {
           </div>
           {
             !isLogin && (
-              <lable htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Retype Password
-              </lable>
+              </label>
             )
           }
           {
@@ -125,7 +145,7 @@ function Auth() {
           {isLogin && <button className="mb-4 justify-end text-sm text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300">
             Forgot password?
           </button>}
-          {error && <p className="text-red-500 dark:text-red-300 text-md text-center mt-1">{error}</p>}
+          {error && <p className="text-red-500 dark:text-red-300 text-md text-center mt-1 pb-6">{error}</p>}
           <button type="Submit" className="cursor-pointer w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center">
             {isLoading ? (
               <Loader2 className="animate-spin h-6 w-6" />
