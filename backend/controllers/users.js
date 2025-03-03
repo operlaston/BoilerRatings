@@ -2,6 +2,7 @@ const usersRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const Major = require('../models/major')
+const sendEmail = require('../utils/email')
 
 usersRouter.post('/', async (req, res) => {
   //const { username, email, password, graduationSemester, major } = req.body
@@ -10,14 +11,14 @@ usersRouter.post('/', async (req, res) => {
     // search db for major
 
     //const majorId = (await Major.findOne({name: major})).id
-
+/*
     const duplicateUser = await User.findOne({email})
     if (duplicateUser !== null) {
       console.log("email exists already")
       res.status(409).json({"error": "email already exists"})
       return
     }
-
+*/
 
     // I'm going to comment out the fields that need to be updated during onboarding since this post is made at signup time which is just email and password
     // Onboarding needs to create a new router to include the onboarding data which will come after verify - Bryce
@@ -40,6 +41,10 @@ usersRouter.post('/', async (req, res) => {
       plans: []
     })
     const savedUser = await user.save()
+    console.log("Attempting to send email to:", email)
+    console.log("Verification code:", verificationCode)
+    console.log("EMAIL_USER:", process.env.EMAIL_USER)
+    console.log("EMAIL_PASS:", process.env.EMAIL_PASS)
     await sendEmail(email, verificationCode)
     res.status(201).end()
   }
