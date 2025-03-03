@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import StarRating from "../assets/StarRating.jsx";
 import { Loader2, Star } from "lucide-react";
 
@@ -15,7 +15,11 @@ const BaseReviewForm = ({
   onCancel,
   submitButtonText = "Submit Review",
 }) => {
-  const [formData, setFormData] = useState(initialData);
+  // Initialize state
+  const [formData, setFormData] = useState(() => ({
+    ...initialData,
+    semesterTaken: initialData.semesterTaken || "",
+  }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,19 +1,22 @@
 import { useState } from "react";
 import AddReviewForm from "../components/AddReviewForm.jsx";
+import BaseReviewForm from "../components/BaseReviewForm.jsx";
+import { EditReviewForm } from "../components/EditReviewForm.jsx";
 import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
 
 const ReviewPage = () => {
   const [canAddReview, setCanAddReview] = useState(true);
+  const [editingReview, setEditingReview] = useState(null);
   const [currentUser] = useState({ id: "user-123" }); // Mock current user
 
   // Temporary mock data - replace with real data later
-  const mockReviews = [
+  const [reviews, setReviews] = useState([
     {
       id: 1,
       user: "user-123",
       name: "Sarah Johnson",
       date: "2023-03-15T12:00:00Z",
-      semesterTaken: "Fall 2022",
+      semesterTaken: "Fall 2024",
       reviewContent:
         "This course really helped me understand fundamental concepts. The projects were challenging but rewarding!",
       recommend: true,
@@ -36,7 +39,7 @@ const ReviewPage = () => {
       likes: 5,
       reports: [],
     },
-  ];
+  ]);
 
   // Handle like
 
@@ -75,25 +78,45 @@ const ReviewPage = () => {
     }
   };
 
-  const [reviews, setReviews] = useState(mockReviews);
-  // Handle submit
   const handleReviewSubmit = async (formData) => {
     try {
-      const newReview = {
-        ...formData,
-        user: "placeholder-user-id",
-        date: new Date().toISOString(),
-        likes: 0,
-        reports: [],
-      };
-
-      // await fetch(...)
-      console.log("Sumbitted success: ", newReview);
+      if (formData.id) {
+        // Update existing review
+        const updatedReview = {
+          ...formData,
+          date: new Date().toISOString(),
+        };
+        setReviews((prev) =>
+          prev.map((r) => (r.id === formData.id ? updatedReview : r))
+        );
+      } else {
+        // Create new review
+        const newReview = {
+          ...formData,
+          id: Date.now(),
+          user: currentUser.id,
+          date: new Date().toISOString(),
+          likes: 0,
+          reports: [],
+        };
+        setReviews((prev) => [newReview, ...prev]);
+      }
     } catch (error) {
       console.error("Submission failed:", error);
-      throw error; // Let AddReviewForm handle error
+      throw error;
+    } finally {
+      setEditingReview(null);
     }
   };
+
+  const handleEdit = (reviewId) => {
+    const review = reviews.find((r) => r.id === reviewId);
+    setEditingReview(review);
+    console.log("Handling editing", review);
+  };
+
+  const handleCancelEdit = () => setEditingReview(null);
+
   return (
     <div className="w-full min-h-screen flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
       {/* Animated background blobs - same style as login page */}
@@ -114,13 +137,13 @@ const ReviewPage = () => {
             ))}
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Based on {mockReviews.length} reviews
+            Based on {reviews.length} reviews
           </p>
         </div>
 
         {/* Reviews List */}
         <div className="flex-column space-y-6">
-          {mockReviews.map((review) => (
+          {reviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow
             key={review.id}"
@@ -142,27 +165,32 @@ const ReviewPage = () => {
                   <div className="flex items-center space-x-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
                     <span className="text-gray-900 dark:text-white">
-                      {(review.enjoyment).toFixed(1)}
+                      {review.enjoyment.toFixed(1)}
                     </span>
                   </div>
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => handleLike(review.id)}
-                      className="p-1 hover:text-green-500 transition-colors"
-                    >
-                      <ThumbsUp className="w-5 h-5" />
-                      <span className="sr-only">Like</span>
-                    </button>
+                    {review.user !== 0 && (
+                      <button
+                        onClick={() => handleLike(review.id)}
+                        className="p-1 hover:text-green-500 transition-colors"
+                      >
+                        <ThumbsUp className="w-5 h-5" />
+                        <span className="sr-only">Like</span>
+                      </button>
+                    )}
 
-                    <button
-                      onClick={() => handleDislike(review.id)}
-                      className="p-1 hover:text-red-500 transition-colors"
-                    >
-                      <ThumbsDown className="w-5 h-5" />
-                      <span className="sr-only">Dislike</span>
-                    </button>
+                    {/* Default id is 0 for now */}
+                    {review.user !== 0 && (
+                      <button
+                        onClick={() => handleDislike(review.id)}
+                        className="p-1 hover:text-red-500 transition-colors"
+                      >
+                        <ThumbsDown className="w-5 h-5" />
+                        <span className="sr-only">Dislike</span>
+                      </button>
+                    )}
 
                     {/* Show edit only for current user's reviews */}
                     {review.user === currentUser.id && (
@@ -203,6 +231,15 @@ const ReviewPage = () => {
                 <ThumbsUp className="w-4 h-4" />
                 <span>{review.likes} likes</span>
               </div>
+
+              {editingReview === review && (
+                <BaseReviewForm
+                  initialData={editingReview}
+                  onSubmit={handleReviewSubmit}
+                  onCancel={handleCancelEdit}
+                  submitButtonText="Update Review"
+                />
+              )}
             </div>
           ))}
 
