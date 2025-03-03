@@ -8,16 +8,16 @@ const transport = nodemailer.createTransport({
 })
 const sendEmail = async (to, subject, text) => {
     const mailOptions = {
-        from: '"Boiler Ratings" <${process.env.EMAIL_USER}>',
+        from: `"Boiler Ratings" <${process.env.EMAIL_USER}>`,
         to,
         subject,
         text,
     };
     try {
         await transport.sendMail(mailOptions);
-        console.log('Email sent to ${to}');
+        console.log(`Email sent to ${to}`);
     } catch (error) {
-        console.error("Failed to send email");
+        console.log("Failed to send email");
         throw new Error("Email failed to send");
     }
 };
