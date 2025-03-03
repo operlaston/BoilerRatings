@@ -142,7 +142,7 @@ const ReviewPage = () => {
                   <div className="flex items-center space-x-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
                     <span className="text-gray-900 dark:text-white">
-                      {((review.difficulty + review.enjoyment) / 2).toFixed(1)}
+                      {(review.enjoyment).toFixed(1)}
                     </span>
                   </div>
 
