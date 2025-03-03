@@ -31,6 +31,17 @@ const BaseReviewForm = ({
       reports: initialData.reports || [],
       date: initialData.date || new Date().toISOString(),
     });
+
+    // Auto-reset only for new reviews
+    if (!initialData.id) {
+      setFormData({
+        semesterTaken: "",
+        reviewContent: "",
+        recommend: false,
+        difficulty: 0,
+        enjoyment: 0,
+      });
+    }
   };
 
   return (
