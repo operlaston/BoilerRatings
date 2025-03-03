@@ -12,7 +12,6 @@ const { requestLogger, unknownEndpoint } = require('./utils/middleware')
 const degreePlanRouter = require('./controllers/degreeplan')
 const instructorRouter = require('./controllers/instructor')
 const app = express()
-const authController = require("./controllers/authoController")
 
 // connect to database
 mongoose.connect(process.env.MONGODB_URI)
@@ -37,13 +36,5 @@ app.use('/api/instructors', instructorRouter)
 
 app.use(unknownEndpoint)
 
-
-const PORT = 5000; //We can change this in the .env file later if we want a differnt port just put this for testing
-app.listen(PORT, () => {
-  console.log(`Running on http://localhost:${PORT}`)
-})
-
-app.post("/api/auth/signup", authController.signup)
-app.post("/api/auth/verify-code", authController.verifyCode)
 
 module.exports = app
