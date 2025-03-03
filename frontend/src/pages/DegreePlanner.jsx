@@ -6,57 +6,66 @@ const INITIAL_CLASSES= [
     courseID: 0,
     courseAlias: "CS 180", 
     semester: "Fall 2025",
+    semesterIndex: 4, 
     description: "Intro to OOP",
     creditHours: 4,
+    prerequisites: [], 
+    corequisites: [],
   }, 
   {
     courseID: 1,
     courseAlias: "CS 240", 
     semester: "Spring 2026", 
+    semesterIndex: 5,
     description: "Programming in C",
     creditHours: 4,
+    prerequisites: [["CS 180"]], 
+    corequisites: [],
   }, 
   {
     courseID: 2,
     courseAlias: "CS 252", 
     semester: "Spring 2026", 
+    semesterIndex: 5,
     description: "Systems programming",
     creditHours: 3,
+    prerequisites: [["CS 240"], ["CS 180"]], 
+    corequisites: [],
   }, 
 ]
 
 const INITIAL_SEMESTERS = [
   {
     semester: "Fall 2023",
-    courses: [],
+    semesterIndex: 0, 
   }, 
   {
     semester: "Spring 2024", 
-    courses: [],
+    semesterIndex: 1, 
   }, 
   {
     semester: "Fall 2024", 
-    courses: [],
+    semesterIndex: 2, 
   }, 
   {
-    semester: "Spring 2025", 
-    courses: [],
+    semester: "Spring 2025",
+    semesterIndex: 3,  
   }, 
   {
-    semester: "Fall 2025", 
-    courses: [],
+    semester: "Fall 2025",
+    semesterIndex: 4,  
   }, 
   {
-    semester: "Spring 2026", 
-    courses: [],
+    semester: "Spring 2026",
+    semesterIndex: 5,  
   }, 
   {
-    semester: "Fall 2026", 
-    courses: [],
+    semester: "Fall 2026",
+    semesterIndex: 6,  
   }, 
   {
-    semester: "Spring 2027", 
-    courses: [],
+    semester: "Spring 2027",
+    semesterIndex: 7,  
   }, 
 ]
 
@@ -87,7 +96,7 @@ export default function DegreePlanner() {
       <div className="col-span-9 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
         { 
           INITIAL_SEMESTERS.map((s) => {
-           return <Semester key={s.semester} semester={s.semester} id={s.semester} courses={courses} setCourses={setCourses} />;
+           return <Semester key={s.semesterIndex} semester={s.semester} semesterIndex={s.semesterIndex} id={s.semesterIndex} courses={courses} setCourses={setCourses} errors={errors} setErrors={setErrors} />;
           })
         }  
     </div>
@@ -124,19 +133,79 @@ export default function DegreePlanner() {
   );
 }
 
-const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch }) => {
+
+//add a SETERROR method and pass it in 
+const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch, conflicts, errors, setErrors }) => {
   const [hovered, setHovered] = useState(false); 
-  function handleMouseOver(e) {
-    e.preventDefault();
+  const handleMouseOver = (e) => {
     setHovered(true);
   }
-  function handleMouseOut(e) {
-    e.preventDefault();
+  const handleMouseOut = (e) => {
     setHovered(false);
   }
   function handleInfoClicked(e) {
     window.alert("Course info clicked");
   }
+
+  // useEffect(() => {
+  //   if (conflicts.length === 0) {
+  //     // Remove errors for this course if there are no conflicts
+  //     const updatedErrors = errors.filter(
+  //       (err) => !(err.errorType === "prerequisite_conflict" && err.course === courseAlias)
+  //     );
+  
+  //     // Only update errors if something was actually removed
+  //     if (updatedErrors.length !== errors.length) {
+  //       setErrors(updatedErrors);
+  //     }
+  //   } else {
+  //     // Generate the error message
+  //     const inlineError = conflicts.map((group) => `(${group.join(" OR ")})`).join(" AND ");
+  //     const errorBoardMessage = `You must take ${inlineError} before taking ${courseAlias}`;
+  
+  //     // Check if the error already exists
+  //     const errorIndex = errors.findIndex(
+  //       (err) => err.errorType === "prerequisite_conflict" && err.course === courseAlias
+  //     );
+  
+  //     if (errorIndex !== -1) {
+  //       // Update the existing error if it already exists
+  //       const updatedErrors = [...errors];
+  //       updatedErrors[errorIndex].errorMessage = errorBoardMessage;
+  
+  //       // Only update errors if the message has changed
+  //       if (updatedErrors[errorIndex].errorMessage !== errors[errorIndex].errorMessage) {
+  //         setErrors(updatedErrors);
+  //       }
+  //     } else {
+  //       // Add a new error if it doesn't exist
+  //       setErrors((prevErrors) => [
+  //         ...prevErrors,
+  //         {
+  //           errorType: "prerequisite_conflict",
+  //           errorMessage: errorBoardMessage,
+  //           clickAction: "search_prerequisites",
+  //           prerequisites: conflicts,
+  //           course: courseAlias,
+  //           semester: semester,
+  //         },
+  //       ]);
+  //     }
+  //   }
+  // }, [conflicts]);
+  //BUGGY CODE
+
+
+  const getConflictMessage = () => {
+    if (conflicts.length == 0) {
+      return null;
+    }
+    else {
+      let inlineError = conflicts.map(group => `(${group.join(" OR ")})`) .join(" AND "); 
+      return inlineError;
+    }
+  };
+  
   return (
     <>
       <DropIndicator beforeId={courseAlias} semester={semester} />
@@ -148,10 +217,14 @@ const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
-        className="relative cursor-grab rounded border dark:border-gray-600 dark:bg-gray-800 p-3 active:cursor-grabbing"
+        className={(conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
       >
-        <p className="text-sm text-white font-semibold">{courseAlias}</p>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{metadata.description}</p>
+        <p className={ (conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseAlias}</p>
+        <p className= { (conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
+          {
+            (conflicts.length == 0) ? metadata.description : "Prerequisite " + getConflictMessage()
+          }
+        </p>
         { hovered && (
           <button 
             className={`absolute top-5 right-4 cursor-pointer w-6 h-6`}
@@ -175,11 +248,12 @@ const DropIndicator = ({ beforeId, semester }) => {
   );
 };
 
-function Semester({ semester, courses, setCourses }) {
+function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors }) {
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
 
   const handleDragStart = (e, course) => {
+    console.log(course);
     e.dataTransfer.setData("courseAlias", course.courseAlias);
   }
 
@@ -242,19 +316,30 @@ function Semester({ semester, courses, setCourses }) {
     setActive(false);
   };
 
+  const checkPrerequisites = (course) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredCourseAliases = new Set(filteredCourses.map(c => c.courseAlias));
+
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredCourseAliases.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
+  }
+
   const handleDragEnd = (e) => {
     const courseAlias = e.dataTransfer.getData("courseAlias");
+    console.log(e);
+
     setActive(false);
     clearHighlights();
     const before = getNearestIndicator(e, getIndicators()).element.dataset.before || "-1";
     if (before !== courseAlias) {
-      console.log("BEFORE ACTION: ", courses); 
       let copyOfCourses = [...courses];
       let courseIndex = copyOfCourses.findIndex((c) => c.courseAlias == courseAlias)
       let courseToTransfer = copyOfCourses.splice(courseIndex, 1)[0];
       courseToTransfer.semester = semester;
-      console.log(copyOfCourses);
-      console.log(courseToTransfer);
+      courseToTransfer.semesterIndex = semesterIndex;
       if (before == "-1") {
         //goes at the very end
         copyOfCourses.push(courseToTransfer);
@@ -265,9 +350,11 @@ function Semester({ semester, courses, setCourses }) {
       }
       
       setCourses(copyOfCourses);
+      checkPrerequisites(courseToTransfer);
     }
   }
   const filteredCourses = courses.filter((c) => (c.semester == semester));
+
   
   const totalCreditHours = filteredCourses.reduce((total, course) => {
     return total + course.creditHours;
@@ -289,7 +376,7 @@ function Semester({ semester, courses, setCourses }) {
         className="h-full w-full"
       >
         {filteredCourses.map((c) => {
-          return <Course key={c.courseID} courseAlias={c.courseAlias} semester={c.semester} handleDragStart={handleDragStart} metadata={c} />;
+          return <Course key={c.courseID} courseAlias={c.courseAlias} semester={c.semester} conflicts={checkPrerequisites(c)} handleDragStart={handleDragStart} metadata={c}/>;
         })}
         <DropIndicator beforeId={null} semester={semester} />
       </div>
