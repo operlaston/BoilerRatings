@@ -22,7 +22,7 @@ const degreePlanSchema = new mongoose.Schema({
           'Error: use format Season+Year Ex:"Fall 2023"',
         ],
       },
-    savedCoursed: [{
+    savedCourses: [{
         semester: {
             type: String,
             required: true,
