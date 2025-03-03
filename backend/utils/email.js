@@ -8,7 +8,7 @@ const transport = nodemailer.createTransport({
 })
 const sendEmail = async (to, subject, text) => {
     const mailOptions = {
-        from: '"My App" <${process.env.EMAIL_USER}>',
+        from: '"Boiler Ratings" <${process.env.EMAIL_USER}>',
         to,
         subject,
         text,

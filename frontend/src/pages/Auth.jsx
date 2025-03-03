@@ -13,7 +13,7 @@ function Auth({user, setUser}) {
 
   const navigate = useNavigate()
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     if (!email) {
       setError("Please fill in your email.");
@@ -56,12 +56,21 @@ function Auth({user, setUser}) {
       setError("Passwords do not match.");
       return;
     }
-    // setError("");
+    setError("");
     setIsLoading(true);
-    setTimeout(() => {
+    /*setTimeout(() => {
       setIsLoading(false);
-    }, 1500);
+    }, 1500);*/
+    try {
+      const newUser = await signup(email, password)
+      console.log("Signed up user: ", newUser);
 
+    } catch (error) {
+      console.error("Signup error", error);
+      setError("Signup failded");
+    } finally {
+      setIsLoading(false)
+    }
     //NOTE: Whoever hooks up the login, can also setError to wrong credentials
     // if (false) {
     //   setError("Credentials incorrect. Please try again");
