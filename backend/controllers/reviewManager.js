@@ -38,3 +38,32 @@ exports.deleteReview = async (req, res) => {
         return
     }
 }
+
+const reviewLikeRouter = require('express').Router
+
+
+// positive is a boolean which dictates like (true) or dislike (false)
+reviewLikeRouter.post('/', async (req, res) => {
+    const { review, user, positive } = req.body
+    try {
+        review = await Review.findById(review)
+        if (!review) {
+            return res.status(401).json({ "error": "review not found" })
+        }
+        user = await User.findById(user);
+        if (user.likedReviews.includes(review)) {
+            return res.status(401).json({"error": "user has already liked/disliked this review"})
+        }
+
+        const num = positive ? 1 : -1
+        await Review.findByIdAndUpdate(review, { $inc: { likes: num } })
+        await User.findByIdAndUpdate(user, { $push: { likedReviews: review._id } })
+
+        return res.status(200).json({ "message": "review changed successfully" })
+    }
+    catch (err) {
+        return res.status(401).json({"error": "bad request"})
+    }
+})
+
+module.exports = reviewLikeRouter
