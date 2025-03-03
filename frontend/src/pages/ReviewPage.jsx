@@ -1,7 +1,6 @@
 import { useState } from "react";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
-import { EditReviewForm } from "../components/EditReviewForm.jsx";
 import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
 
 const ReviewPage = () => {
