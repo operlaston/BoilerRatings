@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { login } from '../services/login'
+import { signup } from '../services/signup'
 
 function Auth({user, setUser}) {
   const [isLogin, setIsLogin] = useState(true);
@@ -62,6 +63,8 @@ function Auth({user, setUser}) {
       setIsLoading(false);
     }, 1500);*/
     try {
+      console.log(email)
+      console.log(password)
       const newUser = await signup(email, password)
       console.log("Signed up user: ", newUser);
 
