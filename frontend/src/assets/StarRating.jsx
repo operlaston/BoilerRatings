@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Star } from "lucide-react";
 
-const StarRating = ({ onRatingChange }) => {
+const StarRating = ({ initialRating = 0, onRatingChange }) => {
   const [hoverRating, setHoverRating] = useState(0);
-  const [selectedRating, setSelectedRating] = useState(0);
+  const [selectedRating, setSelectedRating] = useState(initialRating);
+
+  // Reset when initialRating changes
+  useEffect(() => {
+    setSelectedRating(initialRating);
+  }, [initialRating]);
 
   const handleClick = (rating) => {
     setSelectedRating(rating);
@@ -33,7 +38,7 @@ const StarRating = ({ onRatingChange }) => {
         ))}
       </div>
       <span className="text-lg font-medium text-gray-900 dark:text-white min-w-[2rem] flex-shrink-0 text-center">
-        {selectedRating || "0"}/5
+        {selectedRating}/5
       </span>
     </div>
   );

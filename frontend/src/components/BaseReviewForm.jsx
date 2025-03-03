@@ -68,10 +68,11 @@ const BaseReviewForm = ({
             Course Difficulty
           </label>
           <StarRating
+            key={`difficulty-${initialData.id || "new"}`}
+            initialRating={formData.difficulty}
             onRatingChange={(rating) =>
               setFormData({ ...formData, difficulty: rating })
             }
-            currentRating={formData.difficulty}
           />
         </div>
 
@@ -81,10 +82,11 @@ const BaseReviewForm = ({
             Overall Enjoyment
           </label>
           <StarRating
+            key={`enjoyment-${initialData.id || "new"}`}
+            initialRating={formData.enjoyment}
             onRatingChange={(rating) =>
               setFormData({ ...formData, enjoyment: rating })
             }
-            currentRating={formData.enjoyment}
           />
         </div>
 
