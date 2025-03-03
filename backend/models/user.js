@@ -4,6 +4,9 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   passwordHash: String,
+  isVerified: Boolean,
+  verificationCode: String,
+  codeExpires: Date,
   graduationSemester: String,
   major: {
     type: mongoose.Schema.Types.ObjectId,

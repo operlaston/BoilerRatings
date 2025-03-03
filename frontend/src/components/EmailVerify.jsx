@@ -2,6 +2,8 @@ import React from "react";
 import { MailCheck } from "lucide-react";
 
 function EmailVerify() {
+  
+
   return (
     <div className="relative w-lg p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl">
       <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center dark:text-white">
