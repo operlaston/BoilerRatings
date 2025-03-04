@@ -1,8 +1,25 @@
 import React from "react";
 import { MailCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { verify } from "../services/signup"
 
-function EmailVerify() {
-  
+function EmailVerify(user, setUser) {
+  //Somehow an event will be triggered
+  const [verificationCode, setVerifcationCode] = useState("")
+  const handleVerify = async (e) => {
+    setisLoading(true)
+    try {
+      const newUser = await verify(user.email, verificationCode)
+      setUser(newUser)
+      navigate('/onboarding')
+    } catch (error) {
+      console.log("Incorrect or expired code", error);
+      setError("Incorrect or expired Code")
+    } finally {
+      setisLoading(false)
+    }
+  }
+  const navigate = useNavigate()
 
   return (
     <div className="relative w-lg p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl">
