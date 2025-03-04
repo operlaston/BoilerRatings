@@ -3,7 +3,8 @@ import EmailVerify from "../components/EmailVerify";
 import OnboardingForm from "../components/OnboardingForm";
 
 function Onboarding(user, setUser) {  
-  const [isVerify, setIsVerify] = useState(!user.isVerify); //this variable controls whether the page is on the verify step or the onboarding form
+  // const [isVerify, setIsVerify] = useState(!user.isVerify);
+  const [isVerify, setIsVerify] = useState(true); //this variable controls whether the page is on the verify step or the onboarding form
   return (
     <div className="w-full h-screen flex items-center justify-center p-4 dark:bg-gray-900">
         <div className={`absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1 ease-in-out duration-150 -translate-x-full`}></div>
