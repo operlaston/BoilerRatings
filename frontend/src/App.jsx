@@ -7,7 +7,7 @@ import Auth from './pages/Auth';
 import Onboarding from './pages/Onboarding'
 import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
-
+import CourseInfo from './pages/Course';
 
 
 function App() {
@@ -15,11 +15,14 @@ function App() {
 
   return (
     <Router>
-      <Link to="/">Home</Link>
-      <Link to="/login">Login</Link>
-      <Link to="/onboarding">On-boarding</Link>
-      <Link to="/reviews">Reviews</Link>
-      <Link to="/degree">Degree</Link>
+      <div className="flex gap-x-4 text-xl">
+        <Link to="/">Home</Link>
+        <Link to="/login">Login</Link>
+        <Link to="/onboarding">On-boarding</Link>
+        <Link to="/reviews">Reviews</Link>
+        <Link to="/degree">Degree</Link>
+        <Link to="/course">Course</Link>
+      </div>
 
 
 
@@ -31,12 +34,15 @@ function App() {
         <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
         
         {/* Route for the onboarding page */}
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding" element={<Onboarding user={user} setUser={setUser} />} />
 
         {/* Route for the review page */}
         <Route path="/reviews" element={<ReviewPage />} />
 
         <Route path="/degree" element={<DegreePlanner />} />
+
+        <Route path="/course" element={<CourseInfo />} />
+
       </Routes>
     </Router>
   );
