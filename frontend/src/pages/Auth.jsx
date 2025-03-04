@@ -63,15 +63,13 @@ function Auth({user, setUser}) {
       setIsLoading(false);
     }, 1500);*/
     try {
-      console.log(email)
-      console.log(password)
       const newUser = await signup(email, password)
       console.log("Signed up user: ", newUser);
       setUser(newUser)
       navigate('/onboarding')
     } catch (error) {
       console.error("Signup error", error);
-      setError("Signup failded");
+      setError("Signup failed");
     } finally {
       setIsLoading(false)
     }

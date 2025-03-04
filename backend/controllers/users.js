@@ -46,7 +46,7 @@ usersRouter.post('/', async (req, res) => {
     console.log("EMAIL_USER:", process.env.EMAIL_USER)
     console.log("EMAIL_PASS:", process.env.EMAIL_PASS)
     await sendEmail(email, verificationCode)
-    res.status(201).end()
+    res.status(200).json(savedUser)
   }
   catch (err) {
     // catches major not existing (error) and bad requests
@@ -71,7 +71,7 @@ usersRouter.post('/verify', async (req, res) => {
     user.verificationCode = null
     user.codeExpires = null
     await user.save()
-    res.status(200).json({message: "Email verified successfully"})
+    res.status(200).json(user)
   } catch (error) {
     console.log("Failed to verify email", error)
     res.status(400).json({error: "Bad request"})
