@@ -10,10 +10,10 @@ export const signup = async (email, password) => {
     return response.data
 }
 
-export const verify = async (email, verificationCode) => {
+export const verify = async (email, code) => {
     const response = await axios.post(`${baseurl}/api/users/verify`, {
-        email, verificationCode
+        email, code
     })
-
+    console.log(response)
     return response.data
 }

@@ -3,25 +3,24 @@ import { MailCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { verify } from "../services/signup"
 
-function EmailVerify(user, setUser) {
+function EmailVerify({user, setUser}) {
   //Somehow an event will be triggered
   const [verificationCode, setVerifcationCode] = useState("")
-  const handleVerify = async (e) => {
-    setisLoading(true)
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    //Handle form submit here
     try {
+      console.log(verificationCode)
+      console.log("Test")
+      console.log(user.email)
       const newUser = await verify(user.email, verificationCode)
+      console.log(newUser)
       setUser(newUser)
-      navigate('/onboarding')
+      //navigate('/onboarding')
     } catch (error) {
       console.log("Incorrect or expired code", error);
-      setError("Incorrect or expired Code")
-    } finally {
-      setisLoading(false)
-    }
-  }
-  const navigate = useNavigate();
-  const handleSubmit = (e) => {
-    //Handle form submit here
+    } 
   }
 
   return (
@@ -32,7 +31,7 @@ function EmailVerify(user, setUser) {
       <div className="text-center dark:text-white h-24 w-24 mx-auto mb-4">
         <MailCheck className="text-gray-600 dark:text-gray-300 h-24 w-24"/>
       </div>
-      <form onSubmit={handleSubmit()}>
+      <form onSubmit={handleSubmit}>
       <label htmlFor="code" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Your 6-digit verification code
           </label>
