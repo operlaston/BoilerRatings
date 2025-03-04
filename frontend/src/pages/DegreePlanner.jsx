@@ -125,24 +125,22 @@ export default function DegreePlanner() {
   return (
     <div className="grid grid-cols-12 gap-6 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 px-20">
       <div className="col-span-9 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
-        {
-          INITIAL_SEMESTERS.map((s) => {
-            return (
-              <Semester
-                key={s.semesterIndex}
-                semester={s.semester}
-                semesterIndex={s.semesterIndex}
-                id={s.semesterIndex}
-                courses={courses}
-                setCourses={setCourses}
-                errors={errors}
-                setErrors={setErrors}
-              />
-            );
-          })
-        }
+        {INITIAL_SEMESTERS.map((s) => {
+          return (
+            <Semester
+              key={s.semesterIndex}
+              semester={s.semester}
+              semesterIndex={s.semesterIndex}
+              id={s.semesterIndex}
+              courses={courses}
+              setCourses={setCourses}
+              errors={errors}
+              setErrors={setErrors}
+            />
+          );
+        })}
       </div>
-
+  
       <div className="col-span-3 space-y-6">
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
           <div className="relative">
@@ -151,11 +149,11 @@ export default function DegreePlanner() {
               type="text"
               placeholder="Search courses..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)} // Update search query state
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
-
+  
           <div className="mt-4 space-y-2">
             {filteredCourses.length > 0 && (
               <div className="mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2">
@@ -164,7 +162,7 @@ export default function DegreePlanner() {
                     key={index}
                     className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer"
                     draggable
-                    onDragStart={(e) => handleDragStart(e, course)} // Make course draggable
+                    onDragStart={(e) => handleDragStart(e, course)}
                   >
                     {course.courseAlias}
                   </p>
@@ -172,7 +170,7 @@ export default function DegreePlanner() {
               </div>
             )}
           </div>
-
+  
           <div className="mt-4 space-y-2">
             {errors.length > 0 && (
               <div className="absolute bottom-2 bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
@@ -191,36 +189,6 @@ export default function DegreePlanner() {
         </div>
       </div>
     </div>
-    <div className="col-span-3 space-y-6">
-      <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-          <input
-            type="text"
-            placeholder="Search courses..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          />
-        </div>
-        <div className="mt-4 space-y-2">
-          {errors.length > 0 && (
-              <div className="absolute bottom-2 bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
-                <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
-                  <AlertCircle className="h-5 w-5" />
-                  <h3 className="font-medium">Errors found</h3>
-                </div>
-                  {errors.map((error, index) => (
-                    <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                      {error.errorMessage}
-                    </p>
-                  ))}
-              </div>
-            )}
-        </div>
-      </div>
-    </div>
-  </div>
   );
 }
 
@@ -454,11 +422,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     return total + course.creditHours;
   }, 0);
   
-
-  
-  const totalCreditHours = filteredCourses.reduce((total, course) => {
-    return total + course.creditHours;
-  }, 0);
   
 
   return (
