@@ -2,11 +2,16 @@ const degreePlanRouter = require('express').Router()
 const DegreePlan = require('../models/degreeplan')
 
 degreePlanRouter.post('/', async (req, res) => {
-    const degreePlan = req.body
+    const data = req.body
+    const degreePlan = data.degreePlan
+    const user = data.user
 
     try {
         const newDegreePlan = new DegreePlan(degreePlan)
         const savedDegreePlan = await newDegreePlan.save()
+        await User.findByIdAndUpdate(user, {
+            $push: {plans: savedDegreePlan._id}
+        }, {new: true})
         res.status(201).json(savedDegreePlan)
     } catch (error) {
         console.log("Failed to saved degree plan", error)
@@ -15,7 +20,7 @@ degreePlanRouter.post('/', async (req, res) => {
 })
 
 degreePlanRouter.put('/:id', async (req, res) => {
-    const {original, updated } = req.body
+    const updated = req.body
     const id = req.params.id
 
     try {
@@ -30,53 +35,17 @@ degreePlanRouter.put('/:id', async (req, res) => {
         res.status(400).json({error: 'Bad Request'})
     }
 })
-/* This is for updating the action is add to add a semester and courses, remove to remove and semester and courses, update to replace courses in a specific semester */
-degreePlanRouter.put('/:id/savedcourses', async (req, res) => {
-    const { semester, courses, action } = req.body
-    const planId = req.params.id
+
+degreePlanRouter.get('/', async (req, res) => {
+    const user = req.body
 
     try {
-        const plan = await DegreePlan.findById(planId)
-        if (!plan) {
-            return res.status(404).json({error: "Degree Plan not found"})
-        }
-        let updatedPlan
-        if (action === "add") {
-            updatedPlan = await DegreePlan.findByIdAndUpdate(
-                planId,
-                {
-                    $push: {
-                        savedCourses: {semester, courses}
-                    }
-                },
-                {new: true, runValidators: true}
-            )
-        } else if (action === "remove") {
-            updatedPlan = await DegreePlan.findByIdAndUpdate(
-                planId,
-                {
-                    $pull: {
-                        savedCourses: {semester}
-                    }
-                },
-                {new: true}
-            )
-        } else if (action === "update") {
-            updatedPlan = await DegreePlan.findByIdAndUpdate(
-                {_id: planId, "savedCourses.semester": semester},
-                {
-                    $set: {"savedCourses.$.courses": courses}
-                },
-                {new : true, runValidators: true}
-            )
-        } else {
-            return res.status(400).json({error: "Invalid action"})
-        }
-
-        res.status(200).json(updatePlan)
+        const plans = await DegreePlan.find({
+            userID: user._id
+        })
+        res.status(200).json(plans)
     } catch (error) {
-        console.log("Failed to update saved courses:", error)
-        res.status(400).json({error: "Bad request"})
+        console.log("Couldn't find plans", error)
+        res.status(400).json({error: 'Bad Request'})
     }
 })
-module.exports = degreePlanRouter

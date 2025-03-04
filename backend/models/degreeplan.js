@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const degreePlanSchema = new mongoose.Schema({
     planID: Number,
+    userID: String,
     planName: String,
     requirements: [{
         name: {
