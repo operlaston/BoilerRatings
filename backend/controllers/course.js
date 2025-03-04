@@ -23,6 +23,27 @@ courseRouter.get('/:id', async (req, res) => {
     }
 })
 
+courseRouter.get('/', async (req, res) => {
+    try {
+        const courses = await Course.find({})
+        .populate({
+            path: 'reviews',
+            populate: {
+                path: 'user',
+                select: 'username email'
+            }
+        })
+        .populate('prerequisites', 'courseName courseNumber')
+        if (!course) {
+            return res.status(401).json({error: 'Course not found'})
+        }
+        res.status(200).json(courses)
+    } catch (error) {
+        console.log("Error fetching courses", error)
+        res.status(400).json({error: "bad request"})
+    }
+})
+
 courseRouter.post('/', async (req,res) => {
     const course = new Course(req.body)
 
