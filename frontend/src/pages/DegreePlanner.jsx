@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, AlertCircle, Info } from "lucide-react";
 
 const INITIAL_CLASSES= [
@@ -89,25 +89,22 @@ const INITIAL_ERRORS = [
   }
 ]
 
+const availableCourses = [
+  { courseAlias: "CS 180" },
+  { courseAlias: "CS 193" },
+  { courseAlias: "CS 240" },
+  { courseAlias: "CS 250" },
+  { courseAlias: "CS 251" },
+  { courseAlias: "CS 252" },
+  { courseAlias: "MA 161" },
+  { courseAlias: "MA 162" },
+  { courseAlias: "MA 261" },
+  { courseAlias: "MA 265" },
+  { courseAlias: "STAT 350" },
+];
+
 export default function DegreePlanner() {
-
-  // Define available courses within the function
-
-  const availableCourses = [
-    { courseAlias: "CS 180" },
-    { courseAlias: "CS 193" },
-    { courseAlias: "CS 240" },
-    { courseAlias: "CS 250" },
-    { courseAlias: "CS 251" },
-    { courseAlias: "CS 252" },
-    { courseAlias: "MA 161" },
-    { courseAlias: "MA 162" },
-    { courseAlias: "MA 261" },
-    { courseAlias: "MA 265" },
-    { courseAlias: "STAT 350" },
-  ];
-
-
+  
   const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
@@ -207,52 +204,52 @@ const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch
     window.alert("Course info clicked");
   }
 
-  // useEffect(() => {
-  //   if (conflicts.length === 0) {
-  //     // Remove errors for this course if there are no conflicts
-  //     const updatedErrors = errors.filter(
-  //       (err) => !(err.errorType === "prerequisite_conflict" && err.course === courseAlias)
-  //     );
+  useEffect(() => {
+    if (conflicts.length === 0) {
+      // Remove errors for this course if there are no conflicts
+      const updatedErrors = errors.filter(
+        (err) => !(err.errorType === "prerequisite_conflict" && err.course === courseAlias)
+      );
   
-  //     // Only update errors if something was actually removed
-  //     if (updatedErrors.length !== errors.length) {
-  //       setErrors(updatedErrors);
-  //     }
-  //   } else {
-  //     // Generate the error message
-  //     const inlineError = conflicts.map((group) => `(${group.join(" OR ")})`).join(" AND ");
-  //     const errorBoardMessage = `You must take ${inlineError} before taking ${courseAlias}`;
+      // Only update errors if something was actually removed
+      if (updatedErrors.length !== errors.length) {
+        setErrors(updatedErrors);
+      }
+    } else {
+      // Generate the error message
+      const inlineError = conflicts.map((group) => `(${group.join(" OR ")})`).join(" AND ");
+      const errorBoardMessage = `You must take ${inlineError} before taking ${courseAlias}`;
   
-  //     // Check if the error already exists
-  //     const errorIndex = errors.findIndex(
-  //       (err) => err.errorType === "prerequisite_conflict" && err.course === courseAlias
-  //     );
+      // Check if the error already exists
+      const errorIndex = errors.findIndex(
+        (err) => err.errorType === "prerequisite_conflict" && err.course === courseAlias
+      );
   
-  //     if (errorIndex !== -1) {
-  //       // Update the existing error if it already exists
-  //       const updatedErrors = [...errors];
-  //       updatedErrors[errorIndex].errorMessage = errorBoardMessage;
+      if (errorIndex !== -1) {
+        // Update the existing error if it already exists
+        const updatedErrors = [...errors];
+        updatedErrors[errorIndex].errorMessage = errorBoardMessage;
   
-  //       // Only update errors if the message has changed
-  //       if (updatedErrors[errorIndex].errorMessage !== errors[errorIndex].errorMessage) {
-  //         setErrors(updatedErrors);
-  //       }
-  //     } else {
-  //       // Add a new error if it doesn't exist
-  //       setErrors((prevErrors) => [
-  //         ...prevErrors,
-  //         {
-  //           errorType: "prerequisite_conflict",
-  //           errorMessage: errorBoardMessage,
-  //           clickAction: "search_prerequisites",
-  //           prerequisites: conflicts,
-  //           course: courseAlias,
-  //           semester: semester,
-  //         },
-  //       ]);
-  //     }
-  //   }
-  // }, [conflicts]);
+        // Only update errors if the message has changed
+        if (updatedErrors[errorIndex].errorMessage !== errors[errorIndex].errorMessage) {
+          setErrors(updatedErrors);
+        }
+      } else {
+        // Add a new error if it doesn't exist
+        setErrors((prevErrors) => [
+          ...prevErrors,
+          {
+            errorType: "prerequisite_conflict",
+            errorMessage: errorBoardMessage,
+            clickAction: "search_prerequisites",
+            prerequisites: conflicts,
+            course: courseAlias,
+            semester: semester,
+          },
+        ]);
+      }
+    }
+  }, [conflicts]);
   //BUGGY CODE
 
 
@@ -316,7 +313,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   const [creditHours, setCreditHours] = useState(0);
 
   const handleDragStart = (e, course) => {
-    console.log(course);
     e.dataTransfer.setData("courseAlias", course.courseAlias);
   }
 
@@ -392,7 +388,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
   const handleDragEnd = (e) => {
     const courseAlias = e.dataTransfer.getData("courseAlias");
-    console.log(e);
 
     setActive(false);
     clearHighlights();
@@ -439,8 +434,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         className="h-full w-full"
       >
         {filteredCourses.map((c) => {
-
-          return <Course key={c.courseID} courseAlias={c.courseAlias} semester={c.semester} conflicts={checkPrerequisites(c)} handleDragStart={handleDragStart} metadata={c}/>;
+          return <Course key={c.courseID} courseAlias={c.courseAlias} semester={c.semester} conflicts={checkPrerequisites(c)} errors={errors} setErrors={setErrors} handleDragStart={handleDragStart} metadata={c}/>;
         })}
         <DropIndicator beforeId={null} semester={semester} />
       </div>

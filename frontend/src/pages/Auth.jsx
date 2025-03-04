@@ -59,9 +59,6 @@ function Auth({user, setUser}) {
     }
     setError("");
     setIsLoading(true);
-    /*setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);*/
     try {
       const newUser = await signup(email, password)
       console.log("Signed up user: ", newUser);
@@ -73,10 +70,6 @@ function Auth({user, setUser}) {
     } finally {
       setIsLoading(false)
     }
-    //NOTE: Whoever hooks up the login, can also setError to wrong credentials
-    // if (false) {
-    //   setError("Credentials incorrect. Please try again");
-    // }
   };
 
   const handleLogin = async (event) => {
