@@ -4,20 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { verify } from "../services/signup"
 
 function EmailVerify({user, setUser}) {
-  //Somehow an event will be triggered
   const [verificationCode, setVerifcationCode] = useState("")
   const navigate = useNavigate();
   const handleSubmit = async (e) => {
     e.preventDefault()
     //Handle form submit here
     try {
-      console.log(verificationCode)
-      console.log("Test")
-      console.log(user.email)
       const newUser = await verify(user.email, verificationCode)
-      console.log(newUser)
       setUser(newUser)
-      //navigate('/onboarding')
     } catch (error) {
       console.log("Incorrect or expired code", error);
     } 

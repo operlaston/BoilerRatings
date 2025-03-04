@@ -14,6 +14,5 @@ export const verify = async (email, code) => {
     const response = await axios.post(`${baseurl}/api/users/verify`, {
         email, code
     })
-    console.log(response)
     return response.data
 }

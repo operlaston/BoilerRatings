@@ -41,10 +41,6 @@ usersRouter.post('/', async (req, res) => {
       plans: []
     })
     const savedUser = await user.save()
-    console.log("Attempting to send email to:", email)
-    console.log("Verification code:", verificationCode)
-    console.log("EMAIL_USER:", process.env.EMAIL_USER)
-    console.log("EMAIL_PASS:", process.env.EMAIL_PASS)
     await sendEmail(email, verificationCode)
     res.status(200).json(savedUser)
   }
