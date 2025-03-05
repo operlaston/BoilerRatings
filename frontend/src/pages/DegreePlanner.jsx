@@ -120,10 +120,10 @@ const availableCourses = [
 ];
 
 export default function DegreePlanner() {
-  
   const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
+  const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
 
   // Filter courses based on the search query
   const filteredCourses = availableCourses.filter((course) =>
@@ -133,6 +133,16 @@ export default function DegreePlanner() {
   // Handle the drag start event
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("courseAlias", course.courseAlias); // Set the courseAlias in dataTransfer
+  };
+
+  // Handle saving the degree plan
+  const handleSaveDegreePlan = () => {
+    if (degreePlanName.trim() === "") {
+      alert("Please provide a name for the degree plan.");
+      return;
+    }
+    // Logic for saving the degree plan can be added here
+    console.log("Degree Plan saved as:", degreePlanName);
   };
 
   return (
@@ -153,7 +163,7 @@ export default function DegreePlanner() {
           );
         })}
       </div>
-  
+
       <div className="col-span-3 space-y-6">
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
           <div className="relative">
@@ -166,7 +176,7 @@ export default function DegreePlanner() {
               className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
             />
           </div>
-  
+
           <div className="mt-4 space-y-2">
             {filteredCourses.length > 0 && (
               <div className="mt-2 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2">
@@ -183,7 +193,7 @@ export default function DegreePlanner() {
               </div>
             )}
           </div>
-  
+
           <div className="mt-4 space-y-2">
             {errors.length > 0 && (
               <div className="absolute bottom-2 bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
@@ -199,12 +209,32 @@ export default function DegreePlanner() {
               </div>
             )}
           </div>
+
+          {/* Degree Plan Name Input */}
+          <div className="mt-6">
+            <input
+              type="text"
+              placeholder="Enter degree plan name..."
+              value={degreePlanName}
+              onChange={(e) => setDegreePlanName(e.target.value)}
+              className="w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+
+          {/* Save Button */}
+          <div className="mt-4">
+            <button
+              onClick={handleSaveDegreePlan}
+              className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+            >
+              Save Degree Plan
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
 
 //add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {

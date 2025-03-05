@@ -1,14 +1,13 @@
-// src/App.js
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
-import Onboarding from './pages/Onboarding'
+import Onboarding from './pages/Onboarding';
 import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from './pages/Course';
-
+import SavedDegree from './pages/SavedDegree'; // Import your new page (SavedDegree.jsx)
 
 function App() {
   const [user, setUser] = useState(null)
@@ -22,9 +21,8 @@ function App() {
         <Link to="/reviews">Reviews</Link>
         <Link to="/degree">Degree</Link>
         <Link to="/course">Course</Link>
+        <Link to="/saved-degree">Saved Degree Plans</Link> {/* Update the link */}
       </div>
-
-
 
       <Routes>
         {/* Route for the home page */}
@@ -40,9 +38,10 @@ function App() {
         <Route path="/reviews" element={<ReviewPage />} />
 
         <Route path="/degree" element={<DegreePlanner />} />
-
         <Route path="/course" element={<CourseInfo />} />
-
+        
+        {/* Route for the Saved Degree Plans page */}
+        <Route path="/saved-degree" element={<SavedDegree />} /> {/* Update route */}
       </Routes>
     </Router>
   );
