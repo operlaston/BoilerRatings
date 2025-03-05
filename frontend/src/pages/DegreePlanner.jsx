@@ -50,6 +50,17 @@ const INITIAL_CLASSES= [
     corequisites: [],
     conflicts: [],
 
+  },
+  {
+    courseID: 4,
+    courseAlias: "CS 251",
+    semester: "",
+    semesterIndex: 0,
+    description: "Data structures and algorithms",
+    creditHours: 3,
+    prerequisites: [],
+    conflicts: [],
+
   }, 
 ]
 
@@ -133,6 +144,31 @@ export default function DegreePlanner() {
   // Handle the drag start event
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("courseAlias", course.courseAlias); // Set the courseAlias in dataTransfer
+  };
+
+  const handleDrop = (e, semester) => {
+    const courseAlias = e.dataTransfer.getData("courseAlias");
+    const selectedCourse = courses.find(
+      (course) => course.courseAlias === courseAlias
+    );
+
+    if (selectedCourse) {
+      // Add the course to the correct semester
+      setSemesterCourses((prev) => {
+        const updatedCourses = { ...prev };
+        updatedCourses[semester].push(selectedCourse);
+        return updatedCourses;
+      });
+
+      // Remove course from the available courses
+      setCourses((prevCourses) =>
+        prevCourses.filter((course) => course.courseAlias !== courseAlias)
+      );
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault(); // Allow drop
   };
 
   // Handle saving the degree plan
