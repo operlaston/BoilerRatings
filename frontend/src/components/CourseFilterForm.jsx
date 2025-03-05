@@ -47,7 +47,6 @@ const CourseFilterForm = ({ onClose, onApplyFilters }) => {
       major: selectedMajor,
       requirement: selectedRequirement,
     });
-    console.log(major)
     onClose();
   };
 

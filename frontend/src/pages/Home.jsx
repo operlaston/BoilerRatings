@@ -4,10 +4,10 @@ import { getCourses } from "../services/courses";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
 
 const placeholderRequirements = ["CS SWE Track", "CS Elective"];
-const [showFilters, setShowFilters] = useState(false);
 
 function Home() {
   const [courses, setCourses] = useState([]);
+  const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
     const retrieveCourses = async () => {
@@ -30,7 +30,13 @@ function Home() {
           className="border-solid border-gray-500 border-b-2 placeholder-white
           w-full px-1 pb-2 focus:outline-none focus:border-white"
         />
-        <button onClick={() => setShowFilters(true)}>Open Filters</button>
+        <button
+          className="border-solid border-gray-500 border-b-2 placeholder-white
+          w-full px-1 pb-2 focus:outline-none focus:border-white"
+          onClick={() => setShowFilters(true)}
+        >
+          Open Filters
+        </button>
         {showFilters && (
           <CourseFilterForm
             onClose={() => setShowFilters(false)}
