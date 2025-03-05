@@ -1,42 +1,49 @@
-import React, { useEffect, useState } from 'react';
-import Course from '../components/CourseCard';
-import { getCourses } from '../services/courses';
+import React, { useEffect, useState } from "react";
+import Course from "../components/CourseCard";
+import { getCourses } from "../services/courses";
+import CourseFilterForm from "../components/CourseFilterForm.jsx";
 
-
-const placeholderRequirements = [
-  "CS SWE Track",
-  "CS Elective"
-]
+const placeholderRequirements = ["CS SWE Track", "CS Elective"];
+const [showFilters, setShowFilters] = useState(false);
 
 function Home() {
-  const [courses, setCourses] = useState([])
-
+  const [courses, setCourses] = useState([]);
 
   useEffect(() => {
     const retrieveCourses = async () => {
       try {
-        const listOfCourses = await getCourses()
-        setCourses(listOfCourses)
+        const listOfCourses = await getCourses();
+        setCourses(listOfCourses);
+      } catch (e) {
+        console.log("Could not retrieve list of courses", e);
       }
-      catch (e) {
-        console.log('Could not retrieve list of courses', e)
-      }
-    }
+    };
     // retrieveCourses()
-  }, []) 
+  }, []);
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
       <div className="pb-8 text-xl">
         <input
-          type='text'
-          placeholder='Search for a course'
-          className='border-solid border-gray-500 border-b-2 placeholder-white
-          w-full px-1 pb-2 focus:outline-none focus:border-white'
+          type="text"
+          placeholder="Search for a course"
+          className="border-solid border-gray-500 border-b-2 placeholder-white
+          w-full px-1 pb-2 focus:outline-none focus:border-white"
         />
+        <button onClick={() => setShowFilters(true)}>Open Filters</button>
+        {showFilters && (
+          <CourseFilterForm
+            onClose={() => setShowFilters(false)}
+            onApplyFilters={(filters) => {
+              console.log("Applied filters:", filters);
+              // filter logic goes here
+            }}
+          />
+        )}
       </div>
+
       <div className="grid grid-cols-3 gap-4">
-        <Course 
+        <Course
           number="CS 307"
           name="Software Engineering"
           credits={3}
@@ -61,7 +68,7 @@ function Home() {
 
 const DeleteThisComponentLater = () => {
   return (
-    <Course 
+    <Course
       number="CS 307"
       name="Software Engineering"
       credits={3}
@@ -71,7 +78,7 @@ const DeleteThisComponentLater = () => {
       numReviews={17}
       requirements={placeholderRequirements}
     />
-  )
-}
+  );
+};
 
 export default Home;
