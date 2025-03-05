@@ -173,7 +173,7 @@ export default function DegreePlanner() {
                 {filteredCourses.map((course, index) => (
                   <p
                     key={index}
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer"
+                    className="p-2 text-black dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md cursor-pointer"
                     draggable
                     onDragStart={(e) => handleDragStart(e, course)}
                   >
