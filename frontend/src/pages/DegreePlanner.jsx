@@ -12,6 +12,7 @@ const INITIAL_CLASSES= [
     creditHours: 4,
     prerequisites: [], 
     corequisites: [],
+    conflicts: [],
   }, 
   {
     courseID: 1,
@@ -23,6 +24,7 @@ const INITIAL_CLASSES= [
     creditHours: 4,
     prerequisites: [["CS 180"]], 
     corequisites: [],
+    conflicts: [],
   }, 
   {
     courseID: 2,
@@ -34,6 +36,20 @@ const INITIAL_CLASSES= [
     creditHours: 3,
     prerequisites: [["CS 240"], ["CS 180"]], 
     corequisites: [],
+    conflicts: [],
+
+  }, 
+  {
+    courseID: 3,
+    courseAlias: "CS 250", 
+    semester: "Spring 2026", 
+    semesterIndex: 5,
+    description: "Systems programming",
+    creditHours: 3,
+    prerequisites: [["CS 240"], ["CS 180"]], 
+    corequisites: [],
+    conflicts: [],
+
   }, 
 ]
 
@@ -191,7 +207,8 @@ export default function DegreePlanner() {
 
 
 //add a SETERROR method and pass it in 
-const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch, conflicts, errors, setErrors }) => {
+const Course = ({ course, handleDragStart }) => {
+  const { courseAlias, semester, conflicts } = course;
   const [hovered, setHovered] = useState(false); 
   const handleMouseOver = (e) => {
     setHovered(true);
@@ -203,55 +220,6 @@ const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch
   function handleInfoClicked(e) {
     window.alert("Course info clicked");
   }
-
-  useEffect(() => {
-    if (conflicts.length === 0) {
-      // Remove errors for this course if there are no conflicts
-      const updatedErrors = errors.filter(
-        (err) => !(err.errorType === "prerequisite_conflict" && err.course === courseAlias)
-      );
-  
-      // Only update errors if something was actually removed
-      if (updatedErrors.length !== errors.length) {
-        setErrors(updatedErrors);
-      }
-    } else {
-      // Generate the error message
-      const inlineError = conflicts.map((group) => `(${group.join(" OR ")})`).join(" AND ");
-      const errorBoardMessage = `You must take ${inlineError} before taking ${courseAlias}`;
-  
-      // Check if the error already exists
-      const errorIndex = errors.findIndex(
-        (err) => err.errorType === "prerequisite_conflict" && err.course === courseAlias
-      );
-  
-      if (errorIndex !== -1) {
-        // Update the existing error if it already exists
-        const updatedErrors = [...errors];
-        updatedErrors[errorIndex].errorMessage = errorBoardMessage;
-  
-        // Only update errors if the message has changed
-        if (updatedErrors[errorIndex].errorMessage !== errors[errorIndex].errorMessage) {
-          setErrors(updatedErrors);
-        }
-      } else {
-        // Add a new error if it doesn't exist
-        setErrors((prevErrors) => [
-          ...prevErrors,
-          {
-            errorType: "prerequisite_conflict",
-            errorMessage: errorBoardMessage,
-            clickAction: "search_prerequisites",
-            prerequisites: conflicts,
-            course: courseAlias,
-            semester: semester,
-          },
-        ]);
-      }
-    }
-  }, [conflicts]);
-  //BUGGY CODE
-
 
   const getConflictMessage = () => {
     if (conflicts.length == 0) {
@@ -270,18 +238,17 @@ const Course = ({ courseAlias, id, semester, handleDragStart, metadata, inSearch
       <div
         draggable="true"
         onDragStart={(e) => {
-          handleDragStart(e, { courseAlias, id, semester })
+          handleDragStart(e, { courseAlias, semester })
           handleMouseOut();
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
-
         className={(conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
       >
-        <p className={ (conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseAlias}</p>
-        <p className= { (conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
+        <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseAlias}</p>
+        <p className= { (course.conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
           {
-            (conflicts.length == 0) ? metadata.description : "Prerequisite " + getConflictMessage()
+            (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
           }
         </p>
         { hovered && (
@@ -311,6 +278,10 @@ const DropIndicator = ({ beforeId, semester }) => {
 function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors }) {
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
+
+  useEffect(() => {
+    updateErrors(courses);
+  }, [])
 
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("courseAlias", course.courseAlias);
@@ -386,6 +357,48 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     return unfulfilledPrereqGroups;
   }
 
+  const getCreditHourDisplayColors = (hours) => {
+    let str = "text-sm "
+    if (hours == 0) {
+      return str + "text-gray-500";
+    }
+    else if (hours < 12) {
+      return str + "text-red-300";
+    }
+    else if (hours > 18) {
+      return str + "text-yellow-500";
+    }
+    else {
+      return str + "text-gray-200"
+    }
+  }
+
+  const updateErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.conflicts.length > 0) {
+          const inlineError = course.conflicts
+            .map((group) => `(${group.join(" OR ")})`)
+            .join(" AND ");
+          const errorBoardMessage = `You must take ${inlineError} before ${course.courseAlias}`;
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            errorMessage: errorBoardMessage,
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.courseAlias,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
+  }
+
   const handleDragEnd = (e) => {
     const courseAlias = e.dataTransfer.getData("courseAlias");
 
@@ -393,22 +406,21 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     clearHighlights();
     const before = getNearestIndicator(e, getIndicators()).element.dataset.before || "-1";
     if (before !== courseAlias) {
-      let copyOfCourses = [...courses];
-      let courseIndex = copyOfCourses.findIndex((c) => c.courseAlias == courseAlias)
-      let courseToTransfer = copyOfCourses.splice(courseIndex, 1)[0];
+      let reorderedCourses = [...courses];
+      let courseIndex = reorderedCourses.findIndex((c) => c.courseAlias == courseAlias)
+      let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
       courseToTransfer.semester = semester;
       courseToTransfer.semesterIndex = semesterIndex;
       if (before == "-1") {
         //goes at the very end
-        copyOfCourses.push(courseToTransfer);
+        reorderedCourses.push(courseToTransfer);
       }
       else {
-        const targetIndex = (copyOfCourses.findIndex((c) => c.courseAlias == before));
-        copyOfCourses.splice(targetIndex, 0, courseToTransfer); 
+        const targetIndex = (reorderedCourses.findIndex((c) => c.courseAlias == before));
+        reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
       }
       
-      setCourses(copyOfCourses);
-      checkPrerequisites(courseToTransfer);
+      setCourses(updateErrors(reorderedCourses));
     }
   }
   const filteredCourses = courses.filter((c) => (c.semester == semester));
@@ -423,7 +435,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     <div className="bg-gray-50 dark:bg-gray-800/20 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
       <div className="mb-3 flex items-center justify-between">
         <h3 className= "text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{semester}</h3>
-        <span className="rounded text-sm text-neutral-400">
+        <span className={getCreditHourDisplayColors(totalCreditHours)}>
           {totalCreditHours + " hrs"}
         </span>
       </div>
