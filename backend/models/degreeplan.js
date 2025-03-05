@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 
 const degreePlanSchema = new mongoose.Schema({
     planID: Number,
+    userID: String,
     planName: String,
     requirements: [{
         name: {
@@ -22,7 +23,8 @@ const degreePlanSchema = new mongoose.Schema({
           'Error: use format Season+Year Ex:"Fall 2023"',
         ],
       },
-    savedCoursed: [{
+
+    savedCourses: [{
         semester: {
             type: String,
             required: true,

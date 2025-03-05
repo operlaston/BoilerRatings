@@ -34,7 +34,7 @@ function App() {
         <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
         
         {/* Route for the onboarding page */}
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding" element={<Onboarding user={user} setUser={setUser} />} />
 
         {/* Route for the review page */}
         <Route path="/reviews" element={<ReviewPage />} />

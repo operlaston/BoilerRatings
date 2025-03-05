@@ -2,11 +2,16 @@ const degreePlanRouter = require('express').Router()
 const DegreePlan = require('../models/degreeplan')
 
 degreePlanRouter.post('/', async (req, res) => {
-    const degreePlan = req.body
+    const data = req.body
+    const degreePlan = data.degreePlan
+    const user = data.user
 
     try {
         const newDegreePlan = new DegreePlan(degreePlan)
         const savedDegreePlan = await newDegreePlan.save()
+        await User.findByIdAndUpdate(user, {
+            $push: {plans: savedDegreePlan._id}
+        }, {new: true})
         res.status(201).json(savedDegreePlan)
     } catch (error) {
         console.log("Failed to saved degree plan", error)
@@ -15,7 +20,7 @@ degreePlanRouter.post('/', async (req, res) => {
 })
 
 degreePlanRouter.put('/:id', async (req, res) => {
-    const {original, updated } = req.body
+    const updated = req.body
     const id = req.params.id
 
     try {
@@ -27,6 +32,20 @@ degreePlanRouter.put('/:id', async (req, res) => {
         res.status(200).json(updatePlan)
     } catch (error) {
         console.log('Failed to updated Degree Plan:', error)
+        res.status(400).json({error: 'Bad Request'})
+    }
+})
+
+degreePlanRouter.get('/', async (req, res) => {
+    const user = req.body
+
+    try {
+        const plans = await DegreePlan.find({
+            userID: user._id
+        })
+        res.status(200).json(plans)
+    } catch (error) {
+        console.log("Couldn't find plans", error)
         res.status(400).json({error: 'Bad Request'})
     }
 })
