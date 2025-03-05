@@ -1,0 +1,54 @@
+import { useState, useEffect } from "react";
+
+const CourseFilterForm = ({ onClose, onApplyFilters }) => {
+  // Mock data
+  const [majors] = useState([
+    {
+      id: 1,
+      name: "Computer Science",
+      requirements: [
+        "Core Requirements",
+        "Lab Science",
+        "Greater Issues",
+        "Communication",
+        "CS180"
+      ]
+    },
+    {
+      id: 2,
+      name: "Biology",
+      requirements: [
+        "Core Biology",
+        "Chemistry Sequence",
+        "Lab Requirements",
+        "Advanced Electives"
+      ]
+    }
+  ]);
+
+  const [selectedMajor, setSelectedMajor] = useState("");
+  const [selectedRequirement, setSelectedRequirement] = useState("");
+  const [requirements, setRequirements] = useState([]);
+
+  // Update requirements when major changes
+  useEffect(() => {
+    if (selectedMajor) {
+      const major = majors.find(m => m.name === selectedMajor);
+      setRequirements(major?.requirements || []);
+    } else {
+      setRequirements([]);
+    }
+    setSelectedRequirement(""); // Reset requirement when major changes
+  }, [selectedMajor]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+  };
+
+  return (
+    
+  );
+};
+
+export default CourseFilterForm;
