@@ -1,5 +1,4 @@
 import axios from "axios"
-import Review from "../../../backend/models/review"
 
 const baseurl = 'http://localhost:3000'
 
