@@ -243,7 +243,7 @@ const Course = ({ course, handleDragStart }) => {
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
-        className={(conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
+        className={(course.conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
       >
         <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseAlias}</p>
         <p className= { (course.conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
@@ -446,7 +446,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         className="h-full w-full"
       >
         {filteredCourses.map((c) => {
-          return <Course key={c.courseID} courseAlias={c.courseAlias} semester={c.semester} conflicts={checkPrerequisites(c)} errors={errors} setErrors={setErrors} handleDragStart={handleDragStart} metadata={c}/>;
+          return <Course key={c.courseID} handleDragStart={handleDragStart} course={c}/>;
         })}
         <DropIndicator beforeId={null} semester={semester} />
       </div>
