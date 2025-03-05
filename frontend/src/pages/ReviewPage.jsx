@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
 import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
@@ -10,7 +11,7 @@ const ReviewPage = () => {
   const [currentUser] = useState({ id: "user-123" }); // Mock current user
 
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
-  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the 
+  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
   //Course page should have the reivews in it.
   // Temporary mock data - replace with real data later
   const [reviews, setReviews] = useState([
@@ -43,14 +44,13 @@ const ReviewPage = () => {
       reports: [],
     },
   ]);
+
   // Fetch all reviews
   const fetchAllReviews = async () => {
     try {
-      const response = await fetch("/api/reviews"); // Uses the new GET / endpoint
-      if (!response.ok) throw new Error("Failed to fetch reviews");
-      const reviews = await response.json();
-      console.log(reviews);
-      setReviews(reviews); // Replace mock data with real data
+      console.log(courseID); //courseID is currently undefined anywhere
+      const reviews = await getReviewsForACourse(courseId); 
+      setReviews(reviews); //If the reviews are good this should set them to something thats not the default
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
@@ -138,7 +138,6 @@ const ReviewPage = () => {
 
   return (
     <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
-  
       {/* Content Container */}
       <div className="absolute w-full max-w-auto  p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
         {/* Average Rating Section */}
