@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
 import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
+import { getReviewByID, getReviewsForACourse } from "../services/review.js";
 
 const ReviewPage = () => {
   const [canAddReview, setCanAddReview] = useState(true);
   const [editingReview, setEditingReview] = useState(null);
   const [currentUser] = useState({ id: "user-123" }); // Mock current user
 
+  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
+  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the 
+  //Course page should have the reivews in it.
   // Temporary mock data - replace with real data later
   const [reviews, setReviews] = useState([
     {
