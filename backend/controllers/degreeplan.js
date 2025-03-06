@@ -1,4 +1,5 @@
 const degreePlanRouter = require('express').Router()
+const Course = require('../models/course')
 const DegreePlan = require('../models/degreeplan')
 const User = require('../models/user')
 
@@ -7,35 +8,37 @@ degreePlanRouter.post('/', async (req, res) => {
     const newPlan = new DegreePlan({
         userID: user.id,
         planName: planName,
-        savedCourses: savedCourses
     })
-    newPlan.savedCourses = savedCourses.map((semester) => ({
-        semester: semester.semester,
-        semesterIndex: semester.semesterIndex,
-        courses: semester.courses._id
-    }));
-    console.log(newPlan)
+    let newSavedCourses = savedCourses.map(savedCourses => {
+        return {
+            semester: savedCourses.semester,
+            semesterIndex: savedCourses.semesterIndex,
+            courses: Array.isArray(savedCourses.courses) && savedCourses.courses.length > 0
+                ? savedCourses.courses.map(course => course.id) 
+                : [] 
+        }
+    })
+    newPlan.savedCourses = newSavedCourses
+    
     try {
         const plan = await DegreePlan.findOne({
-            userID: user._id,
+            userID: user.id,
             planName: planName
         })
         if (!plan) {
             //Need to create a new one
             const savedPlan = await newPlan.save()
-            if(savedPlan) {
-                console.log("Saved")
-            } else {
-                console.log("Didn't save")
-            }
             await User.findByIdAndUpdate(user.id, {
                 $push: {plans: savedPlan.id}
             }, {new: true})
         } else {
             //Need to save one
-            const savedPlan = await DegreePlan.findByIdAndUpdate(plan._id, {
-                $set: {savedCourses: newPlan.savedCourses}
-            })
+            const savedPlan = await DegreePlan.findOneAndUpdate({
+                userID: user.id,
+                planName: planName
+            }, 
+                {savedCourses: newSavedCourses}
+            )
             if (!savedPlan) {
                 console.log("Error went into saved but didn't work")
             }
@@ -69,7 +72,7 @@ degreePlanRouter.get('/', async (req, res) => {
 
     try {
         const plans = await DegreePlan.find({
-            userID: user._id
+            userID: user.id
         })
         res.status(200).json(plans)
     } catch (error) {
