@@ -9,15 +9,16 @@ degreePlanRouter.post('/', async (req, res) => {
         userID: user.id,
         planName: planName,
     })
-    let newSavedCourses = savedCourses.map(savedCourses => {
+    let newSavedCourses = savedCourses
+    .filter(savedCourses => savedCourses.semesterIndex !== -1)
+    .map(savedCourses => {
         return {
             semester: savedCourses.semester,
             semesterIndex: savedCourses.semesterIndex,
-            courses: Array.isArray(savedCourses.courses) && savedCourses.courses.length > 0
-                ? savedCourses.courses.map(course => course.id) 
-                : [] 
+            courseID: savedCourses.courseID
         }
     })
+    console.log(newSavedCourses)
     newPlan.savedCourses = newSavedCourses
     
     try {
@@ -73,6 +74,9 @@ degreePlanRouter.get('/:id', async (req, res) => {
     try {
         const plans = await DegreePlan.find({
             userID: userID
+        })
+        .populate({
+            path: 'savedCourses.courseID'
         })
         res.status(200).json(plans)
     } catch (error) {

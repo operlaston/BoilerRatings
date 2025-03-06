@@ -24,22 +24,12 @@ const degreePlanSchema = new mongoose.Schema({
       },
 
     savedCourses: [{
-        semester: {
-            type: String,
-            required: true,
-            match: [
-              /^(Fall|Spring|Summer|Winter)\s\d{4}$/,
-              'Error: use format Season+Year Ex:"Fall 2023"',
-            ],
-          },
-          semesterIndex: {
-            type: Number,
-            required: true
-          },
-        courses: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Course'
-        }]
+      courseID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course"
+      },
+      semester: String,
+      semesterIndex: Number,
     }]
 })
 
