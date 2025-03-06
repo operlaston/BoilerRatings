@@ -232,8 +232,41 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     try {
       console.log("Getting courses")
       const courses = await getCourses();
-      setCourses(courses);
-      setAvailableCourses(courses);
+      const availableCourses = courses.map((course) => ({
+        courseID: course.id,
+        name: course.number,
+        semester: "",
+        semesterIndex: -1,
+        description: course.description,
+        creditHours: course.creditHours,
+        prerequisites: course.prerequisites.map((prereq) => [prereq]),
+        corequisites: [],
+        conflicts: []
+      }))
+      if (degreePlan) {
+        console.log("We are attempting")
+        const getCourses = degreePlan.savedCourses
+        const savedCourseIDs = degreePlan.savedCourses.map(course => course.courseID)
+        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID))
+        const updatedCourses = getCourses.map((course) => {
+          return {
+              courseID: course.courseID.id,
+              name: course.courseID.number,
+              semester: course.semester,
+              semesterIndex: course.semesterIndex,
+              description: course.courseID.description,
+              creditHours: course.courseID.creditHours,
+              prerequisites: course.courseID.prerequisites.map((prereq) => [prereq]),
+              corequisites: [],
+              conflicts: []
+          };
+      });
+        setCourses(updatedCourses)
+        setAvailableCourses(updatedAvailableCourses)
+      } else {
+        setCourses(availableCourses);
+        setAvailableCourses(availableCourses);
+      }
       console.log(courses)
     } catch (error) {
       console.log("Error fetching courses");
@@ -243,18 +276,10 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     console.log("Fetching courses")
     fetchCourses();
   }, []);
-  /*console.log(degreePlan)
   
-  useEffect(() => {
-    if (degreePlan) {
-      setSemesters(degreePlan.savedCourses)
-    }
-  }, [degreePlan])*/
   
-  console.log(courses, availableCourses)
   // Filter courses based on the search query
   const filteredCourses = availableCourses.filter((courses) => {
-    console.log(courses)
     return courses.name.toLowerCase().includes(searchQuery.toLowerCase())
 });
 
@@ -288,6 +313,11 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       availableCoursesCopy.push(courseToTransfer);
       setAvailableCourses(availableCoursesCopy);
       setCourses(currentCourses);
+      let updatedSemesters = semesters.map((s) => ({
+        ...s,
+        courses: s.courses.filter((c) => c.name !== name)
+      }));
+      setSemesters(updatedSemesters);
     }
     setActive(false);
   }
@@ -303,8 +333,9 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       return;
     }
     console.log("Degree Plan saved as:", degreePlanName);
-    console.log(user, degreePlanName, semesters)
-    createDegreePlan(user, degreePlanName, semesters)
+    console.log(semesters)
+    console.log(courses)
+    createDegreePlan(user, degreePlanName, courses)
   };
 
   // Generate the PDF
@@ -729,6 +760,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       const updatedCourses = updateErrors(reorderedCourses)
       setCourses(updatedCourses);
       setAvailableCourses(availableCoursesCopy)
+      console.log(`course ${courseToTransfer.name}`)
     }
     else {
       if (before !== name) {
@@ -745,11 +777,17 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
           const targetIndex = (reorderedCourses.findIndex((c) => c.name == before));
           reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
         }
+
         
         setCourses(updateErrors(reorderedCourses));
       }
-      semesterToUpdate.courses = updatedCourses.filter((c) => c.semester == semester)
-      setSemesters([...allSemesters])
+      /*const updatedSemesters = allSemesters.map((s) => {
+        if (s.semester === semester) {
+          return { ...s, courses: updatedCourses.filter((c) => c.semester == semester) };
+        }
+        return { ...s, courses: updatedCourses.filter((c) => c.semester == s.semester) };
+      });
+      setSemesters(updatedSemesters);*/
     }
   }
   
