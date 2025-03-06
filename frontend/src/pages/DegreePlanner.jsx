@@ -457,8 +457,8 @@ const DropIndicator = ({ beforeId, semester }) => {
 
 
 function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, semesterCourses }) {
-  let semesterToUpdate = semesters.find((s) => s.semester === semester)
-  console.log(semesterToUpdate)
+  //let semesterToUpdate = semesters.find((s) => s.semester === semester)
+  //console.log(semesterToUpdate)
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
 
