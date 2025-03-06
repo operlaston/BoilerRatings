@@ -251,8 +251,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 
   const handleDragStart = (e, course) => {
-    e.preventDefault();
-    e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
+    e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
   };
 
 
@@ -462,6 +461,10 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       </div>
     </div>
   );
+}
+
+const ClickAction = () => {
+  
 }
 
 
