@@ -34,6 +34,10 @@ const courseSchema = new mongoose.Schema({
     }],
     requirements: [String],
     creditHours: Number,
+    conflicts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course'
+    }]
 })
 
 courseSchema.set('toJSON', {
