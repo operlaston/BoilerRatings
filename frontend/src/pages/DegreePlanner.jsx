@@ -10,16 +10,9 @@ import { createDegreePlan } from "../services/degreePlan";
 const INITIAL_CLASSES= [
   {
 	courseID: 0,
-<<<<<<< HEAD
 	name: "CS 180",
-	semester: "",
-
-	semesterIndex: 4,
-=======
-	courseName: "CS 180",
 	semester: "Fall 2023",
 	semesterIndex: 0,
->>>>>>> af48fba275ebe82ac12a377f621fac8589b235c1
 	description: "Intro to OOP",
 	creditHours: 4,
 	prerequisites: [],
@@ -28,16 +21,9 @@ const INITIAL_CLASSES= [
   },
   {
 	courseID: 1,
-<<<<<<< HEAD
 	name: "CS 240",
-	semester: "",
-
-	semesterIndex: 5,
-=======
-	courseName: "CS 240",
 	semester: "Spring 2024",
 	semesterIndex: 1,
->>>>>>> af48fba275ebe82ac12a377f621fac8589b235c1
 	description: "Programming in C",
 	creditHours: 3,
 	prerequisites: [["CS 180"]],
@@ -46,16 +32,9 @@ const INITIAL_CLASSES= [
   },
   {
 	courseID: 2,
-<<<<<<< HEAD
 	name: "CS 252",
-	semester: "",
-
-	semesterIndex: 5,
-=======
-	courseName: "CS 252",
 	semester: "Spring 2025",
 	semesterIndex: 3,
->>>>>>> af48fba275ebe82ac12a377f621fac8589b235c1
 	description: "Systems programming",
 	creditHours: 4,
 	prerequisites: [["CS 250"], ["CS 251"]],
@@ -65,15 +44,9 @@ const INITIAL_CLASSES= [
   },
   {
 	courseID: 3,
-<<<<<<< HEAD
 	name: "CS 250",
-	semester: "",
-	semesterIndex: 5,
-=======
-	courseName: "CS 250",
 	semester: "Fall 2024",
 	semesterIndex: 2,
->>>>>>> af48fba275ebe82ac12a377f621fac8589b235c1
 	description: "Computer architecture",
 	creditHours: 4,
 	prerequisites: [["CS 240"], ["CS 182"]],
@@ -278,13 +251,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 
   const handleDragStart = (e, course) => {
-<<<<<<< HEAD
-    console.log('Dragging course:', course); // Add this for debugging
-    e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
-=======
     e.preventDefault();
-    e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
->>>>>>> af48fba275ebe82ac12a377f621fac8589b235c1
+    e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
   };
 
 
