@@ -25,7 +25,7 @@ courseRouter.get('/:id', async (req, res) => {
 
 courseRouter.get('/', async (req, res) => {
     try {
-        const courses = await Course.find({})
+        const courses = await Course.find()
         .populate({
             path: 'reviews',
             populate: {
@@ -34,9 +34,10 @@ courseRouter.get('/', async (req, res) => {
             }
         })
         .populate('prerequisites', 'courseName courseNumber')
-        if (!course) {
+        if (!courses) {
             return res.status(401).json({error: 'Course not found'})
         }
+        console.log("Courses found", courses)
         res.status(200).json(courses)
     } catch (error) {
         console.log("Error fetching courses", error)

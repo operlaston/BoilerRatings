@@ -26,7 +26,7 @@ function App() {
 
       <Routes>
         {/* Route for the home page */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home user={user} setUser={setUser}/>} />
 
         {/* Route for the login page */}
         <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
@@ -35,13 +35,13 @@ function App() {
         <Route path="/onboarding" element={<Onboarding user={user} setUser={setUser} />} />
 
         {/* Route for the review page */}
-        <Route path="/reviews" element={<ReviewPage />} />
+        <Route path="/reviews" element={<ReviewPage user={user} setUser={setUser}/>} />
 
-        <Route path="/degree" element={<DegreePlanner />} />
-        <Route path="/course" element={<CourseInfo />} />
+        <Route path="/degree" element={<DegreePlanner user={user} setUser={setUser}/>} />
+        <Route path="/course" element={<CourseInfo user={user} setUser={setUser}/>} />
         
         {/* Route for the Saved Degree Plans page */}
-        <Route path="/saved-degree" element={<SavedDegree />} /> {/* Update route */}
+        <Route path="/saved-degree" element={<SavedDegree user={user} setUser={setUser}/>} /> {/* Update route */}
       </Routes>
     </Router>
   );

@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { Search, AlertCircle, Info } from "lucide-react";
+import { getCourses } from "../services/courses";
+
+//Need to set INITIAL_CLASSES to all classes in the data base
+//const INITIAL_CLASSES = await getCourses()
 
 const INITIAL_CLASSES= [
   {
     courseID: 0,
-    courseAlias: "CS 180", 
+    courseName: "CS 180", 
     semester: "Fall 2025",
 
     semesterIndex: 4, 
@@ -16,7 +20,7 @@ const INITIAL_CLASSES= [
   }, 
   {
     courseID: 1,
-    courseAlias: "CS 240", 
+    courseName: "CS 240", 
     semester: "Spring 2026", 
 
     semesterIndex: 5,
@@ -28,7 +32,7 @@ const INITIAL_CLASSES= [
   }, 
   {
     courseID: 2,
-    courseAlias: "CS 252", 
+    courseName: "CS 252", 
     semester: "Spring 2026", 
 
     semesterIndex: 5,
@@ -41,7 +45,7 @@ const INITIAL_CLASSES= [
   }, 
   {
     courseID: 3,
-    courseAlias: "CS 250", 
+    courseName: "CS 250", 
     semester: "Spring 2026", 
     semesterIndex: 5,
     description: "Systems programming",
@@ -53,7 +57,7 @@ const INITIAL_CLASSES= [
   },
   {
     courseID: 4,
-    courseAlias: "CS 251",
+    courseName: "CS 251",
     semester: "",
     semesterIndex: 0,
     description: "Data structures and algorithms",
@@ -116,40 +120,54 @@ const INITIAL_ERRORS = [
   }
 ]
 
-const availableCourses = [
-  { courseAlias: "CS 180" },
-  { courseAlias: "CS 193" },
-  { courseAlias: "CS 240" },
-  { courseAlias: "CS 250" },
-  { courseAlias: "CS 251" },
-  { courseAlias: "CS 252" },
-  { courseAlias: "MA 161" },
-  { courseAlias: "MA 162" },
-  { courseAlias: "MA 261" },
-  { courseAlias: "MA 265" },
-  { courseAlias: "STAT 350" },
+const INITIAL_AVAILABLE_COURSES = [
+  { courseName: "CS 180" },
+  { courseName: "CS 193" },
+  { courseName: "CS 240" },
+  { courseName: "CS 250" },
+  { courseName: "CS 251" },
+  { courseName: "CS 252" },
+  { courseName: "MA 161" },
+  { courseName: "MA 162" },
+  { courseName: "MA 261" },
+  { courseName: "MA 265" },
+  { courseName: "STAT 350" },
 ];
 
 export default function DegreePlanner() {
+  const [availableCourses, setAvailableCourses] = useState(INITIAL_AVAILABLE_COURSES)
   const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
   const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
+  const fetchCourses = async () => {
+    try {
+      const courses = await getCourses()
+      setCourses(courses)
+      setAvailableCourses(courses)
+    } catch (error) {
+      console.log("Error fetching courses")
+    }
+  }
+  useEffect(() => {
+    fetchCourses();  // Fetch courses when the component mounts
+  }, []);
+  console.log(courses)
 
   // Filter courses based on the search query
   const filteredCourses = availableCourses.filter((course) =>
-    course.courseAlias.toLowerCase().includes(searchQuery.toLowerCase())
+    course.courseName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   // Handle the drag start event
   const handleDragStart = (e, course) => {
-    e.dataTransfer.setData("courseAlias", course.courseAlias); // Set the courseAlias in dataTransfer
+    e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
   };
 
   const handleDrop = (e, semester) => {
-    const courseAlias = e.dataTransfer.getData("courseAlias");
+    const courseName = e.dataTransfer.getData("courseName");
     const selectedCourse = courses.find(
-      (course) => course.courseAlias === courseAlias
+      (course) => course.courseName === courseName
     );
 
     if (selectedCourse) {
@@ -162,7 +180,7 @@ export default function DegreePlanner() {
 
       // Remove course from the available courses
       setCourses((prevCourses) =>
-        prevCourses.filter((course) => course.courseAlias !== courseAlias)
+        prevCourses.filter((course) => course.courseName !== courseName)
       );
     }
   };
@@ -223,7 +241,7 @@ export default function DegreePlanner() {
                     draggable
                     onDragStart={(e) => handleDragStart(e, course)}
                   >
-                    {course.courseAlias}
+                    {course.courseName}
                   </p>
                 ))}
               </div>
@@ -274,7 +292,7 @@ export default function DegreePlanner() {
 
 //add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {
-  const { courseAlias, semester, conflicts } = course;
+  const { courseName, semester, conflicts } = course;
   const [hovered, setHovered] = useState(false); 
   const handleMouseOver = (e) => {
     setHovered(true);
@@ -300,18 +318,18 @@ const Course = ({ course, handleDragStart }) => {
 
   return (
     <>
-      <DropIndicator beforeId={courseAlias} semester={semester} />
+      <DropIndicator beforeId={courseName} semester={semester} />
       <div
         draggable="true"
         onDragStart={(e) => {
-          handleDragStart(e, { courseAlias, semester })
+          handleDragStart(e, { courseName, semester })
           handleMouseOut();
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
         className={(course.conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
       >
-        <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseAlias}</p>
+        <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseName}</p>
         <p className= { (course.conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
           {
             (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
@@ -350,7 +368,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   }, [])
 
   const handleDragStart = (e, course) => {
-    e.dataTransfer.setData("courseAlias", course.courseAlias);
+    e.dataTransfer.setData("courseName", course.courseName);
   }
 
   const handleDragOver = (e) => {
@@ -414,11 +432,11 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
   const checkPrerequisites = (course) => {
     const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
-    const filteredCourseAliases = new Set(filteredCourses.map(c => c.courseAlias));
+    const filteredCourseName = new Set(filteredCourses.map(c => c.courseName));
 
     // Find all prerequisite groups that are not fulfilled
     const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
-      !prereqGroup.some(prereq => filteredCourseAliases.has(prereq))
+      !prereqGroup.some(prereq => filteredCourseName.has(prereq))
     );
     return unfulfilledPrereqGroups;
   }
@@ -450,13 +468,13 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
           const inlineError = course.conflicts
             .map((group) => `(${group.join(" OR ")})`)
             .join(" AND ");
-          const errorBoardMessage = `You must take ${inlineError} before ${course.courseAlias}`;
+          const errorBoardMessage = `You must take ${inlineError} before ${course.courseName}`;
           updatedErrors.push({
             errorType: "prerequisite_conflict",
             errorMessage: errorBoardMessage,
             clickAction: "search_prerequisites",
             prerequisites: course.conflicts,
-            course: course.courseAlias,
+            course: course.courseName,
             semester: course.semester,
           });
         }
@@ -466,14 +484,14 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   }
 
   const handleDragEnd = (e) => {
-    const courseAlias = e.dataTransfer.getData("courseAlias");
+    const courseName = e.dataTransfer.getData("courseName");
 
     setActive(false);
     clearHighlights();
     const before = getNearestIndicator(e, getIndicators()).element.dataset.before || "-1";
-    if (before !== courseAlias) {
+    if (before !== courseName) {
       let reorderedCourses = [...courses];
-      let courseIndex = reorderedCourses.findIndex((c) => c.courseAlias == courseAlias)
+      let courseIndex = reorderedCourses.findIndex((c) => c.courseName == courseName)
       let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
       courseToTransfer.semester = semester;
       courseToTransfer.semesterIndex = semesterIndex;
@@ -482,7 +500,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         reorderedCourses.push(courseToTransfer);
       }
       else {
-        const targetIndex = (reorderedCourses.findIndex((c) => c.courseAlias == before));
+        const targetIndex = (reorderedCourses.findIndex((c) => c.courseName == before));
         reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
       }
       
@@ -490,9 +508,9 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     }
   }
   const filteredCourses = courses.filter((c) => (c.semester == semester));
-  
+  console.log(filteredCourses)
   const totalCreditHours = filteredCourses.reduce((total, course) => {
-    return total + course.creditHours;
+    return total + course.creditHours
   }, 0);
   
   
