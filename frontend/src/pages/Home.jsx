@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Course from "../components/CourseCard";
 import { getCourses } from "../services/courses";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
+import { getMajors } from '../services/majors'
 
 const placeholderRequirements = ["CS SWE Track", "CS Elective"];
 
@@ -10,6 +11,10 @@ function Home() {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState('');
   const [sortOption, setSortOption] = useState('');
+  const [selectedMajor, setSelectedMajor] = useState("");
+  const [selectedRequirement, setSelectedRequirement] = useState("");
+  const [majors, setMajors] = useState([])
+  const [requirements, setRequirements] = useState([]);
 
   useEffect(() => {
     const retrieveCourses = async () => {
@@ -20,6 +25,18 @@ function Home() {
         console.log("Could not retrieve list of courses", e);
       }
     };
+    const retrieveMajors = async () => {
+      try {
+        const retrievedMajors = await getMajors()
+        setMajors(retrievedMajors)
+      }
+      catch (err) {
+        console.log('an error occurred while trying to retrieve majors')
+      }
+    }
+    
+    console.log("here lol")
+    retrieveMajors()
     retrieveCourses();
   }, []);
 
@@ -37,6 +54,13 @@ function Home() {
       return 0;
     });
   };
+
+  let filteredCourses = courses
+  if (courses !== null && selectedRequirement !== "") {
+    filteredCourses = courses.filter(course => {
+      return course.requirements.find(req => req === selectedRequirement)
+    })
+  }
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
@@ -63,6 +87,14 @@ function Home() {
               console.log("Applied filters:", filters);
             }}
             onSortChange={(option) => setSortOption(option)}
+            selectedMajor={selectedMajor}
+            setSelectedMajor={setSelectedMajor}
+            selectedRequirement={selectedRequirement}
+            setSelectedRequirement={setSelectedRequirement}
+            majors={majors}
+            setMajors={setMajors}
+            requirements={requirements}
+            setRequirements={setRequirements}
           />
         )}
       </div>
@@ -83,9 +115,9 @@ function Home() {
 
       <div className="grid grid-cols-3 gap-4">
         {
-          courses === null ? "" : 
+          filteredCourses === null ? "" : 
             sortCourses(
-              courses.filter(course => {
+              filteredCourses.filter(course => {
                 const searchToMatch = search.toLowerCase().replace(/\s+/g, '')
                 return (
                   course.name.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
@@ -95,7 +127,7 @@ function Home() {
               })
             ).map(course =>
               <Course
-                key={course.number}
+                key={course.id}
                 number={course.number}
                 name={course.name}
                 credits={course.creditHours}
