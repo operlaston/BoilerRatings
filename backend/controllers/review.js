@@ -20,8 +20,9 @@ reviewRouter.get('/:id', async (req, res) => {
 }) 
 
 reviewRouter.post('/', async (req, res) => {
-    const review = req.body
-    const {user, course} = review
+    const {review, course} = req.body
+    const user = review.user
+
 
     try {
         const courseExists = await Course.findById(course)
@@ -46,6 +47,25 @@ reviewRouter.post('/', async (req, res) => {
     } catch (err) {
         console.error('Error adding review:', err)
         res.status(400).json({error: "Bad request"})
+    }
+})
+
+reviewRouter.get('/course', async(req, res) => {
+    course = req.body
+    try {
+        const courseFound = await Course.findById(course)
+        .populate({
+            path: 'reviews',
+            populate: {
+                path: 'user',
+                select: 'username email'
+            }
+        })
+        const reviews = courseFound.reviews
+        res.status(200).json({reviews})
+    } catch (error) {
+        console.error('Error adding review', error)
+        res.status(400).json({error: 'Bad Request'})
     }
 })
 
