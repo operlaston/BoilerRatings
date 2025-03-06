@@ -14,8 +14,8 @@ const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, 
       <div className = "text-gray-700 dark:text-gray-300">Number of Reviews: {numReviews}</div>
       <div className="flex gap-x-2 flex-wrap pt-2">
         {
-          requirements.map(req =>
-            <div className="text-sm text-gray-700 dark:text-gray-300 rounded-full bg-gray-700 shadow-lg py-1 px-3">
+          requirements.map((req, index) =>
+            <div className="text-sm text-gray-700 dark:text-gray-300 rounded-full bg-gray-700 shadow-lg py-1 px-3" key={index}>
               {req}
             </div>
           )

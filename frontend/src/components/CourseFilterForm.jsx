@@ -1,45 +1,8 @@
 import { useState, useEffect } from "react";
 
-const CourseFilterForm = ({ onClose, onApplyFilters }) => {
+const CourseFilterForm = ({ onClose, onApplyFilters, selectedMajor, setSelectedMajor,
+    selectedRequirement, setSelectedRequirement, majors, setMajors, requirements, setRequirements }) => {
   // Mock data
-  const [majors] = useState([
-    {
-      id: 1,
-      name: "Computer Science",
-      requirements: [
-        "Core Requirements",
-        "Lab Science",
-        "Greater Issues",
-        "Communication",
-        "CS180",
-      ],
-    },
-    {
-      id: 2,
-      name: "Biology",
-      requirements: [
-        "Core Biology",
-        "Chemistry Sequence",
-        "Lab Requirements",
-        "Advanced Electives",
-      ],
-    },
-  ]);
-
-  const [selectedMajor, setSelectedMajor] = useState("");
-  const [selectedRequirement, setSelectedRequirement] = useState("");
-  const [requirements, setRequirements] = useState([]);
-
-  // Update requirements when major changes
-  useEffect(() => {
-    if (selectedMajor) {
-      const major = majors.find((m) => m.name === selectedMajor);
-      setRequirements(major?.requirements || []);
-    } else {
-      setRequirements([]);
-    }
-    setSelectedRequirement(""); // Reset requirement when major changes
-  }, [selectedMajor]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,6 +12,16 @@ const CourseFilterForm = ({ onClose, onApplyFilters }) => {
     });
     onClose();
   };
+
+  const handleMajorSelect = (e) => {
+    if (e.target.value === "") {
+      setSelectedMajor("")
+      setSelectedRequirement("")
+      return
+    }
+    setSelectedMajor(e.target.value)
+    setRequirements(majors.find(major => major.name === e.target.value).requirements)
+  }
 
   return (
     <div className="flex items-center justify-center p-4 z-50 w-full">
@@ -63,16 +36,18 @@ const CourseFilterForm = ({ onClose, onApplyFilters }) => {
 
             <select
               value={selectedMajor}
-              onChange={(e) => setSelectedMajor(e.target.value)}
+              onChange={handleMajorSelect}
               className="w-full p-2 m-2 border rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200"
               required
             >
               <option value="">Choose a major</option>
-              {majors.map((major) => (
-                <option key={major.id} value={major.name}>
-                  {major.name}
-                </option>
-              ))}
+              {
+                majors.map((major, index) => (
+                  <option key={major.id} value={major.name}>
+                    {major.name}
+                  </option>
+                ))
+              }
             </select>
 
             {/* Requirement Selection */}
