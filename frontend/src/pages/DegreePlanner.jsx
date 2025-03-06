@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Search, AlertCircle, Info } from "lucide-react";
 import { getCourses } from "../services/courses";
+import { createDegreePlan } from "../services/degreePlan";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -293,6 +294,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     }
     // Logic for saving the degree plan can be added here
     console.log("Degree Plan saved as:", degreePlanName);
+    console.log(user, degreePlanName, semesters)
+    createDegreePlan(user, degreePlanName, semesters)
   };
 
   return (
@@ -309,7 +312,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               setCourses={setCourses}
               errors={errors}
               setErrors={setErrors}
-              semesterCourses={s.courses}
+              setSemesters={setSemesters}
+              allSemesters={semesters}
             />
           );
         })}
@@ -456,9 +460,9 @@ const DropIndicator = ({ beforeId, semester }) => {
 };
 
 
-function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, semesterCourses }) {
-  //let semesterToUpdate = semesters.find((s) => s.semester === semester)
-  //console.log(semesterToUpdate)
+function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, setSemesters, allSemesters }) {
+  let semesterToUpdate = allSemesters.find((s) => s.semester === semester)
+  
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
 
@@ -602,13 +606,16 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         const targetIndex = (reorderedCourses.findIndex((c) => c.courseName == before));
         reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
       }
-      
-      setCourses(updateErrors(reorderedCourses));
+      const updatedCourses = updateErrors(reorderedCourses)
+      setCourses(updatedCourses);
+      semesterToUpdate.courses = updatedCourses.filter((c) => c.semester == semester)
+      setSemesters([...allSemesters])
+
     }
   }
   const filteredCourses = courses.filter((c) => (c.semester == semester));
-  console.log(semester, filteredCourses)
-  semesterCourses = filteredCourses
+  //semesterToUpdate.courses = filteredCourses
+ 
   const totalCreditHours = filteredCourses.reduce((total, course) => {
     return total + course.creditHours
   }, 0);
