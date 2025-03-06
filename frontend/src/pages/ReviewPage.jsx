@@ -1,13 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
 import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
+import { getReviewByID, getReviewsForACourse } from "../services/review.js";
 
 const ReviewPage = () => {
   const [canAddReview, setCanAddReview] = useState(true);
   const [editingReview, setEditingReview] = useState(null);
   const [currentUser] = useState({ id: "user-123" }); // Mock current user
 
+  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
+  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
+  //Course page should have the reivews in it.
   // Temporary mock data - replace with real data later
   const [reviews, setReviews] = useState([
     {
@@ -39,6 +44,21 @@ const ReviewPage = () => {
       reports: [],
     },
   ]);
+
+  // Fetch all reviews
+  const fetchAllReviews = async () => {
+    try {
+      console.log(courseID); //courseID is currently undefined anywhere
+      const reviews = await getReviewsForACourse(courseId); 
+      setReviews(reviews); //If the reviews are good this should set them to something thats not the default
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAllReviews();
+  }, []);
 
   // Handle like
 
@@ -117,14 +137,9 @@ const ReviewPage = () => {
   const handleCancelEdit = () => setEditingReview(null);
 
   return (
-    <div className="w-full min-h-screen flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
-      {/* Animated background blobs - same style as login page */}
-      <div className="absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1"></div>
-      <div className="absolute top-1/4 w-64 h-64 bg-gray-300 dark:bg-gray-800 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-2"></div>
-      <div className="absolute top-1/2 w-52 h-52 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-3"></div>
-
+    <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
       {/* Content Container */}
-      <div className="relative w-3/4  p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
+      <div className="absolute w-full max-w-auto  p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
         {/* Average Rating Section */}
         <div className="text-center space-y-2 ">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">

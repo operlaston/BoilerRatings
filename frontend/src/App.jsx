@@ -1,17 +1,17 @@
-// src/App.js
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import Home from './pages/Home';
 import Auth from './pages/Auth';
-import Onboarding from './pages/Onboarding'
+import Onboarding from './pages/Onboarding';
 import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from './pages/Course';
-
+import SavedDegree from './pages/SavedDegree';
 
 function App() {
   const [user, setUser] = useState(null)
+  const [degreePlan, setDegreePlan] = useState(null)
 
   return (
     <Router>
@@ -22,13 +22,12 @@ function App() {
         <Link to="/reviews">Reviews</Link>
         <Link to="/degree">Degree</Link>
         <Link to="/course">Course</Link>
+        <Link to="/saved-degree">Saved Degree Plans</Link> {/* Update the link */}
       </div>
-
-
 
       <Routes>
         {/* Route for the home page */}
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home user={user} setUser={setUser}/>} />
 
         {/* Route for the login page */}
         <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
@@ -37,12 +36,13 @@ function App() {
         <Route path="/onboarding" element={<Onboarding user={user} setUser={setUser} />} />
 
         {/* Route for the review page */}
-        <Route path="/reviews" element={<ReviewPage />} />
+        <Route path="/reviews" element={<ReviewPage user={user} setUser={setUser}/>} />
 
-        <Route path="/degree" element={<DegreePlanner />} />
-
-        <Route path="/course" element={<CourseInfo />} />
-
+        <Route path="/degree" element={<DegreePlanner user={user} setUser={setUser} degreePlan={degreePlan}/>} />
+        <Route path="/course" element={<CourseInfo user={user} setUser={setUser}/>} />
+        
+        {/* Route for the Saved Degree Plans page */}
+        <Route path="/saved-degree" element={<SavedDegree degreePlan={degreePlan} setDegreePlan={setDegreePlan} user={user}/>} /> {/* Update route */}
       </Routes>
     </Router>
   );

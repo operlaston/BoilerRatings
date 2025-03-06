@@ -172,7 +172,7 @@ function Auth({user, setUser}) {
           }
             className="text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 font-medium"
           >
-            {isLogin ? "Sign up" : "Sign in"}
+            {isLogin ? "Register" : "Sign in"}
           </button>
         </p>
       </div>

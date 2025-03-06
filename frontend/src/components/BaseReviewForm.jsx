@@ -126,7 +126,7 @@ const BaseReviewForm = ({
           onChange={(e) =>
             setFormData({ ...formData, reviewContent: e.target.value })
           }
-          placeholder="Leave a review..."
+          placeholder="Leave a review... (20 characters minimum)"
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                 bg-white/90 dark:bg-gray-800/80 placeholder-gray-400 dark:placeholder-gray-100 
                 focus:outline-none focus:ring-2 focus:ring-orange-500 

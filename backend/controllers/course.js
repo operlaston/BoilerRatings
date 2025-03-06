@@ -12,7 +12,7 @@ courseRouter.get('/:id', async (req, res) => {
                 select: 'username email'
             }
         })
-        .populate('prerequisites', 'courseName courseNumber')
+        .populate('prerequisites', 'name number')
         if (!course) {
             return res.status(401).json({error: 'Course not found'})
         }
@@ -25,7 +25,7 @@ courseRouter.get('/:id', async (req, res) => {
 
 courseRouter.get('/', async (req, res) => {
     try {
-        const courses = await Course.find({})
+        const courses = await Course.find()
         .populate({
             path: 'reviews',
             populate: {
@@ -33,10 +33,11 @@ courseRouter.get('/', async (req, res) => {
                 select: 'username email'
             }
         })
-        .populate('prerequisites', 'courseName courseNumber')
-        if (!course) {
+        .populate('prerequisites', 'name number')
+        if (!courses) {
             return res.status(401).json({error: 'Course not found'})
         }
+        console.log("Courses found", courses)
         res.status(200).json(courses)
     } catch (error) {
         console.log("Error fetching courses", error)

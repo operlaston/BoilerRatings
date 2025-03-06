@@ -20,10 +20,15 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DegreePlan'
   }],
-  likedReviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Review'
-  }]
+  likedReviews: [
+      {
+          review: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'Review'
+          },
+          favorability: Number
+      }
+  ]
 })
 
 userSchema.set('toJSON', {
