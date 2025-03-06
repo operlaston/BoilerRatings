@@ -6,7 +6,7 @@ import CourseFilterForm from "../components/CourseFilterForm.jsx";
 const placeholderRequirements = ["CS SWE Track", "CS Elective"];
 
 function Home() {
-  const [courses, setCourses] = useState([]);
+  const [courses, setCourses] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
 
   useEffect(() => {
@@ -18,8 +18,10 @@ function Home() {
         console.log("Could not retrieve list of courses", e);
       }
     };
-    // retrieveCourses()
+    retrieveCourses()
   }, []);
+
+  console.log(courses)
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
@@ -49,42 +51,23 @@ function Home() {
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        <Course
-          number="CS 307"
-          name="Software Engineering"
-          credits={3}
-          enjoyment={4.67}
-          difficulty={4.12}
-          recommended={0.87}
-          numReviews={17}
-          requirements={placeholderRequirements}
-        />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
-        <DeleteThisComponentLater />
+        {courses === null ? "" : 
+          courses.map(course => 
+            <Course
+              number={course.number}
+              name={course.name}
+              credits={course.creditHours}
+              enjoyment={course.enjoyment}
+              difficulty={course.difficulty}
+              recommended={course.recommended}
+              numReviews={course.numReviews}
+              requirements={course.requirements}
+            />
+          )
+        }
       </div>
     </div>
   );
 }
-
-const DeleteThisComponentLater = () => {
-  return (
-    <Course
-      number="CS 307"
-      name="Software Engineering"
-      credits={3}
-      enjoyment={4.67}
-      difficulty={4.12}
-      recommended={0.87}
-      numReviews={17}
-      requirements={placeholderRequirements}
-    />
-  );
-};
 
 export default Home;
