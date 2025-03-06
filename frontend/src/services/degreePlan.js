@@ -11,7 +11,7 @@ const createDegreePlan = async (user, planName, savedCourses) => {
 }
 
 const getAllPlans = async (user) => {
-    const response = await axios.get(`${baseurl}/api/degreeplans`, user)
+    const response = await axios.get(`${baseurl}/api/degreeplans/${user.id}`)
     return response.data
 }
 

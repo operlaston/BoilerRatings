@@ -7,10 +7,11 @@ import Onboarding from './pages/Onboarding';
 import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from './pages/Course';
-import SavedDegree from './pages/SavedDegree'; // Import your new page (SavedDegree.jsx)
+import SavedDegree from './pages/SavedDegree';
 
 function App() {
   const [user, setUser] = useState(null)
+  const [degreePlan, setDegreePlan] = useState(null)
 
   return (
     <Router>
@@ -37,11 +38,11 @@ function App() {
         {/* Route for the review page */}
         <Route path="/reviews" element={<ReviewPage user={user} setUser={setUser}/>} />
 
-        <Route path="/degree" element={<DegreePlanner user={user} setUser={setUser}/>} />
+        <Route path="/degree" element={<DegreePlanner user={user} setUser={setUser} degreePlan={degreePlan}/>} />
         <Route path="/course" element={<CourseInfo user={user} setUser={setUser}/>} />
         
         {/* Route for the Saved Degree Plans page */}
-        <Route path="/saved-degree" element={<SavedDegree user={user} setUser={setUser}/>} /> {/* Update route */}
+        <Route path="/saved-degree" element={<SavedDegree degreePlan={degreePlan} setDegreePlan={setDegreePlan} user={user}/>} /> {/* Update route */}
       </Routes>
     </Router>
   );
