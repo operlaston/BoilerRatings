@@ -8,7 +8,8 @@ const placeholderRequirements = ["CS SWE Track", "CS Elective"];
 function Home() {
   const [courses, setCourses] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [search, setSearch] = useState('')
+  const [search, setSearch] = useState('');
+  const [sortOption, setSortOption] = useState('');
 
   useEffect(() => {
     const retrieveCourses = async () => {
@@ -19,8 +20,23 @@ function Home() {
         console.log("Could not retrieve list of courses", e);
       }
     };
-    retrieveCourses()
+    retrieveCourses();
   }, []);
+
+  const sortCourses = (courses) => {
+    if (!sortOption) return courses;
+    
+    return [...courses].sort((a, b) => {
+      if (sortOption === "mostReviews") {
+        return b.numReviews - a.numReviews;
+      } else if (sortOption === "highestDifficulty") {
+        return b.difficulty - a.difficulty;
+      } else if (sortOption === "highestEnjoyability") {
+        return b.enjoyment - a.enjoyment;
+      }
+      return 0;
+    });
+  };
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
@@ -45,35 +61,51 @@ function Home() {
             onClose={() => setShowFilters(false)}
             onApplyFilters={(filters) => {
               console.log("Applied filters:", filters);
-              // filter logic goes here
             }}
+            onSortChange={(option) => setSortOption(option)}
           />
         )}
+      </div>
+
+      <div className="pb-4">
+        <label className="mr-2">Sort by:</label>
+        <select 
+          className="bg-gray-800 text-white p-2 rounded"
+          value={sortOption} 
+          onChange={(e) => setSortOption(e.target.value)}
+        >
+          <option value="">None</option>
+          <option value="mostReviews">Most Reviews</option>
+          <option value="highestDifficulty">Highest Difficulty</option>
+          <option value="highestEnjoyability">Highest Enjoyability</option>
+        </select>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
         {
           courses === null ? "" : 
-            courses
-              .filter(course => {
-                // checks search match by removing all spaces and ignoring case
+            sortCourses(
+              courses.filter(course => {
                 const searchToMatch = search.toLowerCase().replace(/\s+/g, '')
-                return (course.name.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
-                course.number.toLowerCase().replace(/\s+/g, '').includes(searchToMatch)) ||
-                course.description.toLowerCase().replace(/\s+/g, '').includes(searchToMatch)
+                return (
+                  course.name.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
+                  course.number.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
+                  course.description.toLowerCase().replace(/\s+/g, '').includes(searchToMatch)
+                );
               })
-              .map(course =>
-                <Course
-                  number={course.number}
-                  name={course.name}
-                  credits={course.creditHours}
-                  enjoyment={course.enjoyment}
-                  difficulty={course.difficulty}
-                  recommended={course.recommended}
-                  numReviews={course.numReviews}
-                  requirements={course.requirements}
-                />
-              )
+            ).map(course =>
+              <Course
+                key={course.number}
+                number={course.number}
+                name={course.name}
+                credits={course.creditHours}
+                enjoyment={course.enjoyment}
+                difficulty={course.difficulty}
+                recommended={course.recommended}
+                numReviews={course.numReviews}
+                requirements={course.requirements}
+              />
+            )
         }
       </div>
     </div>
@@ -81,3 +113,4 @@ function Home() {
 }
 
 export default Home;
+
