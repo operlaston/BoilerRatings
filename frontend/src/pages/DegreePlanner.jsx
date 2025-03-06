@@ -724,7 +724,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       setCourses(updatedCourses);
       semesterToUpdate.courses = updatedCourses.filter((c) => c.semester == semester)
       setSemesters([...allSemesters])
-
+      setAvailableCourses(availableCoursesCopy)
     }
     else {
       if (before !== courseName) {
