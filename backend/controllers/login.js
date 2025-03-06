@@ -16,6 +16,7 @@ loginRouter.post('/', async (req, res) => {
       console.log("Login success:", userEmail)
       res.status(200).json({
         id: user.id,
+        isVerified: user.isVerified,
         username: user.username,
         email: user.email,
         graduationSemester: user.graduationSemester,
