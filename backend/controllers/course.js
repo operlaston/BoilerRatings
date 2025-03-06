@@ -12,7 +12,7 @@ courseRouter.get('/:id', async (req, res) => {
                 select: 'username email'
             }
         })
-        .populate('prerequisites', 'courseName courseNumber')
+        .populate('prerequisites', 'name number')
         if (!course) {
             return res.status(401).json({error: 'Course not found'})
         }
@@ -33,7 +33,7 @@ courseRouter.get('/', async (req, res) => {
                 select: 'username email'
             }
         })
-        .populate('prerequisites', 'courseName courseNumber')
+        .populate('prerequisites', 'name number')
         if (!courses) {
             return res.status(401).json({error: 'Course not found'})
         }

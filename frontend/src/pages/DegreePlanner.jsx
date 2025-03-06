@@ -133,7 +133,7 @@ const INITIAL_AVAILABLE_COURSES = [
   },
   {
     courseID: 4,
-    courseName: "CS 251",
+    name: "CS 251",
     semester: "",
     semesterIndex: -1,
     description: "Data structures and algorithms",
@@ -144,7 +144,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 5,
-    courseName: "CS 193",
+    name: "CS 193",
     semester: "",
     semesterIndex: -1,
     description: "Tools",
@@ -155,7 +155,7 @@ const INITIAL_AVAILABLE_COURSES = [
    },
    {
     courseID: 6,
-    courseName: "CS 182",
+    name: "CS 182",
     semester: "",
     semesterIndex: -1,
     description: "Foundations of Computer Science",
@@ -166,7 +166,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 7,
-    courseName: "MA 161",
+    name: "MA 161",
     semester: "",
     semesterIndex: -1,
     description: "Calculus I",
@@ -177,7 +177,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 8,
-    courseName: "MA 162",
+    name: "MA 162",
     semester: "",
     semesterIndex: -1,
     description: "Calculus II",
@@ -188,7 +188,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 9,
-    courseName: "MA 261",
+    name: "MA 261",
     semester: "",
     semesterIndex: -1,
     description: "Multivariate Calculus",
@@ -199,7 +199,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 10,
-    courseName: "MA 265",
+    name: "MA 265",
     semester: "",
     semesterIndex: -1,
     description: "Linear Algebra",
@@ -210,7 +210,7 @@ const INITIAL_AVAILABLE_COURSES = [
     },
     {
     courseID: 11,
-    courseName: "STAT 350",
+    name: "STAT 350",
     semester: "",
     semesterIndex: -1,
     description: "Introduction to Statistics",
@@ -230,9 +230,9 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const [active, setActive] = useState(false);
   const fetchCourses = async () => {
     try {
-      const courses = await getCourses();
-      setCourses(courses);
-      setAvailableCourses(courses);
+      // const courses = await getCourses();
+      // setCourses(courses);
+      // setAvailableCourses(courses);
     } catch (error) {
       console.log("Error fetching courses");
     }
@@ -247,12 +247,12 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
 
   // Filter courses based on the search query
   const filteredCourses = availableCourses.filter((course) =>
-    course.courseName.toLowerCase().includes(searchQuery.toLowerCase())
+    course.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleDragStart = (e, course) => {
-    console.log('Dragging course:', course); // Add this for debugging
-    e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
+    e.preventDefault();
+    e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
   };
 
 
@@ -268,12 +268,12 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   }
 
   const handleDragEnd = (e) => {
-    let courseName = e.dataTransfer.getData("courseName");
-    if (courses.some((c) => c.courseName === courseName)) {
+    let name = e.dataTransfer.getData("name");
+    if (courses.some((c) => c.name === name)) {
       //This means the course is in the search bar
       let availableCoursesCopy = [...availableCourses];
       let currentCourses = [...courses];
-      let courseIndex = currentCourses.findIndex((c) => c.courseName == courseName)
+      let courseIndex = currentCourses.findIndex((c) => c.name == name)
       let courseToTransfer = currentCourses.splice(courseIndex, 1)[0];
       courseToTransfer.semester = "";
       courseToTransfer.semesterIndex = -1;
@@ -315,7 +315,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       doc.text(semesterTitle, 10, 20 + index * 10); // Adjust spacing dynamically
 
       semester.courses.forEach((course, courseIndex) => {
-        const courseText = `${course.courseName}`;
+        const courseText = `${course.name}`;
         doc.text(courseText, 10, 30 + index * 10 + courseIndex * 10); // Adjust spacing dynamically
       });
     });
@@ -327,15 +327,15 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const getErrorMessages = (array) => { //
     let formattedErrorArray = [];
 
-    let notEnoughHoursArray = errors.filter((err) => err.errorType === "not_enough_hours");
-    if (notEnoughHoursArray.length != 0) {
-      let NOT_ENOUGH_HOURS = "Not enough hours in ";
-      NOT_ENOUGH_HOURS += notEnoughHoursArray
-      .map((err) => err.semester)
-      .join(", ");
+    // let notEnoughHoursArray = errors.filter((err) => err.errorType === "not_enough_hours");
+    // if (notEnoughHoursArray.length != 0) {
+    //   let NOT_ENOUGH_HOURS = "Not enough hours in ";
+    //   NOT_ENOUGH_HOURS += notEnoughHoursArray
+    //   .map((err) => err.semester)
+    //   .join(", ");
       
-      formattedErrorArray.push(NOT_ENOUGH_HOURS);
-    }
+    //   formattedErrorArray.push(NOT_ENOUGH_HOURS);
+    // }
     
     let prerequisiteConflictArray = errors.filter((err) => err.errorType === "prerequisite_conflict");
     if (prerequisiteConflictArray.length != 0) {
@@ -405,7 +405,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
                   //   draggable
                   //   onDragStart={(e) => handleDragStart(e, course)}
                   // >
-                  //   {course.courseName}
+                  //   {course.name}
                   // </p>
                   <Course key={c.courseID} handleDragStart={handleDragStart} course={c}/>
                 ))}
@@ -467,7 +467,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
 
 //add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {
-  const { courseName, semester, conflicts } = course;
+  const { name, semester, conflicts } = course;
   const [hovered, setHovered] = useState(false); 
   const handleMouseOver = (e) => {
     setHovered(true);
@@ -493,18 +493,18 @@ const Course = ({ course, handleDragStart }) => {
 
   return (
     <>
-      <DropIndicator beforeId={courseName} semester={semester} />
+      <DropIndicator beforeId={name} semester={semester} />
       <div
         draggable="true"
         onDragStart={(e) => {
-          handleDragStart(e, { courseName, semester })
+          handleDragStart(e, { name, semester })
           handleMouseOut();
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
         className={(course.conflicts.length > 0 ?`bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) +  " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
       >
-        <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{courseName}</p>
+        <p className={ (course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold` }>{name}</p>
         <p className= { (course.conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
           {
             (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
@@ -545,7 +545,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   }, [])
 
   const handleDragStart = (e, course) => {
-    e.dataTransfer.setData("courseName", course.courseName);
+    e.dataTransfer.setData("name", course.name);
   }
 
   const handleDragOver = (e) => {
@@ -609,7 +609,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
   const checkPrerequisites = (course, courses) => {
     const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
-    const filteredCourseName = new Set(filteredCourses.map(c => c.courseName));
+    const filteredCourseName = new Set(filteredCourses.map(c => c.name));
 
     // Find all prerequisite groups that are not fulfilled
     const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
@@ -684,28 +684,27 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
             errorType: "prerequisite_conflict",
             clickAction: "search_prerequisites",
             prerequisites: course.conflicts,
-            course: course.courseName,
+            course: course.name,
             semester: course.semester,
           });
         }
       });
-      console.log(updatedCourses);
       setErrors(updatedErrors);
       return updatedCourses;
   }
 
   const handleDragEnd = (e) => {
-    const courseName = e.dataTransfer.getData("courseName");
+    const name = e.dataTransfer.getData("name");
 
     setActive(false);
     clearHighlights();
     const before = getNearestIndicator(e, getIndicators()).element.dataset.before || "-1";
 
-    if (!courses.some((c) => c.courseName === courseName)) {
+    if (!courses.some((c) => c.name === name)) {
       //This means the course is in the search bar
       let availableCoursesCopy = [...availableCourses];
       let reorderedCourses = [...courses];
-      let courseIndex = availableCoursesCopy.findIndex((c) => c.courseName == courseName)
+      let courseIndex = availableCoursesCopy.findIndex((c) => c.name == name)
       let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
       courseToTransfer.semester = semester;
       courseToTransfer.semesterIndex = semesterIndex;
@@ -714,7 +713,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         reorderedCourses.push(courseToTransfer);
       }
       else {
-        const targetIndex = (courses.findIndex((c) => c.courseName == before));
+        const targetIndex = (courses.findIndex((c) => c.name == before));
         reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
       }
       const updatedCourses = updateErrors(reorderedCourses)
@@ -724,9 +723,9 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       setAvailableCourses(availableCoursesCopy)
     }
     else {
-      if (before !== courseName) {
+      if (before !== name) {
         let reorderedCourses = [...courses];
-        let courseIndex = reorderedCourses.findIndex((c) => c.courseName == courseName)
+        let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
         let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
         courseToTransfer.semester = semester;
         courseToTransfer.semesterIndex = semesterIndex;
@@ -735,14 +734,13 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
           reorderedCourses.push(courseToTransfer);
         }
         else {
-          const targetIndex = (reorderedCourses.findIndex((c) => c.courseName == before));
+          const targetIndex = (reorderedCourses.findIndex((c) => c.name == before));
           reorderedCourses.splice(targetIndex, 0, courseToTransfer); 
         }
         
         setCourses(updateErrors(reorderedCourses));
       }
     }
-    
   }
   
   const filteredCourses = courses.filter((c) => (c.semester == semester));

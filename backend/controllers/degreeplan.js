@@ -67,12 +67,12 @@ degreePlanRouter.put('/:id', async (req, res) => {
     }
 })
 
-degreePlanRouter.get('/', async (req, res) => {
-    const user = req.body
+degreePlanRouter.get('/:id', async (req, res) => {
+    const userID = req.params.id
 
     try {
         const plans = await DegreePlan.find({
-            userID: user.id
+            userID: userID
         })
         res.status(200).json(plans)
     } catch (error) {
