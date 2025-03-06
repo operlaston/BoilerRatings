@@ -11,9 +11,8 @@ const INITIAL_CLASSES= [
   {
 	courseID: 0,
 	courseName: "CS 180",
-	semester: "",
-
-	semesterIndex: 4,
+	semester: "Fall 2023",
+	semesterIndex: 0,
 	description: "Intro to OOP",
 	creditHours: 4,
 	prerequisites: [],
@@ -23,9 +22,8 @@ const INITIAL_CLASSES= [
   {
 	courseID: 1,
 	courseName: "CS 240",
-	semester: "",
-
-	semesterIndex: 5,
+	semester: "Spring 2024",
+	semesterIndex: 1,
 	description: "Programming in C",
 	creditHours: 3,
 	prerequisites: [["CS 180"]],
@@ -35,9 +33,8 @@ const INITIAL_CLASSES= [
   {
 	courseID: 2,
 	courseName: "CS 252",
-	semester: "",
-
-	semesterIndex: 5,
+	semester: "Spring 2025",
+	semesterIndex: 3,
 	description: "Systems programming",
 	creditHours: 4,
 	prerequisites: [["CS 250"], ["CS 251"]],
@@ -48,8 +45,8 @@ const INITIAL_CLASSES= [
   {
 	courseID: 3,
 	courseName: "CS 250",
-	semester: "",
-	semesterIndex: 5,
+	semester: "Fall 2024",
+	semesterIndex: 2,
 	description: "Computer architecture",
 	creditHours: 4,
 	prerequisites: [["CS 240"], ["CS 182"]],
@@ -233,9 +230,9 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const [active, setActive] = useState(false);
   const fetchCourses = async () => {
     try {
-      const courses = await getCourses();
-      setCourses(courses);
-      setAvailableCourses(courses);
+      // const courses = await getCourses();
+      // setCourses(courses);
+      // setAvailableCourses(courses);
     } catch (error) {
       console.log("Error fetching courses");
     }
@@ -254,7 +251,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 
   const handleDragStart = (e, course) => {
-    console.log('Dragging course:', course); // Add this for debugging
+    e.preventDefault();
     e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
   };
 
@@ -330,15 +327,15 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const getErrorMessages = (array) => { //
     let formattedErrorArray = [];
 
-    let notEnoughHoursArray = errors.filter((err) => err.errorType === "not_enough_hours");
-    if (notEnoughHoursArray.length != 0) {
-      let NOT_ENOUGH_HOURS = "Not enough hours in ";
-      NOT_ENOUGH_HOURS += notEnoughHoursArray
-      .map((err) => err.semester)
-      .join(", ");
+    // let notEnoughHoursArray = errors.filter((err) => err.errorType === "not_enough_hours");
+    // if (notEnoughHoursArray.length != 0) {
+    //   let NOT_ENOUGH_HOURS = "Not enough hours in ";
+    //   NOT_ENOUGH_HOURS += notEnoughHoursArray
+    //   .map((err) => err.semester)
+    //   .join(", ");
       
-      formattedErrorArray.push(NOT_ENOUGH_HOURS);
-    }
+    //   formattedErrorArray.push(NOT_ENOUGH_HOURS);
+    // }
     
     let prerequisiteConflictArray = errors.filter((err) => err.errorType === "prerequisite_conflict");
     if (prerequisiteConflictArray.length != 0) {
@@ -692,7 +689,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
           });
         }
       });
-      console.log(updatedCourses);
       setErrors(updatedErrors);
       return updatedCourses;
   }
@@ -745,7 +741,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         setCourses(updateErrors(reorderedCourses));
       }
     }
-    
   }
   
   const filteredCourses = courses.filter((c) => (c.semester == semester));
