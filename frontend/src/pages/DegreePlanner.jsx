@@ -71,35 +71,43 @@ const INITIAL_CLASSES= [
 const INITIAL_SEMESTERS = [
   {
     semester: "Fall 2023",
-    semesterIndex: 0, 
+    semesterIndex: 0,
+    courses: [],
   }, 
   {
     semester: "Spring 2024", 
     semesterIndex: 1, 
+    courses: [],
   }, 
   {
     semester: "Fall 2024", 
     semesterIndex: 2, 
+    courses: [],
   }, 
   {
     semester: "Spring 2025",
     semesterIndex: 3,  
+    courses: [],
   }, 
   {
     semester: "Fall 2025",
-    semesterIndex: 4,  
+    semesterIndex: 4, 
+    courses: [],
   }, 
   {
     semester: "Spring 2026",
     semesterIndex: 5,  
+    courses: [],
   }, 
   {
     semester: "Fall 2026",
     semesterIndex: 6,  
+    courses: [],
   }, 
   {
     semester: "Spring 2027",
     semesterIndex: 7,  
+    courses: [],
   }, 
 ]
 
@@ -134,7 +142,8 @@ const INITIAL_AVAILABLE_COURSES = [
   { courseName: "STAT 350" },
 ];
 
-export default function DegreePlanner() {
+export default function DegreePlanner({user, setUser, degreePlan}) {
+  const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
   const [availableCourses, setAvailableCourses] = useState(INITIAL_AVAILABLE_COURSES)
   const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
@@ -152,7 +161,10 @@ export default function DegreePlanner() {
   useEffect(() => {
     fetchCourses();  // Fetch courses when the component mounts
   }, []);
-  console.log(courses)
+  console.log(semesters)
+  if (degreePlan) {
+    setSemesters(degreePlan.savedCourses)
+  }
 
   // Filter courses based on the search query
   const filteredCourses = availableCourses.filter((course) =>
@@ -191,8 +203,14 @@ export default function DegreePlanner() {
 
   // Handle saving the degree plan
   const handleSaveDegreePlan = () => {
+    console.log(semesters)
     if (degreePlanName.trim() === "") {
       alert("Please provide a name for the degree plan.");
+      return;
+    }
+    //Can only save if they are logged in
+    if (!user) {
+      alert("Please log in to save");
       return;
     }
     // Logic for saving the degree plan can be added here
@@ -202,7 +220,7 @@ export default function DegreePlanner() {
   return (
     <div className="grid grid-cols-12 gap-6 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 px-20">
       <div className="col-span-9 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
-        {INITIAL_SEMESTERS.map((s) => {
+        {semesters.map((s) => {
           return (
             <Semester
               key={s.semesterIndex}
@@ -213,6 +231,7 @@ export default function DegreePlanner() {
               setCourses={setCourses}
               errors={errors}
               setErrors={setErrors}
+              semesterCourses={s.courses}
             />
           );
         })}
@@ -359,7 +378,9 @@ const DropIndicator = ({ beforeId, semester }) => {
 };
 
 
-function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors }) {
+function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, semesterCourses }) {
+  let semesterToUpdate = semesters.find((s) => s.semester === semester)
+  console.log(semesterToUpdate)
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
 
@@ -508,7 +529,8 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     }
   }
   const filteredCourses = courses.filter((c) => (c.semester == semester));
-  console.log(filteredCourses)
+  console.log(semester, filteredCourses)
+  semesterCourses = filteredCourses
   const totalCreditHours = filteredCourses.reduce((total, course) => {
     return total + course.creditHours
   }, 0);

@@ -1,23 +1,22 @@
 const mongoose = require("mongoose");
 
 const degreePlanSchema = new mongoose.Schema({
-    planID: Number,
     userID: String,
     planName: String,
     requirements: [{
         name: {
             type: String,
-            required: true
+            required: false //Setting this to false for now in sprint 2 or 3 when we flesh this out more we can re enable this
         },
         isCompleted: {
             type: Boolean,
-            required: true
+            required: false //Setting this to false for now in sprint 2 or 3 when we flesh this out more we can re enable this
         } 
     }],
     totalCredits: Number,
     graduationSemester: {
         type: String,
-        required: true,
+        required: false, //Setting this to false for now in sprint 2 or 3 when we flesh this out more we can re enable this
         match: [
           /^(Fall|Spring|Summer|Winter)\s\d{4}$/,
           'Error: use format Season+Year Ex:"Fall 2023"',
@@ -32,6 +31,10 @@ const degreePlanSchema = new mongoose.Schema({
               /^(Fall|Spring|Summer|Winter)\s\d{4}$/,
               'Error: use format Season+Year Ex:"Fall 2023"',
             ],
+          },
+          semesterIndex: {
+            type: Number,
+            required: true
           },
         courses: [{
             type: mongoose.Schema.Types.ObjectId,
