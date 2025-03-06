@@ -87,7 +87,7 @@ const DEGREE_REQUIREMENTS = [
 const INITIAL_AVAILABLE_COURSES = [
   {
     courseID: 0,
-    courseName: "CS 180",
+    name: "CS 180",
     semester: "",
     semesterIndex: -1,
     description: "Intro to OOP",
@@ -98,7 +98,7 @@ const INITIAL_AVAILABLE_COURSES = [
   },
   {
     courseID: 1,
-    courseName: "CS 240",
+    name: "CS 240",
     semester: "",
     semesterIndex: -1,
     description: "Programming in C",
@@ -109,7 +109,7 @@ const INITIAL_AVAILABLE_COURSES = [
   },
   {
     courseID: 2,
-    courseName: "CS 252",
+    name: "CS 252",
     semester: "",
     semesterIndex: -1,
     description: "Systems programming",
@@ -121,7 +121,7 @@ const INITIAL_AVAILABLE_COURSES = [
   },
   {
     courseID: 3,
-    courseName: "CS 250",
+    name: "CS 250",
     semester: "",
     semesterIndex: -1,
     description: "Computer architecture",
@@ -251,7 +251,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 
   const handleDragStart = (e, course) => {
-    e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
+    e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
   };
 
 
@@ -612,11 +612,11 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
   const checkPrerequisites = (course, courses) => {
     const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
-    const filteredCourseName = new Set(filteredCourses.map(c => c.name));
+    const filteredname = new Set(filteredCourses.map(c => c.name));
 
     // Find all prerequisite groups that are not fulfilled
     const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
-      !prereqGroup.some(prereq => filteredCourseName.has(prereq))
+      !prereqGroup.some(prereq => filteredname.has(prereq))
     );
     return unfulfilledPrereqGroups;
   }
