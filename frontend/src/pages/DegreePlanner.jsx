@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info } from "lucide-react";
 import { getCourses } from "../services/courses";
 import { createDegreePlan } from "../services/degreePlan";
@@ -10,7 +11,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 0,
 	courseName: "CS 180",
-	semester: "Fall 2025",
+	semester: "",
 
 	semesterIndex: 4,
 	description: "Intro to OOP",
@@ -22,7 +23,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 1,
 	courseName: "CS 240",
-	semester: "Spring 2026",
+	semester: "",
 
 	semesterIndex: 4,
 	description: "Programming in C",
@@ -34,7 +35,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 2,
 	courseName: "CS 252",
-	semester: "Spring 2026",
+	semester: "",
 
 	semesterIndex: 5,
 	description: "Systems programming",
@@ -47,7 +48,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 3,
 	courseName: "CS 250",
-	semester: "Spring 2026",
+	semester: "",
 	semesterIndex: 5,
 	description: "Computer architecture",
 	creditHours: 4,
@@ -210,6 +211,7 @@ const INITIAL_ERRORS = [
 const INITIAL_AVAILABLE_COURSES = [
   { courseName: "CS 180" },
   { courseName: "CS 193" },
+  { courseName: "CS 182" },
   { courseName: "CS 240" },
   { courseName: "CS 250" },
   { courseName: "CS 251" },
@@ -221,28 +223,30 @@ const INITIAL_AVAILABLE_COURSES = [
   { courseName: "STAT 350" },
 ];
 
-export default function DegreePlanner({user, setUser, degreePlan}) {
-  const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
-  const [availableCourses, setAvailableCourses] = useState(INITIAL_AVAILABLE_COURSES)
-  const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
-  const [searchQuery, setSearchQuery] = useState(""); // Search query state
-  const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
-  const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
+export default function DegreePlanner({ user, setUser, degreePlan }) {
+  const [semesters, setSemesters] = useState(INITIAL_SEMESTERS);
+  const [availableCourses, setAvailableCourses] = useState(INITIAL_AVAILABLE_COURSES);
+  const [courses, setCourses] = useState(INITIAL_CLASSES);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [errors, setErrors] = useState(INITIAL_ERRORS);
+  const [degreePlanName, setDegreePlanName] = useState("");
+
   const fetchCourses = async () => {
     try {
-      const courses = await getCourses()
-      setCourses(courses)
-      setAvailableCourses(courses)
+      const courses = await getCourses();
+      setCourses(courses);
+      setAvailableCourses(courses);
     } catch (error) {
-      console.log("Error fetching courses")
+      console.log("Error fetching courses");
     }
-  }
+  };
+
   useEffect(() => {
-    fetchCourses();  // Fetch courses when the component mounts
+    fetchCourses();
   }, []);
-  console.log(semesters)
+
   if (degreePlan) {
-    setSemesters(degreePlan.savedCourses)
+    setSemesters(degreePlan.savedCourses);
   }
 
   // Filter courses based on the search query
@@ -250,8 +254,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     course.courseName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Handle the drag start event
   const handleDragStart = (e, course) => {
+    console.log('Dragging course:', course); // Add this for debugging
     e.dataTransfer.setData("courseName", course.courseName); // Set the courseName in dataTransfer
   };
 
@@ -260,6 +264,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     const selectedCourse = courses.find(
       (course) => course.courseName === courseName
     );
+
+    console.log('Dropping course:', selectedCourse); // Add this for debugging
 
     if (selectedCourse) {
       // Add the course to the correct semester
@@ -276,26 +282,44 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     }
   };
 
-  const handleDragOver = (e) => {
-    e.preventDefault(); // Allow drop
-  };
-
   // Handle saving the degree plan
   const handleSaveDegreePlan = () => {
-    console.log(semesters)
+    console.log(semesters);
     if (degreePlanName.trim() === "") {
       alert("Please provide a name for the degree plan.");
       return;
     }
-    //Can only save if they are logged in
     if (!user) {
       alert("Please log in to save");
       return;
     }
-    // Logic for saving the degree plan can be added here
     console.log("Degree Plan saved as:", degreePlanName);
     console.log(user, degreePlanName, semesters)
     createDegreePlan(user, degreePlanName, semesters)
+  };
+
+  // Generate the PDF
+  const handleCreatePDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "normal");
+
+    // Add the title
+    doc.text("Degree Plan: " + degreePlanName, 10, 10);
+
+    // Add semester courses
+    semesters.forEach((semester, index) => {
+      const semesterTitle = `Semester ${semester.semesterIndex + 1}`;
+      doc.text(semesterTitle, 10, 20 + index * 10); // Adjust spacing dynamically
+
+      semester.courses.forEach((course, courseIndex) => {
+        const courseText = `${course.courseName}`;
+        doc.text(courseText, 10, 30 + index * 10 + courseIndex * 10); // Adjust spacing dynamically
+      });
+    });
+
+    // Save the PDF
+    doc.save(`${degreePlanName}_DegreePlan.pdf`);
   };
 
   return (
@@ -376,13 +400,19 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
             />
           </div>
 
-          {/* Save Button */}
-          <div className="mt-4">
+          {/* Save and Create PDF Buttons */}
+          <div className="mt-4 space-y-4">
             <button
               onClick={handleSaveDegreePlan}
               className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
               Save Degree Plan
+            </button>
+            <button
+              onClick={handleCreatePDF}
+              className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
+            >
+              Create PDF
             </button>
           </div>
         </div>
@@ -390,6 +420,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
     </div>
   );
 }
+
 
 //add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {
