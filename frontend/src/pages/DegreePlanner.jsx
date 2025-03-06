@@ -9,7 +9,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 0,
 	courseName: "CS 180",
-	semester: "Fall 2025",
+	semester: "",
 
 	semesterIndex: 4,
 	description: "Intro to OOP",
@@ -21,7 +21,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 1,
 	courseName: "CS 240",
-	semester: "Spring 2026",
+	semester: "",
 
 	semesterIndex: 4,
 	description: "Programming in C",
@@ -33,7 +33,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 2,
 	courseName: "CS 252",
-	semester: "Spring 2026",
+	semester: "",
 
 	semesterIndex: 5,
 	description: "Systems programming",
@@ -46,7 +46,7 @@ const INITIAL_CLASSES= [
   {
 	courseID: 3,
 	courseName: "CS 250",
-	semester: "Spring 2026",
+	semester: "",
 	semesterIndex: 5,
 	description: "Computer architecture",
 	creditHours: 4,
