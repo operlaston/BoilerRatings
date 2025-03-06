@@ -1,16 +1,26 @@
 const Review = require('../models/review')
 const User = require('../models/user')
 
-// client should send an object with two review fields, one for the old review and one for the new review
+// client should send a string [OLD_REVIEW_ID]||[NEW_REVIEW]
+// NOTE: use JSON.stringify(review) to convert the new review to a string
 exports.editReview = async (req, res) => {
-    const { oldReview, newReview } = req.body
+    var data = req.body
     try {
-        review = await Review.findOne(oldReview)
+        data = data.split("||")
+        const oldReviewid = data[0]
+        const newData = JSON.parse(data[1])
+        if (newData === null) {
+            res.status(400).json({ "error": "bad request" })
+            return
+        }
+        const newReview = new Review(newData)
+        review = await Review.findById(oldReviewid)
         if (review === null) {
             res.status(401).json({ "error": "review not found" })
             return
         }
-        Review.findOneandReplace(review, newReview)
+        newReview._id = oldReviewid
+        await Review.findOneAndReplace(review, newReview)
         res.status(200).json({ "message": "review successfully edited" })
         return
     }
@@ -20,16 +30,16 @@ exports.editReview = async (req, res) => {
     }
 }
 
-// client should send a review object
+// client should send a review_id
 exports.deleteReview = async (req, res) => {
-    const review = req.body
+    const reviewID = req.body
     try {
-        const r = await Review.findOne(review)
+        const r = await Review.findById(reviewID)
         if (r === null) {
             res.status(401).json({ "error": "review not found" })
             return
         }
-        Review.findOneandDelete(r);
+        await Review.findOneAndDelete(r);
         res.status(200).json({ message: "review successfully deleted" })
         return
     }
@@ -40,21 +50,28 @@ exports.deleteReview = async (req, res) => {
 }
 
 
-// client should send an object with a user and review object
+// client should send a string [USER_ID]||[REVIEW_ID]
 exports.likeReview = async (req, res) => {
-    const { review, user} = req.body
+    var data = req.body
     try {
-        review = await Review.findById(review)
+        data = data.split("||")
+        const userId = data[0]
+        const reviewId = data[1]
+        if (reviewId === null) {
+            res.status(400).json({ "error": "bad request" })
+            return
+        }
+        review = await Review.findById(reviewId)
         if (!review) {
             return res.status(401).json({ "error": "review not found" })
         }
-        user = await User.findById(user);
+        user = await User.findById(userId);
         if (!user) {
             return res.status(401).json({ "error": "user not found" })
         }
-        const includesReview = user.likedReviews.find((likedReview) => JSON.stringify(likedReview.review) == JSON.stringify(review))
+        // check if user has already interacted with this review
+        const includesReview = user.likedReviews.find((likedReview) => likedReview.review._id.toString() == review._id)
         if (includesReview) {
-            const index = user.likedReviews.findIndex((likedReview) => JSON.stringify(likedReview.review) == JSON.stringify(review))
             if (includesReview.favorability == 1) {
                 // user has already liked review
                 // remove like from user list and decrement like count by one
@@ -69,33 +86,40 @@ exports.likeReview = async (req, res) => {
         }
         else {
             // user hasn't interacted with review
-            const newReview = new likedReview({ review: review, favorability: 1 })
-            await User.findByIdAndUpdate(user, { $push: { likedReviews: newReview } })
+            await User.findByIdAndUpdate(user, { $push: { likedReviews: { review: review, favorability: 1 } } })
             await Review.findByIdAndUpdate(review, { $inc: { likes: 1 } })
         }
 
         return res.status(200).json({ "message": "review changed successfully" })
     }
     catch (err) {
-        return res.status(401).json({"error": "bad request"})
+        return res.status(400).json({"error": "bad request"})
     }
 }
 
-// client should send an object with a user and review object
+// client should send a string [USER_ID]||[REVIEW_ID]
 exports.dislikeReview = async (req, res) => {
-    const { review, user } = req.body
+    var data = req.body
     try {
-        review = await Review.findById(review)
+        data = data.split("||")
+        const userId = data[0]
+        const reviewId = data[1]
+        if (reviewId === null) {
+            res.status(400).json({ "error": "bad request" })
+            return
+        }
+
+        review = await Review.findById(reviewId)
         if (!review) {
             return res.status(401).json({ "error": "review not found" })
         }
-        user = await User.findById(user);
+        user = await User.findById(userId);
         if (!user) {
             return res.status(401).json({ "error": "user not found" })
         }
-        const includesReview = user.likedReviews.find((likedReview) => JSON.stringify(likedReview.review) == JSON.stringify(review))
+        // check if user has already interacted with this review
+        const includesReview = user.likedReviews.find((likedReview) => likedReview.review._id.toString() == review._id)
         if (includesReview) {
-            const index = user.likedReviews.findIndex((likedReview) => JSON.stringify(likedReview.review) == JSON.stringify(review))
             if (includesReview.favorability == 1) {
                 // user has already liked review
                 // change like to dislike and decrement like count by 2 (net -1 to +1 likes)
@@ -110,15 +134,14 @@ exports.dislikeReview = async (req, res) => {
         }
         else {
             // user hasn't interacted with review
-            const newReview = new likedReview({ review: review, favorability: -1 })
-            await User.findByIdAndUpdate(user, { $push: { likedReviews: newReview } })
+            await User.findByIdAndUpdate(user, { $push: { likedReviews: { review: review, favorability: -1 } } })
             await Review.findByIdAndUpdate(review, { $inc: { likes: -1 } })
         }
 
         return res.status(200).json({ "message": "review changed successfully" })
     }
     catch (err) {
-        return res.status(401).json({ "error": "bad request" })
+        return res.status(400).json({ "error": "bad request" })
     }
 }
 
