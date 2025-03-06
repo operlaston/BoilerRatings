@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 
 const courseSchema = new mongoose.Schema({
-    courseName: String,
-    courseNumber: String,
+    name: String,
+    number: String,
     description: String,
     instructors: [{
         type: mongoose.Schema.Types.ObjectId,
