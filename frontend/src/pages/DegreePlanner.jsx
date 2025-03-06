@@ -7,56 +7,7 @@ import { createDegreePlan } from "../services/degreePlan";
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
 
-const INITIAL_CLASSES= [
-  {
-	courseID: 0,
-	courseName: "CS 180",
-	semester: "",
-
-	semesterIndex: 4,
-	description: "Intro to OOP",
-	creditHours: 4,
-	prerequisites: [],
-	corequisites: [],
-	conflicts: [],
-  },
-  {
-	courseID: 1,
-	courseName: "CS 240",
-	semester: "",
-
-	semesterIndex: 5,
-	description: "Programming in C",
-	creditHours: 3,
-	prerequisites: [["CS 180"]],
-	corequisites: [],
-	conflicts: [],
-  },
-  {
-	courseID: 2,
-	courseName: "CS 252",
-	semester: "",
-
-	semesterIndex: 5,
-	description: "Systems programming",
-	creditHours: 4,
-	prerequisites: [["CS 250"], ["CS 251"]],
-	corequisites: [],
-	conflicts: [],
-
-  },
-  {
-	courseID: 3,
-	courseName: "CS 250",
-	semester: "",
-	semesterIndex: 5,
-	description: "Computer architecture",
-	creditHours: 4,
-	prerequisites: [["CS 240"], ["CS 182"]],
-	corequisites: [],
-	conflicts: [],
-
-  },
+const INITIAL_CLASSES = [
 ]
 
 const INITIAL_SEMESTERS = [
@@ -134,6 +85,52 @@ const DEGREE_REQUIREMENTS = [
 ]
 
 const INITIAL_AVAILABLE_COURSES = [
+  {
+    courseID: 0,
+    courseName: "CS 180",
+    semester: "",
+    semesterIndex: -1,
+    description: "Intro to OOP",
+    creditHours: 4,
+    prerequisites: [],
+    corequisites: [],
+    conflicts: [],
+  },
+  {
+    courseID: 1,
+    courseName: "CS 240",
+    semester: "",
+    semesterIndex: -1,
+    description: "Programming in C",
+    creditHours: 3,
+    prerequisites: [["CS 180"]],
+    corequisites: [],
+    conflicts: [],
+  },
+  {
+    courseID: 2,
+    courseName: "CS 252",
+    semester: "",
+    semesterIndex: -1,
+    description: "Systems programming",
+    creditHours: 4,
+    prerequisites: [["CS 250"], ["CS 251"]],
+    corequisites: [],
+    conflicts: [],
+
+  },
+  {
+    courseID: 3,
+    courseName: "CS 250",
+    semester: "",
+    semesterIndex: -1,
+    description: "Computer architecture",
+    creditHours: 4,
+    prerequisites: [["CS 240"], ["CS 182"]],
+    corequisites: [],
+    conflicts: [],
+
+  },
   {
     courseID: 4,
     courseName: "CS 251",
