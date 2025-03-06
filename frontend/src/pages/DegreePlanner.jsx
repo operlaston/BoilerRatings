@@ -230,25 +230,33 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const [active, setActive] = useState(false);
   const fetchCourses = async () => {
     try {
-      // const courses = await getCourses();
-      // setCourses(courses);
-      // setAvailableCourses(courses);
+      console.log("Getting courses")
+      const courses = await getCourses();
+      setCourses(courses);
+      setAvailableCourses(courses);
+      console.log(courses)
     } catch (error) {
       console.log("Error fetching courses");
     }
   }
-
   useEffect(() => {
+    console.log("Fetching courses")
     fetchCourses();
   }, []);
-  if (degreePlan) {
-    setSemesters(degreePlan.savedCourses);
-  }
-
+  /*console.log(degreePlan)
+  
+  useEffect(() => {
+    if (degreePlan) {
+      setSemesters(degreePlan.savedCourses)
+    }
+  }, [degreePlan])*/
+  
+  console.log(courses, availableCourses)
   // Filter courses based on the search query
-  const filteredCourses = availableCourses.filter((course) =>
-    course.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredCourses = availableCourses.filter((courses) => {
+    console.log(courses)
+    return courses.name.toLowerCase().includes(searchQuery.toLowerCase())
+});
 
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
@@ -493,7 +501,6 @@ const Course = ({ course, handleDragStart }) => {
     }
   };
   
-
   return (
     <>
       <DropIndicator beforeId={name} semester={semester} />
@@ -721,8 +728,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       }
       const updatedCourses = updateErrors(reorderedCourses)
       setCourses(updatedCourses);
-      semesterToUpdate.courses = updatedCourses.filter((c) => c.semester == semester)
-      setSemesters([...allSemesters])
       setAvailableCourses(availableCoursesCopy)
     }
     else {
@@ -743,6 +748,8 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
         
         setCourses(updateErrors(reorderedCourses));
       }
+      semesterToUpdate.courses = updatedCourses.filter((c) => c.semester == semester)
+      setSemesters([...allSemesters])
     }
   }
   

@@ -4,16 +4,14 @@ import { useNavigate } from "react-router-dom";
 import { getAllPlans } from "../services/degreePlan";
 
 
-const SavedDegreePlans = ({user}) => {
+const SavedDegreePlans = ({setDegreePlan, user}) => {
   
   console.log(user)
   const navigate = useNavigate()
   const [degreePlans, setDegreePlans] = useState(null)
   const getDegreePlans = async () => {
     try {
-      console.log("Into the try")
       const response = await getAllPlans(user)
-      console.log("Got a response", response)
       setDegreePlans(response)
     } catch (error) {
       console.log("Error")
@@ -22,15 +20,15 @@ const SavedDegreePlans = ({user}) => {
   useEffect(() => {
     if (!user) {
       alert("Please log in to save");
-      console.log("Plz login")
       return;
     }else {
       getDegreePlans()
     }
   },[user])
   
-  const onClick = async () => {
-    console.log("Test")
+  const onClick = async (plan) => {
+    setDegreePlan(plan)
+    navigate('/degree')
   }
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 py-6 px-20">
@@ -44,7 +42,7 @@ const SavedDegreePlans = ({user}) => {
               <DegreePlanCard
                 key={plan._id} 
                 name={plan.planName} 
-                onClick={() => onClick(plan.id)} 
+                onClick={() => onClick(plan)} 
               />
             ))
           ) : (
