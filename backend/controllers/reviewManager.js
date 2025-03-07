@@ -20,7 +20,7 @@ exports.editReview = async (req, res) => {
             return
         }
         newReview._id = oldReviewid
-        await Review.findOneAndReplace(review, newReview)
+        await Review.findByIdAndUpdate(oldReviewid, newReview, { new: true }) // changed
         res.status(200).json({ "message": "review successfully edited" })
         return
     }
