@@ -14,14 +14,15 @@ import {
   addReview,
   getReviewsForACourse,
   likeReview,
-  dislikeReview
+  dislikeReview,
+  editReview,
 } from "../services/review.js";
 
-const ReviewPage = ({ user, course, refreshCourses }) => {
+import { getCourses } from "../services/courses.js";
+
+const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCourses }) => {
   const [canAddReview, setCanAddReview] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
-  //const [currentUser] = useState({ id: "user-123" }); // Mock current user
-  //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
   const currentUser = user ?? {};
   const courseId = course.id;
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
@@ -31,13 +32,22 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    console.log("refreshed reviews in reviewPage");
-    setReviews(course.reviews);
     if (user) {
       //if user LOGGED IN add review section appears
+      console.log("logged in right now");
       setCanAddReview(true);
     }
-  }, [course]);
+    getCourses()
+      .then((listOfCourses) => {
+        setCourses(listOfCourses);
+        setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+      })
+      .catch((err) => console.log("Could not retrieve list of courses", err));
+  }, [])
+
+  // useEffect(() => {
+  //   console.log("refreshed reviews in reviewPage");
+  // }, [course]);
 
   const handleDelete = async (reviewId) => {
     const response = addReview(reviewId, courseId);
@@ -53,7 +63,12 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
       else {
         const {newUser, newReview} = await likeReview(reviewId, user.id)
         setUser(newUser)
-        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+        getCourses()
+          .then((listOfCourses) => {
+            setCourses(listOfCourses);
+            setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+          })
+          .catch((err) => console.log("Could not retrieve list of courses", err));
       }
     } catch (error) {
       console.log("an error occurred while liking a review", err)
@@ -69,7 +84,12 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
       else {
         const {newUser, newReview} = await dislikeReview(reviewId, user.id)
         setUser(newUser)
-        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+        getCourses()
+          .then((listOfCourses) => {
+            setCourses(listOfCourses);
+            setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+          })
+          .catch((err) => console.log("Could not retrieve list of courses", err));
       }
     } catch (error) {
       console.log("an error occurred while liking a review", err)
@@ -82,18 +102,23 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
         // Update existing review
         const updatedReview = {
           ...formData,
+          user: currentUser.id, //same as currentUser.id
           date: new Date().toISOString(),
+          likes: 0,
+          reports: [],
+          instructor: null,
         };
         setReviews((prev) =>
           prev.map((r) => (r.id === formData.id ? updatedReview : r))
         );
-        //await
+        console.log("sent editReview");
+        console.log(updatedReview);
+        await editReview(formData.id, updatedReview);
       } else {
-        // Create new review, could be the problem here?
         const newReview = {
           ...formData,
-          user: currentUser.id, //.id is correct
-          date: new Date(),
+          user: currentUser.id, //.id is incorrect
+          date: new Date().toISOString(),
           likes: 0,
           reports: [],
           instructor: null,
@@ -101,20 +126,15 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
         console.log(newReview);
         console.log(courseId);
         // Optimistically update UI first
-        console.log("Set reviews says");
-        console.log(reviews);
         setReviews((prev) => [newReview, ...prev]);
-
-
         await addReview(newReview, courseId); // NOTICE addReview might have isusues, changed from courseId
-        await refreshCourses();
       }
     } catch (error) {
       console.error("Submission failed:", error);
-      setReviews(prev => prev.filter(r => r.id !== newReview.id));
       throw error;
     } finally {
       setEditingReview(null);
+      await refreshCourses();
     }
   };
 
@@ -125,7 +145,6 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
   };
 
   const handleCancelEdit = () => setEditingReview(null);
-  console.log("Review", reviews);
 
   return (
     <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
@@ -151,13 +170,13 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
           {reviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
-            key={review.id}
+              key={review.id}
             >
               {/* Review Header */}
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.user}
+                    {review.user || ""}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
@@ -170,7 +189,7 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
                   <div className="flex items-center space-x-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
                     <span className="text-gray-900 dark:text-white">
-                      {review.enjoyment.toFixed(1)}
+                      {review.enjoyment || 0}
                     </span>
                   </div>
 
@@ -197,7 +216,7 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
                     )} */}
 
                     {/* Show edit only for current user's reviews */}
-                    {review.user.id === currentUser.id && (
+                    {currentUser?.id && review.user === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
                         className="p-1 hover:text-blue-500 peer-checked:text-blue-500 transition-colors cursor-pointer"
@@ -207,7 +226,7 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
                       </button>
                     )}
                     {/* Show delete only for current user's reviews */}
-                    {review.user.id === currentUser.id && (
+                    {currentUser?.id && review.user === currentUser.id && (
                       <button
                         onClick={() => handleDelete(review.id)}
                         className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors cursor-pointer"
@@ -224,10 +243,10 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
               <div className="mb-4">
                 <div className="flex gap-2 mb-2">
                   <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                    Difficulty: {review.difficulty}/5
+                    Difficulty: {review.difficulty || 0}/5
                   </span>
                   <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
-                    Enjoyment: {review.enjoyment}/5
+                    Enjoyment: {review.enjoyment || 0}/5
                   </span>
                   {review.recommend && (
                     <span className="text-sm px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded">
@@ -242,16 +261,24 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
 
               {/* Like Count */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp 
-                  className="w-4 h-4 cursor-pointer" 
+                <ThumbsUp
+                  
+                  className="w-4 h-4 cursor-pointer"
+                  
                   onClick={() => handleLike(review.id)}
-                  // fill={user.likedReviews.find(review => 
-                    
-                  // )}
+                  fill={user ? (user.likedReviews.find(currReview => {
+                    return currReview.review === review.id && currReview.favorability === 1
+                  }) ? "#9CA3AF" : "#000000") : "#000000"}
                 />
                 {/* #9CA3AF fill color */}
                 <span>{review.likes}</span>
-                <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
+                <ThumbsDown 
+                  className="w-4 h-4 cursor-pointer" 
+                  onClick={() => handleDislike(review.id)} 
+                  fill={user ? (user.likedReviews.find(currReview => {
+                    return currReview.review === review.id && currReview.favorability === -1
+                  }) ? "#9CA3AF" : "#000000") : "#000000"}
+                />
               </div>
 
               {editingReview === review && (

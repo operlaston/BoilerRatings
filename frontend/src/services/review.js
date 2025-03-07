@@ -1,19 +1,27 @@
-import axios from "axios"
+import axios from "axios";
 
-const baseurl = 'http://localhost:3000'
+const baseurl = "http://localhost:3000";
 
 const getReviewsForACourse = async (course) => {
-    console.log(course)
-    const response = await axios.get(`${baseurl}/api/reviews/course`, course)
-    return response.data
-}
+  console.log(course);
+  const response = await axios.get(`${baseurl}/api/reviews/course`, course);
+  return response.data;
+};
 
-const addReview = async ( review, courseId ) => {
-    const response = await axios.post(`${baseurl}/api/reviews`, {review, 
-        course: courseId  //this was the issue, it was course by itself before 
-    })
-    return response.data
-}
+const addReview = async (review, courseId) => {
+  const response = await axios.post(`${baseurl}/api/reviews`, {
+    review,
+    course: courseId, //this was the issue, it was course by itself before
+  });
+  return response.data;
+};
+
+const editReview = async (reviewId, updatedReview) => {
+  const response = await axios.put(
+    `${baseurl}/api/reviews/${reviewId}`, {updatedReview});
+  return response.data;
+};
+
 //I don't know how you have a review id without the rest of the data but just incase
 //here is a way to get the rest of the review
 
@@ -33,4 +41,4 @@ const dislikeReview = async (reviewId, userId) => {
     return response.data
 }
 
-export {getReviewsForACourse, addReview, likeReview, dislikeReview}
+export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview };
