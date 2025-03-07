@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import ReviewPage from "./ReviewPage";
 import { useNavigate } from "react-router-dom";
 
-function CourseInfo({ user, course, refreshCourses }) {
+function CourseInfo({ user, setUser, course, setCourse, refreshCourses, setCourses }) {
   const navigate = useNavigate();
 
   return (
@@ -23,6 +23,9 @@ function CourseInfo({ user, course, refreshCourses }) {
         <ReviewPage
           course={course}
           user={user}
+          setUser={setUser}
+          setCourse={setCourse}
+          setCourses={setCourses}
           refreshCourses={refreshCourses}
         />
       </div>

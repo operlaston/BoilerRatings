@@ -17,7 +17,9 @@ import {
   dislikeReview
 } from "../services/review.js";
 
-const ReviewPage = ({ user, course, refreshCourses }) => {
+import { getCourses } from "../services/courses.js";
+
+const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCourses }) => {
   const [canAddReview, setCanAddReview] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   //const [currentUser] = useState({ id: "user-123" }); // Mock current user
@@ -31,13 +33,21 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
-    console.log("refreshed reviews in reviewPage");
-    setReviews(course.reviews);
     if (user) {
       //if user LOGGED IN add review section appears
       setCanAddReview(true);
     }
-  }, [course]);
+    getCourses()
+      .then((listOfCourses) => {
+        setCourses(listOfCourses);
+        setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+      })
+      .catch((err) => console.log("Could not retrieve list of courses", err));
+  }, [])
+
+  // useEffect(() => {
+  //   console.log("refreshed reviews in reviewPage");
+  // }, [course]);
 
   const handleDelete = async (reviewId) => {
     const response = addReview(reviewId, courseId);
@@ -53,7 +63,12 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
       else {
         const {newUser, newReview} = await likeReview(reviewId, user.id)
         setUser(newUser)
-        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+        getCourses()
+          .then((listOfCourses) => {
+            setCourses(listOfCourses);
+            setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+          })
+          .catch((err) => console.log("Could not retrieve list of courses", err));
       }
     } catch (error) {
       console.log("an error occurred while liking a review", err)
@@ -69,7 +84,12 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
       else {
         const {newUser, newReview} = await dislikeReview(reviewId, user.id)
         setUser(newUser)
-        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+        getCourses()
+          .then((listOfCourses) => {
+            setCourses(listOfCourses);
+            setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+          })
+          .catch((err) => console.log("Could not retrieve list of courses", err));
       }
     } catch (error) {
       console.log("an error occurred while liking a review", err)
@@ -245,13 +265,19 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
                 <ThumbsUp 
                   className="w-4 h-4 cursor-pointer" 
                   onClick={() => handleLike(review.id)}
-                  // fill={user.likedReviews.find(review => 
-                    
-                  // )}
+                  fill={user ? (user.likedReviews.find(currReview => {
+                    return currReview.review === review.id && currReview.favorability === 1
+                  }) ? "#9CA3AF" : "#000000") : "#000000"}
                 />
                 {/* #9CA3AF fill color */}
                 <span>{review.likes}</span>
-                <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
+                <ThumbsDown 
+                  className="w-4 h-4 cursor-pointer" 
+                  onClick={() => handleDislike(review.id)} 
+                  fill={user ? (user.likedReviews.find(currReview => {
+                    return currReview.review === review.id && currReview.favorability === -1
+                  }) ? "#9CA3AF" : "#000000") : "#000000"}
+                />
               </div>
 
               {editingReview === review && (
