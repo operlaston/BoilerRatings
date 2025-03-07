@@ -16,15 +16,13 @@ import {
   getReviewsForACourse,
 } from "../services/review.js";
 
-const ReviewPage = ({user, course}) => {
-  const [canAddReview, setCanAddReview] = useState(true);
+const ReviewPage = ({ user, course }) => {
+  const [canAddReview, setCanAddReview] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   //const [currentUser] = useState({ id: "user-123" }); // Mock current user
   //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
-  // console.log(course)
-  // console.log(user)
-  const currentUser = user;
-  const courseId = course.id
+  const currentUser = user ?? {};
+  const courseId = course.id;
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
   //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
   //Course page should have the reivews in it.
@@ -65,7 +63,7 @@ const ReviewPage = ({user, course}) => {
     try {
       console.log(courseId); //courseID is currently undefined anywhere
       const getReviews = await getReviewsForACourse(courseId);
-      console.log(getReviews)
+      console.log(getReviews);
       setReviews(getReviews); //If the reviews are good this should set them to something thats not the default
     } catch (error) {
       console.error("Error fetching reviews:", error);
@@ -74,7 +72,11 @@ const ReviewPage = ({user, course}) => {
 
   useEffect(() => {
     //fetchAllReviews();
-    setReviews(course.reviews)
+    setReviews(course.reviews);
+    if (user) {
+      //if user LOGGED IN add review section appears
+      setCanAddReview(true);
+    }
   }, []);
 
   const handleDelete = async (reviewId) => {
@@ -289,10 +291,12 @@ const ReviewPage = ({user, course}) => {
             </div>
           ))}
 
-          <AddReviewForm
-            onSubmit={handleReviewSubmit}
-            canAddReview={canAddReview}
-          />
+          {canAddReview === true && (
+            <AddReviewForm
+              onSubmit={handleReviewSubmit}
+              canAddReview={canAddReview}
+            />
+          )}
         </div>
       </div>
     </div>
