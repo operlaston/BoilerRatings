@@ -14,16 +14,18 @@ loginRouter.post('/', async (req, res) => {
     }
     if (await bcrypt.compare(userCredentials.password, user.passwordHash)) {
       console.log("Login success:", userEmail)
-      res.status(200).json({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        graduationSemester: user.graduationSemester,
-        major: user.major,
-        reviews: user.reviews,
-        likedReviews: user.likedReviews,
-        plans: user.plans
-      })
+      // res.status(200).json({
+      //   id: user.id,
+      //   isVerified: user.isVerified,
+      //   username: user.username,
+      //   email: user.email,
+      //   graduationSemester: user.graduationSemester,
+      //   major: user.major,
+      //   reviews: user.reviews,
+      //   likedReviews: user.likedReviews,
+      //   plans: user.plans
+      // })
+      res.status(200).json(user)
     }
     else {
       console.log("Login failed")

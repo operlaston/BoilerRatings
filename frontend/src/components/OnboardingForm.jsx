@@ -1,5 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { User, ChevronDown, X } from "lucide-react";
+import { getMajors } from "../services/majors";
+import { onboard } from "../services/signup";
+import { useNavigate } from "react-router-dom";
+
 const MAJORS = [
   "Computer Science",
   "Data Science", 
@@ -13,8 +17,9 @@ const GRADUATION_SEMESTERS = [
   "Fall 2025",
   "Spring 2026",
 ];
-function OnboardingForm() {
+function OnboardingForm({user, setUser}) {
   const [displayName, setDisplayName] = useState("");
+  const [allMajors, setAllMajors] = useState(MAJORS);
   const [selectedMajors, setSelectedMajors] = useState([]);
   const [selectedMinors, setSelectedMinors] = useState([]);
   const [graduationSemester, setGraduationSemester] = useState("");
@@ -24,8 +29,18 @@ function OnboardingForm() {
   const [error, setError] = useState("");
   const majorsRef = useRef(null);
   const minorsRef = useRef(null);
-  
+  const navigate = useNavigate();
+  console.log(user)
+  const getAllMajors = async () => {
+    try {
+      const majors = await getMajors()
+      setAllMajors(majors)
+    } catch {
+      console.log("Error getting majors")
+    }
+  }
   useEffect(() => {
+    getAllMajors()
     const handleClickOutside = (event) => {
       if (
         majorsRef.current &&
@@ -41,9 +56,9 @@ function OnboardingForm() {
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside); 
   }, []);
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if ( !displayName ) {
@@ -67,6 +82,13 @@ function OnboardingForm() {
     setIsLoading(true);
     
     //TODO: rig form submission to backend.
+    console.log(displayName, selectedMajors, selectedMinors, graduationSemester)
+    try {
+      await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      navigate('/')
+    } catch (error) {
+      console.log("Error onboarding")
+    }
     setTimeout(() => setIsLoading(false), 1500);
   };
   const handleMajorToggle = (major) => {
@@ -112,10 +134,10 @@ function OnboardingForm() {
             <div className="flex flex-wrap gap-2 mt-2">
               {selectedMajors.map((major) => (
                 <span
-                  key={major}
+                  key={major.name}
                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-default"
                 >
-                  {major}
+                  {major.name}
                   <button
                     type="button"
                     onClick={() => handleMajorToggle(major)}
@@ -142,11 +164,11 @@ function OnboardingForm() {
             </button>
             {isMajorsOpen && (
               <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-auto">
-                {MAJORS.filter(
+                {allMajors.filter(
                   (major) => !selectedMajors.includes(major),
                 ).map((major) => (
                   <button
-                    key={major}
+                    key={major.name}
                     type="button"
                     onClick={() => {
                         handleMajorToggle(major);
@@ -155,7 +177,7 @@ function OnboardingForm() {
                     }
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {major}
+                    {major.name}
                   </button>
                 ))}
               </div>
@@ -169,10 +191,10 @@ function OnboardingForm() {
           <div className="flex flex-wrap gap-2 mb-2">
             {selectedMinors.map((minor) => (
               <span
-                key={minor}
+                key={minor.name}
                 className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-default"
               >
-                {minor}
+                {minor.name}
                 <button
                   type="button"
                   onClick={() => handleMinorToggle(minor)}
@@ -198,16 +220,16 @@ function OnboardingForm() {
             </button>
             {isMinorsOpen && (
               <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-auto">
-                {MAJORS.filter(
+                {allMajors.filter(
                   (major) => !selectedMinors.includes(major),
                 ).map((major) => (
                   <button
-                    key={major}
+                    key={major.name}
                     type="button"
                     onClick={() => handleMinorToggle(major)}
                     className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
                   >
-                    {major}
+                    {major.name}
                   </button>
                 ))}
               </div>

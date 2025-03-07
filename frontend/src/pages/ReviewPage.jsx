@@ -1,63 +1,138 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
-import { Loader2, Star } from "lucide-react";
+import BaseReviewForm from "../components/BaseReviewForm.jsx";
+import {
+  Loader2,
+  Star,
+  Pencil,
+  ThumbsUp,
+  ThumbsDown,
+  Trash2,
+} from "lucide-react";
+import {
+  addReview,
+  getReviewsForACourse,
+  likeReview,
+  dislikeReview
+} from "../services/review.js";
 
-const ReviewPage = () => {
-  // Declare all states inside the component
-  const [canAddReview, setCanAddReview] = useState(true);
-
+const ReviewPage = ({ user, course, refreshCourses }) => {
+  const [canAddReview, setCanAddReview] = useState(false);
+  const [editingReview, setEditingReview] = useState(null);
+  //const [currentUser] = useState({ id: "user-123" }); // Mock current user
+  //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
+  const currentUser = user ?? {};
+  const courseId = course.id;
+  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
+  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
+  //Course page should have the reivews in it.
   // Temporary mock data - replace with real data later
-  const mockReviews = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      rating: 4.5,
-      text: "This course really helped me understand fundamental concepts. The projects were challenging but rewarding!",
-    },
-    {
-      id: 2,
-      name: "Mike Chen",
-      rating: 3.8,
-      text: "Good content but the workload was heavier than expected. Make sure to manage your time well.",
-    },
-    {
-      id: 3,
-      name: "Emma Wilson",
-      rating: 4.2,
-      text: "Excellent professor and well-structured materials. The exams were fair but required thorough preparation.",
-    },
-  ];
+  const [reviews, setReviews] = useState([]);
 
-  // Handle submit
-  const handleReviewSubmit = async (formData) => {
+  useEffect(() => {
+    console.log("refreshed reviews in reviewPage");
+    setReviews(course.reviews);
+    if (user) {
+      //if user LOGGED IN add review section appears
+      setCanAddReview(true);
+    }
+  }, [course]);
+
+  const handleDelete = async (reviewId) => {
+    const response = addReview(reviewId, courseId);
+    console.log(response);
+  };
+
+  // Handle like
+  const handleLike = async (reviewId) => {
     try {
-      const newReview = {
-        ...formData,
-        user: "placeholder-user-id",
-        date: new Date().toISOString(),
-        likes: 0,
-        reports: [],
-      };
-
-      // await fetch(...)
-      setMockReviews((prev) => [newReview, ...prev]);
+      if (user === null) {
+        return
+      }
+      else {
+        const {newUser, newReview} = await likeReview(reviewId, user.id)
+        setUser(newUser)
+        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+      }
     } catch (error) {
-      console.error("Submission failed:", error);
-      throw error; // Let AddReviewForm handle error
+      console.log("an error occurred while liking a review", err)
     }
   };
 
-  return (
-    <div className="w-full min-h-screen flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
-      {/* Animated background blobs - same style as login page */}
-      <div className="absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1"></div>
-      <div className="absolute top-1/4 w-64 h-64 bg-gray-300 dark:bg-gray-800 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-2"></div>
-      <div className="absolute top-1/2 w-52 h-52 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-3"></div>
+  // handle dislike
+  const handleDislike = async (reviewId) => {
+    try {
+      if (user === null) {
+        return
+      }
+      else {
+        const {newUser, newReview} = await dislikeReview(reviewId, user.id)
+        setUser(newUser)
+        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+      }
+    } catch (error) {
+      console.log("an error occurred while liking a review", err)
+    }
+  }
 
+  const handleReviewSubmit = async (formData) => {
+    try {
+      if (formData.id) {
+        // Update existing review
+        const updatedReview = {
+          ...formData,
+          date: new Date().toISOString(),
+        };
+        setReviews((prev) =>
+          prev.map((r) => (r.id === formData.id ? updatedReview : r))
+        );
+        //await
+      } else {
+        // Create new review, could be the problem here?
+        const newReview = {
+          ...formData,
+          user: currentUser.id, //.id is correct
+          date: new Date(),
+          likes: 0,
+          reports: [],
+          instructor: null,
+        };
+        console.log(newReview);
+        console.log(courseId);
+        // Optimistically update UI first
+        console.log("Set reviews says");
+        console.log(reviews);
+        setReviews((prev) => [newReview, ...prev]);
+
+
+        await addReview(newReview, courseId); // NOTICE addReview might have isusues, changed from courseId
+        await refreshCourses();
+      }
+    } catch (error) {
+      console.error("Submission failed:", error);
+      setReviews(prev => prev.filter(r => r.id !== newReview.id));
+      throw error;
+    } finally {
+      setEditingReview(null);
+    }
+  };
+
+  const handleEdit = (reviewId) => {
+    const review = reviews.find((r) => r.id === reviewId);
+    setEditingReview(review);
+    console.log("Handling editing", review);
+  };
+
+  const handleCancelEdit = () => setEditingReview(null);
+  console.log("Review", reviews);
+
+  return (
+    <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
       {/* Content Container */}
-      <div className="relative w-full max-w-2xl p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
+      <div className="absolute w-full max-w-auto  p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
         {/* Average Rating Section */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 ">
           <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
             4.2/5
           </h2>
@@ -67,39 +142,135 @@ const ReviewPage = () => {
             ))}
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Based on {mockReviews.length} reviews
+            Based on {reviews.length} reviews
           </p>
         </div>
 
         {/* Reviews List */}
-        <div className="space-y-6">
-          {mockReviews.map((review) => (
+        <div className="flex-column space-y-6">
+          {reviews.map((review) => (
             <div
-              key={review.id}
-              className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm"
+              className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
+            key={review.id}
             >
-              {/* Reviewer Header */}
+              {/* Review Header */}
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium text-gray-900 dark:text-white">
-                  {review.name}
-                </h3>
-                <div className="flex items-center space-x-1">
-                  <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                  <span className="text-gray-900 dark:text-white">
-                    {review.rating}
-                  </span>
+                <div>
+                  <h3 className="font-medium text-gray-900 dark:text-white">
+                    {review.user}
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {new Date(review.date).toLocaleDateString()} •{" "}
+                    {review.semesterTaken}
+                  </p>
+                </div>
+
+                {/* Rating and Actions */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
+                    <span className="text-gray-900 dark:text-white">
+                      {review.enjoyment.toFixed(1)}
+                    </span>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* {canAddReview === true && (
+                      <button
+                        onClick={() => handleLike(review.id)}
+                        className="p-1 hover:text-green-500 peer-checked:text-green-500 transition-colors"
+                      >
+                        <ThumbsUp className="w-5 h-5" />
+                        <span className="sr-only">Like</span>
+                      </button>
+                    )}
+
+                    {canAddReview === true && (
+                      <button
+                        onClick={() => handleDislike(review.id)}
+                        className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors"
+                      >
+                        <ThumbsDown className="w-5 h-5" />
+                        <span className="sr-only">Dislike</span>
+                      </button>
+                    )} */}
+
+                    {/* Show edit only for current user's reviews */}
+                    {review.user.id === currentUser.id && (
+                      <button
+                        onClick={() => handleEdit(review.id)}
+                        className="p-1 hover:text-blue-500 peer-checked:text-blue-500 transition-colors cursor-pointer"
+                      >
+                        <Pencil className="w-5 h-5" />
+                        <span className="sr-only">Edit</span>
+                      </button>
+                    )}
+                    {/* Show delete only for current user's reviews */}
+                    {review.user.id === currentUser.id && (
+                      <button
+                        onClick={() => handleDelete(review.id)}
+                        className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors cursor-pointer"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        <span className="sr-only">Delete</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Review Text */}
-              <p className="text-gray-600 dark:text-gray-300">{review.text}</p>
+              {/* Review Body */}
+              <div className="mb-4">
+                <div className="flex gap-2 mb-2">
+                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                    Difficulty: {review.difficulty}/5
+                  </span>
+                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
+                    Enjoyment: {review.enjoyment}/5
+                  </span>
+                  {review.recommend && (
+                    <span className="text-sm px-2 py-1 bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 rounded">
+                      Recommends this course
+                    </span>
+                  )}
+                </div>
+                <p className="text-gray-600 dark:text-gray-300">
+                  {review.reviewContent}
+                </p>
+              </div>
+
+              {/* Like Count */}
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <ThumbsUp 
+                  className="w-4 h-4 cursor-pointer" 
+                  onClick={() => handleLike(review.id)}
+                  // fill={user.likedReviews.find(review => 
+                    
+                  // )}
+                />
+                {/* #9CA3AF fill color */}
+                <span>{review.likes}</span>
+                <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
+              </div>
+
+              {editingReview === review && (
+                <BaseReviewForm
+                  initialData={editingReview}
+                  onSubmit={handleReviewSubmit}
+                  onCancel={handleCancelEdit}
+                  submitButtonText="Update Review"
+                />
+              )}
             </div>
           ))}
 
-          <AddReviewForm
-            onSubmit={handleReviewSubmit}
-            canAddReview={canAddReview}
-          />
+          {canAddReview === true && (
+            <AddReviewForm
+              onSubmit={handleReviewSubmit}
+              canAddReview={canAddReview}
+            />
+          )}
         </div>
       </div>
     </div>

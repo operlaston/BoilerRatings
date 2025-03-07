@@ -4,11 +4,18 @@ const userSchema = new mongoose.Schema({
   username: String,
   email: String,
   passwordHash: String,
+  isVerified: Boolean,
+  verificationCode: String,
+  codeExpires: Date,
   graduationSemester: String,
-  major: {
+  major: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Major'
-  },
+  }],
+  minor: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Major'
+  }],
   reviews: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Review'
@@ -17,14 +24,20 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DegreePlan'
   }],
-  likedReviews: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Review'
-  }]
+  likedReviews: [
+      {
+          review: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'Review'
+          },
+          favorability: Number
+      }
+  ]
 })
 
 userSchema.set('toJSON', {
   transform: (document, returnedObject) => {
+    if (!returnedObject._id) return
     returnedObject.id = returnedObject._id.toString()
     delete returnedObject._id
     delete returnedObject.__v

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { login } from '../services/login'
+import { signup } from '../services/signup'
 
 function Auth({user, setUser}) {
   const [isLogin, setIsLogin] = useState(true);
@@ -13,7 +14,7 @@ function Auth({user, setUser}) {
 
   const navigate = useNavigate()
 
-  const handleSignUp = (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
     if (!email) {
       setError("Please fill in your email.");
@@ -34,6 +35,7 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
     const hasUpper = /[A-Z]/.test(password)
     const hasLower = /[a-z]/.test(password)
@@ -43,6 +45,7 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
     const badChar = /[^a-zA-Z0-9#$+%@^*\-_\/!,.;]/.test(password);
     if (badChar) {
@@ -50,26 +53,43 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
 
     if (!isLogin && (retype != password)) {
       setError("Passwords do not match.");
       return;
     }
-    // setError("");
+    setError("");
     setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1500);
-
-    //NOTE: Whoever hooks up the login, can also setError to wrong credentials
-    // if (false) {
-    //   setError("Credentials incorrect. Please try again");
-    // }
+    try {
+      const newUser = await signup(email, password)
+      console.log("Signed up user: ", newUser);
+      setUser(newUser)
+      navigate('/onboarding')
+    } catch (error) {
+      console.error("Signup error", error);
+      setError("Signup failed");
+    } finally {
+      setIsLoading(false)
+    }
   };
 
   const handleLogin = async (event) => {
     event.preventDefault()
+    if (!email) {
+      setError("Please fill in your email.");
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@purdue\.edu$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid Purdue email.")
+      return;
+    }
+    if (!password) {
+      setError("Please fill in your password.");
+      return;
+    }
     try {
       const loggedInUser = await login(email, password)
       setUser(loggedInUser)
@@ -168,7 +188,7 @@ function Auth({user, setUser}) {
           }
             className="text-gray-900 dark:text-white cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 font-medium"
           >
-            {isLogin ? "Sign up" : "Sign in"}
+            {isLogin ? "Register" : "Sign in"}
           </button>
         </p>
       </div>
