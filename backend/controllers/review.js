@@ -235,5 +235,5 @@ reviewRouter.put('/dislike/:id', async (req, res) => {
     }
 })
 
-
+module.exports = reviewRouter
 
