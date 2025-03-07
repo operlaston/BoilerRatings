@@ -190,7 +190,9 @@ const ReviewPage = ({ user, course }) => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.name}
+                    {review.user
+                      //TODO NOTICE IMPORATANT SWITCH WITH review.user.username eventually 
+                    } 
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
@@ -209,7 +211,7 @@ const ReviewPage = ({ user, course }) => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {review.user !== 0 && (
+                    {canAddReview === true && (
                       <button
                         onClick={() => handleLike(review.id)}
                         className="p-1 hover:text-green-500 peer-checked:text-green-500 transition-colors"
@@ -220,7 +222,7 @@ const ReviewPage = ({ user, course }) => {
                     )}
 
                     {/* Default id is 0 for now */}
-                    {review.user !== 0 && (
+                    {canAddReview === true && (
                       <button
                         onClick={() => handleDislike(review.id)}
                         className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors"
