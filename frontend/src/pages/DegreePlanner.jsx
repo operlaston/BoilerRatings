@@ -68,7 +68,7 @@ const INITIAL_ERRORS = [
     semester: "Spring 2024"
   }
 ]
-
+//
 const DEGREE_REQUIREMENTS = [
   {
     type: "core",
@@ -80,7 +80,7 @@ const DEGREE_REQUIREMENTS = [
   {
     type: "core",
     name: "Software engineering",
-    courses: [["CS 307"]],
+    courses: [["CS 307", "CS 308"]],
     numberOfCoursesRequired: -1,
     numberOfCreditsRequired: -1,
   }
@@ -220,6 +220,16 @@ const INITIAL_AVAILABLE_COURSES = [
     prerequisites: [["MA 162"]],
     conflicts: [],
     },
+    {
+      courseID: 12,
+      name: "CS 307",
+      semester: "",
+      semesterIndex: -1,
+      description: "Software engineering",
+      creditHours: 3,
+      prerequisites: [],
+      conflicts: [],
+      },
 ];
 
 export default function DegreePlanner({user, setUser, degreePlan}) {
@@ -282,8 +292,18 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   
   
   // Filter courses based on the search query
-  const filteredCourses = availableCourses.filter((courses) => {
-    return courses.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredCourses = availableCourses.filter((course) => {
+    // Normalize the course name by removing spaces and converting to lowercase
+    const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
+  
+    // Split the search query by "AND" and trim whitespace
+    const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
+  
+    // Check if the normalized course name matches any of the normalized search terms
+    return searchTerms.some(term => {
+      const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
+      return normalizedCourseName.includes(normalizedTerm);
+    });
   });
 
   const handleDragStart = (e, course) => {
@@ -315,7 +335,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       courseToTransfer.conflicts = [];
       availableCoursesCopy.push(courseToTransfer);
       setAvailableCourses(availableCoursesCopy);
-      setCourses(currentCourses);
+      setCourses(updatePrerequisiteErrors(currentCourses));
       let updatedSemesters = semesters.map((s) => ({
         ...s,
         courses: s.courses.filter((c) => c.name !== name)
@@ -393,7 +413,6 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   }
 
   
-  //TODO: Paralell requirement compatibility (e.g. MA161 OR MA 165)
   useEffect(() => {
     let arr = [];
     DEGREE_REQUIREMENTS.forEach(requirement => {
@@ -401,21 +420,64 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         name: requirement.name,
         courses: []
       };
-      requirement.courses.forEach(course => {
-        if (!courses.some(c => c.courseAlias === course[0])) {
-          // If not found, add it to the missingRequirements array
-          missingRequirement.courses.push(course[0]);
+  
+      // Check each group of equivalent courses
+      requirement.courses.forEach(group => {
+        // Check if none of the courses in the group are found in the user's completed courses
+        if (!group.some(course => courses.some(c => c.name === course))) {
+          // If none are found, add the entire group to missingRequirement.courses
+          missingRequirement.courses.push(group);
         }
       });
-      arr.push(missingRequirement);
+  
+      // If there are missing groups, add the requirement to the array
+      if (missingRequirement.courses.length > 0) {
+        arr.push(missingRequirement);
+      }
     });
+  
     setMissingRequirements(arr);
     console.log(arr);
-  }, [courses])
+  }, [courses]);
 
-  const handleErrorClick = (course) => {
+  const handleErrorClick = (requirement) => {
     // window.alert(course);
-    setSearchQuery(course);
+    setSearchQuery(requirement.courses.map(group => group.join(" AND ")).join(" AND "));
+  }
+
+  const checkPrerequisites = (course, courses) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredname = new Set(filteredCourses.map(c => c.name));
+
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredname.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
+  }
+
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.semesterIndex == -1) {
+          return;
+        }
+        if (course.conflicts.length > 0) {
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.name,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
   }
 
 
@@ -502,27 +564,30 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               Create PDF
             </button>
           </div>
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2"
+          >
             {errors.length > 0 && (
-              <div className=" bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll">
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll" style={{height: "23vh"}}>
                 <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
                   <AlertCircle className="h-5 w-5" />
                   <h3 className="font-medium">Errors found</h3>
                 </div>
                 {getErrorMessages().map((error, index) => (
-                  <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                    {error}
-
-                  </p>
+                  <div>
+                    <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                      {error}
+                    </p>
+                    <br></br>
+                  </div>
                 ))}
                 {
                   missingRequirements.map((r, index) => (
                     // <ClickAction course={r.courses[0]} key={index}></ClickAction>
                     <p key={index} 
                     className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
-                    onClick={() => handleErrorClick(r.courses[0])}
+                    onClick={() => handleErrorClick(r)}
                     >
-                      {"You must take " + r.courses[0]}
+                      {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
                     </p>
                   ))
                 }
@@ -535,21 +600,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 }
 
-const ClickAction = (course) => {
-  const handleClick = () => {
-    console.log(course + " clicked");
-  }
-  return (
-    <a
-      onClick={handleClick}
-    >
-      {course}
-    </a>
-  )
-}
 
-
-//add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {
   const { name, semester, conflicts } = course;
   const [hovered, setHovered] = useState(false); 
@@ -690,17 +741,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     setActive(false);
   };
 
-  const checkPrerequisites = (course, courses) => {
-    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
-    const filteredname = new Set(filteredCourses.map(c => c.name));
-
-    // Find all prerequisite groups that are not fulfilled
-    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
-      !prereqGroup.some(prereq => filteredname.has(prereq))
-    );
-    return unfulfilledPrereqGroups;
-  }
-
   useEffect(() => {
     INITIAL_SEMESTERS.forEach(s => {
       const filteredCourses = courses.filter((c) => (c.semester == s.semester));
@@ -735,21 +775,15 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     });
   }, [courses]);
 
+  const checkPrerequisites = (course, courses) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredname = new Set(filteredCourses.map(c => c.name));
 
-  const getCreditHourDisplayColors = (hours) => {
-    let str = "text-sm "
-    if (hours == 0) {
-      return str + "text-gray-500";
-    }
-    else if (hours < 12) {
-      return str + "text-red-300";
-    }
-    else if (hours > 18) {
-      return str + "text-yellow-500";
-    }
-    else {
-      return str + "text-gray-200"
-    }
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredname.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
   }
 
   const updatePrerequisiteErrors = (reorderedCourses) => {
@@ -774,6 +808,22 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       });
       setErrors(updatedErrors);
       return updatedCourses;
+  }
+
+  const getCreditHourDisplayColors = (hours) => {
+    let str = "text-sm "
+    if (hours == 0) {
+      return str + "text-gray-500";
+    }
+    else if (hours < 12) {
+      return str + "text-red-300";
+    }
+    else if (hours > 18) {
+      return str + "text-yellow-500";
+    }
+    else {
+      return str + "text-gray-200"
+    }
   }
 
   const handleDragEnd = (e) => {
