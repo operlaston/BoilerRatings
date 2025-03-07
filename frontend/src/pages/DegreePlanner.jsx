@@ -377,18 +377,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               Create PDF
             </button>
           </div>
-          {/* Warning message if degree plan is not saved */}
-          {/* {!isSaved && (
-            <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
-              <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
-                <AlertCircle className="h-5 w-5" />
-                <h3 className="font-medium">Warning</h3>
-              </div>
-              <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                You have not saved your degree plan yet. Please click "Save Degree Plan" to save your changes.
-              </p>
-            </div>
-          )} */}
+
           {/* Errors and missing requirements (unchanged) */}
           <div className="mt-4 space-y-2">
             {errors.length > 0 && (
