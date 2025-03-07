@@ -538,7 +538,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   const handleDragOver = (e) => {
     e.preventDefault();
     highlightIndicator(e);
-
     setActive(true);
   };
 
