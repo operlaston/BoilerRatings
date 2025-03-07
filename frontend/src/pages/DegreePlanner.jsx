@@ -86,146 +86,11 @@ const DEGREE_REQUIREMENTS = [
   }
 ]
 
-const INITIAL_AVAILABLE_COURSES = [
-  {
-    courseID: 0,
-    name: "CS 180",
-    semester: "",
-    semesterIndex: -1,
-    description: "Intro to OOP",
-    creditHours: 4,
-    prerequisites: [],
-    corequisites: [],
-    conflicts: [],
-  },
-  {
-    courseID: 1,
-    name: "CS 240",
-    semester: "",
-    semesterIndex: -1,
-    description: "Programming in C",
-    creditHours: 3,
-    prerequisites: [["CS 180"]],
-    corequisites: [],
-    conflicts: [],
-  },
-  {
-    courseID: 2,
-    name: "CS 252",
-    semester: "",
-    semesterIndex: -1,
-    description: "Systems programming",
-    creditHours: 4,
-    prerequisites: [["CS 250"], ["CS 251"]],
-    corequisites: [],
-    conflicts: [],
-
-  },
-  {
-    courseID: 3,
-    name: "CS 250",
-    semester: "",
-    semesterIndex: -1,
-    description: "Computer architecture",
-    creditHours: 4,
-    prerequisites: [["CS 240"], ["CS 182"]],
-    corequisites: [],
-    conflicts: [],
-
-  },
-  {
-    courseID: 4,
-    name: "CS 251",
-    semester: "",
-    semesterIndex: -1,
-    description: "Data structures and algorithms",
-    creditHours: 3,
-    prerequisites: [["CS 240"], ["CS 182"]],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 5,
-    name: "CS 193",
-    semester: "",
-    semesterIndex: -1,
-    description: "Tools",
-    creditHours: 1,
-    prerequisites: [],
-    conflicts: [],
-  
-   },
-   {
-    courseID: 6,
-    name: "CS 182",
-    semester: "",
-    semesterIndex: -1,
-    description: "Foundations of Computer Science",
-    creditHours: 3,
-    prerequisites: [["CS 180"], ["MA 161"]],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 7,
-    name: "MA 161",
-    semester: "",
-    semesterIndex: -1,
-    description: "Calculus I",
-    creditHours: 5,
-    prerequisites: [],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 8,
-    name: "MA 162",
-    semester: "",
-    semesterIndex: -1,
-    description: "Calculus II",
-    creditHours: 5,
-    prerequisites: [["MA 161"]],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 9,
-    name: "MA 261",
-    semester: "",
-    semesterIndex: -1,
-    description: "Multivariate Calculus",
-    creditHours: 4,
-    prerequisites: [["MA 162"]],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 10,
-    name: "MA 265",
-    semester: "",
-    semesterIndex: -1,
-    description: "Linear Algebra",
-    creditHours: 3,
-    prerequisites: [["MA 162"]],
-    conflicts: [],
-  
-    },
-    {
-    courseID: 11,
-    name: "STAT 350",
-    semester: "",
-    semesterIndex: -1,
-    description: "Introduction to Statistics",
-    creditHours: 3,
-    prerequisites: [["MA 162"]],
-    conflicts: [],
-    },
-];
 
 export default function DegreePlanner({user, setUser, degreePlan}) {
   const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
-  const [availableCourses, setAvailableCourses] = useState(INITIAL_AVAILABLE_COURSES)
-  const [courses, setCourses] = useState(INITIAL_CLASSES); // Initial courses state
+  const [availableCourses, setAvailableCourses] = useState([])
+  const [courses, setCourses] = useState([]); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
   const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
@@ -240,7 +105,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         name: course.number,
         semester: "",
         semesterIndex: -1,
-        description: course.description,
+        description: course.name,
         creditHours: course.creditHours,
         prerequisites: course.prerequisites.map((prereq) => [prereq]),
         corequisites: [],
@@ -257,7 +122,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               name: course.courseID.number,
               semester: course.semester,
               semesterIndex: course.semesterIndex,
-              description: course.courseID.description,
+              description: course.courseID.name,
               creditHours: course.courseID.creditHours,
               prerequisites: course.courseID.prerequisites.map((prereq) => [prereq]),
               corequisites: [],
