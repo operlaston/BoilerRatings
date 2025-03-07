@@ -3,7 +3,7 @@ import CoursePanel from "../components/CoursePanel";
 import { ArrowLeft } from "lucide-react";
 import ReviewPage from "./ReviewPage";
 
-function CourseInfo() {
+function CourseInfo({user, course}) {
   return (
     <div className="w-full h-min-screen flex items-center justify-center p-4 dark:bg-gray-900 overflow-y-auto">
       <div className="absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1 ease-in-out duration-150  translate-x-2/3 -translate-y-1/4"></div>
@@ -13,8 +13,8 @@ function CourseInfo() {
         <button className="absolute text-white -left-15 top-20 rounded-full cursor-pointer items-center ">
           <ArrowLeft className="text-white h-10 w-10" />
         </button>
-        <CoursePanel />
-        <ReviewPage />
+        <CoursePanel course={course}/>
+        <ReviewPage course={course} user={user}/>
       </div>
     </div>
   );

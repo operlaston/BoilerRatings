@@ -12,6 +12,7 @@ import SavedDegree from './pages/SavedDegree';
 function App() {
   const [user, setUser] = useState(null)
   const [degreePlan, setDegreePlan] = useState(null)
+  const [course, setCourse] = useState(null)
 
   return (
     <Router>
@@ -27,7 +28,7 @@ function App() {
 
       <Routes>
         {/* Route for the home page */}
-        <Route path="/" element={<Home user={user} setUser={setUser}/>} />
+        <Route path="/" element={<Home user={user} setUser={setUser} course={course} setCourse={setCourse}/>} />
 
         {/* Route for the login page */}
         <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
@@ -36,10 +37,10 @@ function App() {
         <Route path="/onboarding" element={<Onboarding user={user} setUser={setUser} />} />
 
         {/* Route for the review page */}
-        <Route path="/reviews" element={<ReviewPage user={user} setUser={setUser}/>} />
+        <Route path="/reviews" element={<ReviewPage user={user} setUser={setUser} course={course}/>} />
 
         <Route path="/degree" element={<DegreePlanner user={user} setUser={setUser} degreePlan={degreePlan}/>} />
-        <Route path="/course" element={<CourseInfo user={user} setUser={setUser}/>} />
+        <Route path="/course" element={<CourseInfo user={user} setUser={setUser} course={course}/>} />
         
         {/* Route for the Saved Degree Plans page */}
         <Route path="/saved-degree" element={<SavedDegree degreePlan={degreePlan} setDegreePlan={setDegreePlan} user={user}/>} /> {/* Update route */}

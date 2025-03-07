@@ -3,6 +3,7 @@ import axios from "axios"
 const baseurl = 'http://localhost:3000'
 
 const getReviewsForACourse = async (course) => {
+    console.log(course)
     const response = await axios.get(`${baseurl}/api/reviews/course`, course)
     return response.data
 }

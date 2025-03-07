@@ -6,11 +6,7 @@ courseRouter.get('/:id', async (req, res) => {
     try {
         const course = await Course.findByID(req.params.id)
         .populate({
-            path: 'reviews',
-            populate: {
-                path: 'user',
-                select: 'username email'
-            }
+            path: 'reviews'
         })
         .populate('prerequisites', 'name number')
         if (!course) {

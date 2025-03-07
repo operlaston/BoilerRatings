@@ -6,6 +6,7 @@ import {
   BookOpen,
   MessageCircle,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 
 const COURSE_DATA = {
   number: "CS 180",
@@ -20,7 +21,11 @@ const COURSE_DATA = {
   }
 };
 
-function CoursePanel() {
+function CoursePanel({course}) {
+  const [courseData, setCourseData] = useState(COURSE_DATA);
+  useEffect(() => {
+    setCourseData(course)
+  },[])
   return (
     <div className="relative w-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg">
       <div className="grid lg:grid-cols-3 gap-8">
@@ -28,10 +33,10 @@ function CoursePanel() {
         <div className="lg:col-span-2 space-y-6">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-              {COURSE_DATA.number}
+              {courseData.number}
             </h1>
             <h2 className="text-2xl text-gray-700 dark:text-gray-300">
-              {COURSE_DATA.name}
+              {courseData.name}
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -50,7 +55,7 @@ function CoursePanel() {
                 Description
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {COURSE_DATA.description}
+                {courseData.description}
               </p>
             </div>
             <div>
@@ -58,14 +63,14 @@ function CoursePanel() {
                 Prerequisites
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {COURSE_DATA.prerequisites}
+                {courseData.prerequisites}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  {COURSE_DATA.credits} Credits
+                  {courseData.credits} Credits
                 </span>
               </div>
             </div>
@@ -84,14 +89,14 @@ function CoursePanel() {
                   Difficulty
                 </span>
                 <span className="text-lg font-medium text-gray-900 dark:text-white">
-                  {COURSE_DATA.ratings.difficulty}/5.0
+                  {courseData.difficulty}/5.0
                 </span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                 <div
                   className="h-full bg-gray-500 dark:bg-gray-400 rounded-full"
                   style={{
-                    width: `${(COURSE_DATA.ratings.difficulty / 5) * 100}%`,
+                    width: `${(courseData.difficulty / 5) * 100}%`,
                   }}
                 />
               </div>
@@ -103,14 +108,14 @@ function CoursePanel() {
                   Enjoyability
                 </span>
                 <span className="text-lg font-medium text-gray-900 dark:text-white">
-                  {COURSE_DATA.ratings.enjoyability}/5.0
+                  {courseData.enjoyability}/5.0
                 </span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
                 <div
                   className="h-full bg-gray-500 dark:bg-gray-400 rounded-full"
                   style={{
-                    width: `${(COURSE_DATA.ratings.enjoyability / 5) * 100}%`,
+                    width: `${(courseData.enjoyability / 5) * 100}%`,
                   }}
                 />
               </div>

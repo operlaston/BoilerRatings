@@ -51,9 +51,10 @@ reviewRouter.post('/', async (req, res) => {
 })
 
 reviewRouter.get('/course', async(req, res) => {
-    course = req.body
+    const cID = req.body
+    console.log(cID)
     try {
-        const courseFound = await Course.findById(course)
+        const courseFound = await Course.findById(cID)
         .populate({
             path: 'reviews',
             populate: {

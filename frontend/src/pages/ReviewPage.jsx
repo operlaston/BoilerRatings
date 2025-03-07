@@ -16,12 +16,15 @@ import {
   getReviewsForACourse,
 } from "../services/review.js";
 
-const ReviewPage = () => {
+const ReviewPage = ({user, course}) => {
   const [canAddReview, setCanAddReview] = useState(true);
   const [editingReview, setEditingReview] = useState(null);
-  const [currentUser] = useState({ id: "user-123" }); // Mock current user
-  const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
-
+  //const [currentUser] = useState({ id: "user-123" }); // Mock current user
+  //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
+  console.log(course)
+  console.log(user)
+  const currentUser = user;
+  const courseId = course.id
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
   //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
   //Course page should have the reivews in it.
@@ -60,20 +63,22 @@ const ReviewPage = () => {
   // Fetch all reviews
   const fetchAllReviews = async () => {
     try {
-      console.log(courseID); //courseID is currently undefined anywhere
-      const reviews = await getReviewsForACourse(courseID);
-      setReviews(reviews); //If the reviews are good this should set them to something thats not the default
+      console.log(courseId); //courseID is currently undefined anywhere
+      const getReviews = await getReviewsForACourse(courseId);
+      console.log(getReviews)
+      setReviews(getReviews); //If the reviews are good this should set them to something thats not the default
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
 
   useEffect(() => {
-    fetchAllReviews();
+    //fetchAllReviews();
+    setReviews(course.reviews)
   }, []);
 
   const handleDelete = async (reviewId) => {
-    const response = addReview(reviewId, courseID);
+    const response = addReview(reviewId, courseId);
     console.log(response);
   };
 
@@ -135,7 +140,7 @@ const ReviewPage = () => {
           reports: [],
         };
         setReviews((prev) => [newReview, ...prev]); //only for the mock data
-        addReview(newReview, courseID); //this one uses services, addReview might have isusues
+        addReview(newReview, courseId); //this one uses services, addReview might have isusues
       }
     } catch (error) {
       console.error("Submission failed:", error);
