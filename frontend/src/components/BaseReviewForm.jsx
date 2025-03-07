@@ -122,7 +122,7 @@ const BaseReviewForm = ({
 
         {/* Review Text */}
         <textarea
-          value={formData.reviewContent}
+          value={formData.reviewContent || ""}
           onChange={(e) =>
             setFormData({ ...formData, reviewContent: e.target.value })
           }
