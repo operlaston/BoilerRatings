@@ -84,6 +84,8 @@ const DEGREE_REQUIREMENTS = [
 ]
 
 
+
+
 export default function DegreePlanner({user, setUser, degreePlan}) {
   const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
   const [availableCourses, setAvailableCourses] = useState([])
@@ -105,7 +107,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         semesterIndex: -1,
         description: course.name,
         creditHours: course.creditHours,
-        prerequisites: course.prerequisites.map((prereq) => [prereq]),
+        prerequisites: course.prerequisites,
         corequisites: [],
         conflicts: []
       }))
@@ -124,26 +126,60 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               semesterIndex: course.semesterIndex,
               description: course.courseID.name,
               creditHours: course.courseID.creditHours,
-              prerequisites: course.courseID.prerequisites.map((prereq) => [prereq]),
+              prerequisites: course.courseID.prerequisites,
               corequisites: [],
               conflicts: []
           };
       });
-        setCourses(updatedCourses)
+        setCourses(updatePrerequisiteErrors(updatedCourses))
         setAvailableCourses(updatedAvailableCourses)
       } else {
         setCourses([]);
         setAvailableCourses(availableCourses);
       }
     } catch (error) {
-      console.log("Error fetching courses");
+      console.log("Error fetching courses", error);
     }
   }
   useEffect(() => {
     console.log("Fetching courses")
     fetchCourses();
   }, []);
-  
+
+  const checkPrerequisites = (course, courses) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredname = new Set(filteredCourses.map(c => c.name));
+
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredname.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
+  }
+
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.semesterIndex == -1) {
+          return;
+        }
+        if (course.conflicts.length > 0) {
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.name,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
+  }
   
   const filteredCourses = availableCourses
   .filter((course) => {
@@ -189,7 +225,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       courseToTransfer.conflicts = [];
       availableCoursesCopy.push(courseToTransfer);
       setAvailableCourses(availableCoursesCopy);
-      setCourses(currentCourses);
+      setCourses(updatePrerequisiteErrors(currentCourses));
       let updatedSemesters = semesters.map((s) => ({
         ...s,
         courses: s.courses.filter((c) => c.name !== name)
@@ -569,6 +605,30 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     return unfulfilledPrereqGroups;
   }
 
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.semesterIndex == -1) {
+          return;
+        }
+        if (course.conflicts.length > 0) {
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.name,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
+  }
+
   useEffect(() => {
     INITIAL_SEMESTERS.forEach(s => {
       const filteredCourses = courses.filter((c) => (c.semester == s.semester));
@@ -620,30 +680,7 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     }
   }
 
-  const updatePrerequisiteErrors = (reorderedCourses) => {
-    const updatedCourses = reorderedCourses.map((course) => {
-      const conflicts = checkPrerequisites(course, reorderedCourses);
-      return { ...course, conflicts }; // Update the conflicts field
-    });
-    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
-      updatedCourses.forEach((course) => {
-        if (course.semesterIndex == -1) {
-          return;
-        }
-        if (course.conflicts.length > 0) {
-          updatedErrors.push({
-            errorType: "prerequisite_conflict",
-            clickAction: "search_prerequisites",
-            prerequisites: course.conflicts,
-            course: course.name,
-            semester: course.semester,
-          });
-        }
-      });
-      setErrors(updatedErrors);
-      return updatedCourses;
-  }
-
+  
   const handleDragEnd = (e) => {
     const name = e.dataTransfer.getData("name");
 
