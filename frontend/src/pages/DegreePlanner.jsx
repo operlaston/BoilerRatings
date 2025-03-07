@@ -245,6 +245,35 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     return formattedErrorArray;
   };
 
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!isSaved) {
+        event.preventDefault(); // Prevent the default behavior
+        event.returnValue = ''; // Required for Chrome
+
+        // Use `window.confirm` to ask the user if they want to leave
+        const confirmLeave = window.confirm(
+          'You have unsaved changes. Are you sure you want to leave?'
+        );
+
+        if (confirmLeave) {
+          // Allow the page to unload
+          return;
+        } else {
+          // Cancel the unload
+          event.returnValue = ''; // Required for Chrome
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isSaved]); // Re-run effect when `isSaved` changes
+
+
   // Missing requirements logic (unchanged)
   useEffect(() => {
     let arr = [];
@@ -262,6 +291,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         arr.push(missingRequirement);
       }
     });
+    setIsSaved(false);
     setMissingRequirements(arr);
   }, [courses]);
 
@@ -348,7 +378,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             </button>
           </div>
           {/* Warning message if degree plan is not saved */}
-          {!isSaved && (
+          {/* {!isSaved && (
             <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
               <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
                 <AlertCircle className="h-5 w-5" />
@@ -358,7 +388,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 You have not saved your degree plan yet. Please click "Save Degree Plan" to save your changes.
               </p>
             </div>
-          )}
+          )} */}
           {/* Errors and missing requirements (unchanged) */}
           <div className="mt-4 space-y-2">
             {errors.length > 0 && (
