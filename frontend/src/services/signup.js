@@ -13,6 +13,10 @@ export const verify = async (email, code) => {
     const response = await axios.post(`${baseurl}/api/users/verify`, {
         email, code
     })
+    console.log(response.data)
+    if (response.data.deleted) {
+        throw new Error("Verificaiton code expired")
+    }
     return response.data
 }
 

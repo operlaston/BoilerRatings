@@ -11,9 +11,13 @@ function EmailVerify({user, setUser}) {
     //Handle form submit here
     try {
       const newUser = await verify(user.email, verificationCode)
-      setUser(newUser)
+        setUser(newUser)
     } catch (error) {
-      console.log("Incorrect or expired code", error);
+      if (error.response.data.deleted) {
+        alert("Your code has expired redirecting to login")
+        navigate('/login')
+      }
+      console.log("Error", error)
     } 
   }
 

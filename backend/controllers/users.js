@@ -35,7 +35,7 @@ usersRouter.post('/', async (req, res) => {
       //graduationSemester,
       //major: majorId,
       verificationCode,
-      codeExpires: new Date(Date.now() + 10 * 60),
+      codeExpires: new Date(Date.now() + 10 * 60 * 1000 ),
       isVerified: false,
       reviews: [],
       likedReviews: [],
@@ -53,22 +53,38 @@ usersRouter.post('/', async (req, res) => {
 })
 
 usersRouter.post('/verify', async (req, res) => {
-  const {email, code} = req.body
+  const { email, code } = req.body;
 
   try {
-    const user = await User.findOne({
-      email,
-      verificationCode: code,
-      codeExpires: { $gt: Date.now() }
-    })
+    const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({error: "Invalid or Expired Code"})
+      return res.status(400).json({ error: "User not found" });
     }
-    user.isVerified = true
-    user.verificationCode = null
-    user.codeExpires = null
-    await user.save()
-    res.status(200).json(user)
+
+    if (user.codeExpires < Date.now()) {
+      await User.deleteOne({ _id: user._id });
+      return res.status(400).json({
+        error: "Verification code expired",
+        deleted: true
+      });
+    }
+
+    if (user.verificationCode !== code) {
+      return res.status(400).json({ error: "Invalid code" });
+    }
+    const newUser = await User.findByIdAndUpdate(
+      user._id, 
+      {
+        $set: {
+          isVerified: true,
+          verificationCode: null,
+          codeExpires: null
+        }
+      },
+      { new: true }
+    );
+    console.log("Returning", newUser)
+    res.status(200).json(newUser);
   } catch (error) {
     console.log("Failed to verify email", error)
     res.status(400).json({error: "Bad request"})
