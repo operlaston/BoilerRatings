@@ -35,6 +35,7 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
     const hasUpper = /[A-Z]/.test(password)
     const hasLower = /[a-z]/.test(password)
@@ -44,6 +45,7 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
     const badChar = /[^a-zA-Z0-9#$+%@^*\-_\/!,.;]/.test(password);
     if (badChar) {
@@ -51,6 +53,7 @@ function Auth({user, setUser}) {
         At least 8 characters
         An uppercase letter, lowercase letter, and number
         Can only include alphanumberic symbols and these characters \"#$+%@^*-_/!,.;\"`);
+        return;
     }
 
     if (!isLogin && (retype != password)) {
@@ -74,6 +77,19 @@ function Auth({user, setUser}) {
 
   const handleLogin = async (event) => {
     event.preventDefault()
+    if (!email) {
+      setError("Please fill in your email.");
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@purdue\.edu$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid Purdue email.")
+      return;
+    }
+    if (!password) {
+      setError("Please fill in your password.");
+      return;
+    }
     try {
       const loggedInUser = await login(email, password)
       setUser(loggedInUser)
