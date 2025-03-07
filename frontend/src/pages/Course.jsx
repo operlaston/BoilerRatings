@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import ReviewPage from "./ReviewPage";
 import { useNavigate } from "react-router-dom";
 
-function CourseInfo({user, course}) {
+function CourseInfo({ user, course, refreshCourses }) {
   const navigate = useNavigate();
 
   return (
@@ -14,10 +14,17 @@ function CourseInfo({user, course}) {
       <div className="absolute top-1/2 w-52 h-52 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-3 ease-in-out duration-200 -translate-x-2/3"></div>
       <div className="relative flex flex-col w-full max-w-7xl min-h-screen py-12">
         <button className="absolute text-white -left-15 top-20 rounded-full cursor-pointer items-center ">
-          <ArrowLeft className="text-white h-10 w-10 cursor-pointer" onClick={() => navigate('/')} />
+          <ArrowLeft
+            className="text-white h-10 w-10 cursor-pointer"
+            onClick={() => navigate("/")}
+          />
         </button>
-        <CoursePanel course={course}/>
-        <ReviewPage course={course} user={user}/>
+        <CoursePanel course={course} />
+        <ReviewPage
+          course={course}
+          user={user}
+          refreshCourses={refreshCourses}
+        />
       </div>
     </div>
   );

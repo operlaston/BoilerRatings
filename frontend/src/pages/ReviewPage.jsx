@@ -17,7 +17,7 @@ import {
   dislikeReview
 } from "../services/review.js";
 
-const ReviewPage = ({ user, course }) => {
+const ReviewPage = ({ user, course, refreshCourses }) => {
   const [canAddReview, setCanAddReview] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   //const [currentUser] = useState({ id: "user-123" }); // Mock current user
@@ -30,26 +30,14 @@ const ReviewPage = ({ user, course }) => {
   // Temporary mock data - replace with real data later
   const [reviews, setReviews] = useState([]);
 
-  // Fetch all reviews
-  const fetchAllReviews = async () => {
-    try {
-      console.log(courseId); //courseID is currently undefined anywhere
-      const getReviews = await getReviewsForACourse(courseId);
-      console.log(getReviews);
-      setReviews(getReviews); //If the reviews are good this should set them to something thats not the default
-    } catch (error) {
-      console.error("Error fetching reviews:", error);
-    }
-  };
-
   useEffect(() => {
-    //fetchAllReviews();
+    console.log("refreshed reviews in reviewPage");
     setReviews(course.reviews);
     if (user) {
       //if user LOGGED IN add review section appears
       setCanAddReview(true);
     }
-  }, []);
+  }, [course]);
 
   const handleDelete = async (reviewId) => {
     const response = addReview(reviewId, courseId);
@@ -94,20 +82,31 @@ const ReviewPage = ({ user, course }) => {
         setReviews((prev) =>
           prev.map((r) => (r.id === formData.id ? updatedReview : r))
         );
+        //await
       } else {
-        // Create new review
+        // Create new review, could be the problem here?
         const newReview = {
           ...formData,
-          id: Date.now(),
-          user: currentUser.id,
-          date: new Date().toISOString(),
+          user: currentUser.id, //.id is correct
+          date: new Date(),
           likes: 0,
           reports: [],
+          instructor: null,
         };
-        await addReview(newReview, course); // NOTICE addReview might have isusues, changed from courseId
+        console.log(newReview);
+        console.log(courseId);
+        // Optimistically update UI first
+        console.log("Set reviews says");
+        console.log(reviews);
+        setReviews((prev) => [newReview, ...prev]);
+
+
+        await addReview(newReview, courseId); // NOTICE addReview might have isusues, changed from courseId
+        await refreshCourses();
       }
     } catch (error) {
       console.error("Submission failed:", error);
+      setReviews(prev => prev.filter(r => r.id !== newReview.id));
       throw error;
     } finally {
       setEditingReview(null);
@@ -121,7 +120,7 @@ const ReviewPage = ({ user, course }) => {
   };
 
   const handleCancelEdit = () => setEditingReview(null);
-  console.log("Review", reviews)
+  console.log("Review", reviews);
 
   return (
     <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
@@ -153,9 +152,7 @@ const ReviewPage = ({ user, course }) => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.user.id
-                      //TODO NOTICE IMPORATANT SWITCH WITH review.user.username eventually 
-                    } 
+                    {review.user}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
