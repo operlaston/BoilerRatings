@@ -3,10 +3,11 @@ import Course from "../components/CourseCard";
 import { getCourses } from "../services/courses";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
 import { getMajors } from '../services/majors'
+import { useNavigate } from "react-router-dom";
 
 const placeholderRequirements = ["CS SWE Track", "CS Elective"];
 
-function Home() {
+function Home({course, setCourse}) {
   const [courses, setCourses] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState('');
@@ -39,6 +40,11 @@ function Home() {
     retrieveMajors()
     retrieveCourses();
   }, []);
+  const navigate = useNavigate();
+  const onClick = async (course) => {
+    setCourse(course)
+    navigate('/course')
+  }
 
   const sortCourses = (courses) => {
     if (!sortOption) return courses;
@@ -136,6 +142,7 @@ function Home() {
                 recommended={course.recommended}
                 numReviews={course.numReviews}
                 requirements={course.requirements}
+                onClick={() => onClick(course)}
               />
             )
         }

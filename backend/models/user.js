@@ -8,10 +8,14 @@ const userSchema = new mongoose.Schema({
   verificationCode: String,
   codeExpires: Date,
   graduationSemester: String,
-  major: {
+  major: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Major'
-  },
+  }],
+  minor: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Major'
+  }],
   reviews: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Review'

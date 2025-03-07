@@ -2,14 +2,29 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
-import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown } from "lucide-react";
-import { getReviewByID, getReviewsForACourse } from "../services/review.js";
+import {
+  Loader2,
+  Star,
+  Pencil,
+  ThumbsUp,
+  ThumbsDown,
+  Trash2,
+} from "lucide-react";
+import {
+  addReview,
+  getReviewByID,
+  getReviewsForACourse,
+} from "../services/review.js";
 
-const ReviewPage = () => {
+const ReviewPage = ({user, course}) => {
   const [canAddReview, setCanAddReview] = useState(true);
   const [editingReview, setEditingReview] = useState(null);
-  const [currentUser] = useState({ id: "user-123" }); // Mock current user
-
+  //const [currentUser] = useState({ id: "user-123" }); // Mock current user
+  //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
+  console.log(course)
+  console.log(user)
+  const currentUser = user;
+  const courseId = course.id
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
   //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
   //Course page should have the reivews in it.
@@ -48,20 +63,26 @@ const ReviewPage = () => {
   // Fetch all reviews
   const fetchAllReviews = async () => {
     try {
-      console.log(courseID); //courseID is currently undefined anywhere
-      const reviews = await getReviewsForACourse(courseId); 
-      setReviews(reviews); //If the reviews are good this should set them to something thats not the default
+      console.log(courseId); //courseID is currently undefined anywhere
+      const getReviews = await getReviewsForACourse(courseId);
+      console.log(getReviews)
+      setReviews(getReviews); //If the reviews are good this should set them to something thats not the default
     } catch (error) {
       console.error("Error fetching reviews:", error);
     }
   };
 
   useEffect(() => {
-    fetchAllReviews();
+    //fetchAllReviews();
+    setReviews(course.reviews)
   }, []);
 
-  // Handle like
+  const handleDelete = async (reviewId) => {
+    const response = addReview(reviewId, courseId);
+    console.log(response);
+  };
 
+  // Handle like
   const handleLike = async (reviewId) => {
     setReviews((prev) =>
       prev.map((review) =>
@@ -118,7 +139,8 @@ const ReviewPage = () => {
           likes: 0,
           reports: [],
         };
-        setReviews((prev) => [newReview, ...prev]);
+        setReviews((prev) => [newReview, ...prev]); //only for the mock data
+        addReview(newReview, courseId); //this one uses services, addReview might have isusues
       }
     } catch (error) {
       console.error("Submission failed:", error);
@@ -188,7 +210,7 @@ const ReviewPage = () => {
                     {review.user !== 0 && (
                       <button
                         onClick={() => handleLike(review.id)}
-                        className="p-1 hover:text-green-500 transition-colors"
+                        className="p-1 hover:text-green-500 peer-checked:text-green-500 transition-colors"
                       >
                         <ThumbsUp className="w-5 h-5" />
                         <span className="sr-only">Like</span>
@@ -199,7 +221,7 @@ const ReviewPage = () => {
                     {review.user !== 0 && (
                       <button
                         onClick={() => handleDislike(review.id)}
-                        className="p-1 hover:text-red-500 transition-colors"
+                        className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors"
                       >
                         <ThumbsDown className="w-5 h-5" />
                         <span className="sr-only">Dislike</span>
@@ -210,10 +232,20 @@ const ReviewPage = () => {
                     {review.user === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
-                        className="p-1 hover:text-blue-500 transition-colors"
+                        className="p-1 hover:text-blue-500  peer-checked:text-blue-500 transition-colors"
                       >
                         <Pencil className="w-5 h-5" />
                         <span className="sr-only">Edit</span>
+                      </button>
+                    )}
+                    {/* Show delete only for current user's reviews */}
+                    {review.user === currentUser.id && (
+                      <button
+                        onClick={() => handleDelete(review.id)}
+                        className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                        <span className="sr-only">Delete</span>
                       </button>
                     )}
                   </div>

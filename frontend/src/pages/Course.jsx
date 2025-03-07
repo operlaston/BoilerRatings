@@ -16,8 +16,8 @@ function CourseInfo() {
         <button className="absolute text-white -left-15 top-20 rounded-full cursor-pointer items-center ">
           <ArrowLeft className="text-white h-10 w-10 cursor-pointer" onClick={() => navigate('/')} />
         </button>
-        <CoursePanel />
-        <ReviewPage />
+        <CoursePanel course={course}/>
+        <ReviewPage course={course} user={user}/>
       </div>
     </div>
   );

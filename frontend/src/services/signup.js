@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { User } from 'lucide-react';
 
 const baseurl = "http://localhost:3000"
 
@@ -13,6 +12,14 @@ export const signup = async (email, password) => {
 export const verify = async (email, code) => {
     const response = await axios.post(`${baseurl}/api/users/verify`, {
         email, code
+    })
+    return response.data
+}
+
+export const onboard = async (user, username,  majors, minors, gradSemester) => {
+    console.log(user)
+    const response = await axios.post(`${baseurl}/api/users/${user.id}`, {
+        username, majors, minors, gradSemester
     })
     return response.data
 }
