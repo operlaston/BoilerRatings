@@ -159,6 +159,7 @@ const ReviewPage = ({ user, course }) => {
   };
 
   const handleCancelEdit = () => setEditingReview(null);
+  console.log("Review", reviews)
 
   return (
     <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
@@ -190,7 +191,7 @@ const ReviewPage = ({ user, course }) => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.user
+                    {review.user.id
                       //TODO NOTICE IMPORATANT SWITCH WITH review.user.username eventually 
                     } 
                   </h3>
@@ -233,7 +234,7 @@ const ReviewPage = ({ user, course }) => {
                     )}
 
                     {/* Show edit only for current user's reviews */}
-                    {review.user === currentUser.id && (
+                    {review.user.id === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
                         className="p-1 hover:text-blue-500  peer-checked:text-blue-500 transition-colors"
@@ -243,7 +244,7 @@ const ReviewPage = ({ user, course }) => {
                       </button>
                     )}
                     {/* Show delete only for current user's reviews */}
-                    {review.user === currentUser.id && (
+                    {review.user.id === currentUser.id && (
                       <button
                         onClick={() => handleDelete(review.id)}
                         className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors"
