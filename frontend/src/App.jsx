@@ -19,26 +19,17 @@ function App() {
   const [majors, setMajors] = useState([])
 
   useEffect(() => {
-    const retrieveCourses = async () => {
-      try {
-        const listOfCourses = await getCourses();
-        setCourses(listOfCourses);
-      } catch (e) {
-        console.log("Could not retrieve list of courses", e);
-      }
-    };
-    const retrieveMajors = async () => {
-      try {
-        const retrievedMajors = await getMajors()
-        setMajors(retrievedMajors)
-      }
-      catch (err) {
-        console.log('an error occurred while trying to retrieve majors')
-      }
-    }
+    getCourses()
+      .then((listOfCourses) => {
+        setCourses(listOfCourses)
+      })
+      .catch((err) => console.log('Could not retrieve list of courses', err))
 
-    retrieveMajors()
-    retrieveCourses()
+    getMajors()
+      .then((listOfMajors) => {
+        setMajors(listOfMajors)
+      })
+      .catch((err) => console.log('Could not retrieve list of majors', err))
   }, []);
 
   return (
