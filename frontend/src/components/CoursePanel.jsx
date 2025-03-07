@@ -105,10 +105,10 @@ function CoursePanel({course}) {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600 dark:text-gray-400 flex items-center">
                   <ThumbsUp className="w-4 h-4 mr-2" />
-                  Enjoyability
+                  Enjoyment
                 </span>
                 <span className="text-lg font-medium text-gray-900 dark:text-white">
-                  {courseData.enjoyability}/5.0
+                  {courseData.enjoyment}/5.0
                 </span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
