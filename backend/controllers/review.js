@@ -1,3 +1,4 @@
+const mongoose = require("mongoose"); // Add this line at the top
 const reviewRouter = require("express").Router();
 const User = require("../models/user");
 const Review = require("../models/review");
@@ -7,7 +8,7 @@ const mongoose = require('mongoose')
 reviewRouter.get("/:id", async (req, res) => {
   try {
     const review = await Review.findById(req.params.id)
-      .populate("instrutor", "instructorName gpa")
+      .populate("instructor", "instructorName gpa")
       .populate("user", "username email")
       .populate("reports");
     if (!review) {
@@ -59,8 +60,8 @@ reviewRouter.post("/", async (req, res) => {
               (courseExists.numReviews + 1)) *
               10
           ) / 10,
-        recommended:
-          review.recommended === true
+        recommend: 
+          review.recommend === true //In review schema, its called recommend not recommended
             ? courseExists.recommended + 1
             : courseExists.recommended,
       },
@@ -74,26 +75,102 @@ reviewRouter.post("/", async (req, res) => {
   }
 });
 
-reviewRouter.get('/course', async(req, res) => {
-    const cID = req.body
-    console.log(cID)
-    try {
-        const courseFound = await Course.findById(cID)
-        .populate({
-            path: 'reviews',
-            populate: {
-                path: 'user',
-                select: 'username email'
-            }
-        })
-        const reviews = courseFound.reviews
-        res.status(200).json({reviews})
-    } catch (error) {
-        console.error('Error adding review', error)
-        res.status(400).json({error: 'Bad Request'})
-    }
-})
+// Edit review
+reviewRouter.put("/:id", async (req, res) => {
+  try {
+    console.log("review edit controller trigger");
+    const { id } = req.params;
+    const newReviewData = req.body.updatedReview;
 
+    // Validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ error: "Invalid review ID format" });
+    }
+
+    // Find existing review
+    const existingReview = await Review.findById(id);
+    if (!existingReview) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+
+  
+    // Update review
+    console.log("passed newreviewdata");
+    console.log(newReviewData);
+    const updatedReview = await Review.findOneAndUpdate(
+      { _id: id },
+      newReviewData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedReview) {
+      return res.status(404).json({ error: "Review not found" });
+    }
+    console.log("this is updated Review:")
+    console.log(updatedReview)
+
+
+    // Recalculate course aggregates
+    /*
+    const course = await Course.findOne({ reviews: id }).populate("reviews");
+
+    const reviews = course.reviews;
+    const numReviews = reviews.length;
+
+    const newDifficulty =
+      reviews.reduce((sum, r) => sum + r.difficulty, 0) / numReviews;
+    const newEnjoyment =
+      reviews.reduce((sum, r) => sum + r.enjoyment, 0) / numReviews;
+    const newRecommended = reviews.filter((r) => r.recommend).length;
+
+    console.log(newDifficulty);
+    console.log(newEnjoyment);
+    console.log(newRecommended);
+
+
+    await Course.findByIdAndUpdate(course._id, {
+      difficulty: Math.round(newDifficulty * 10) / 10,
+      enjoyment: Math.round(newEnjoyment * 10) / 10,
+      recommended: newRecommended,
+    });
+    */
+
+    res.status(200).json(updatedReview);
+  } catch (err) {
+    console.error("Error updating review:", err);
+
+    // Handle validation errors
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ error: err.message });
+    }
+
+    // Handle cast errors
+    if (err.name === "CastError") {
+      return res.status(400).json({ error: "Malformed request data" });
+    }
+
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+reviewRouter.get("/course", async (req, res) => {
+  const cID = req.body;
+  console.log(cID);
+  try {
+    const courseFound = await Course.findById(cID).populate({
+      path: "reviews",
+      populate: {
+        path: "user",
+        select: "username email",
+      },
+    });
+    const reviews = courseFound.reviews;
+    res.status(200).json({ reviews });
+  } catch (error) {
+    console.error("Error adding review", error);
+    res.status(400).json({ error: "Bad Request" });
+  }
+});
 
 // client should send a string [OLD_REVIEW_ID]||[NEW_REVIEW]
 // NOTE: use JSON.stringify(review) to convert the new review to a string
@@ -126,23 +203,22 @@ reviewRouter.get('/course', async(req, res) => {
 
 // delete a review
 // client should send a review_id
-reviewRouter.delete('/:id', async (req, res) => {
-    const reviewID = req.params.id
-    try {
-        const r = await Review.findById(reviewID)
-        if (r === null) {
-            res.status(401).json({ "error": "review not found" })
-            return
-        }
-        await Review.findOneAndDelete(r);
-        res.status(200).json({ message: "review successfully deleted" })
-        return
+reviewRouter.delete("/:id", async (req, res) => {
+  const reviewID = req.params.id;
+  try {
+    const r = await Review.findById(reviewID);
+    if (r === null) {
+      res.status(401).json({ error: "review not found" });
+      return;
     }
-    catch (err) {
-        res.status(400).json({ "error": "bad request" })
-        return
-    }
-})
+    await Review.findOneAndDelete(r);
+    res.status(200).json({ message: "review successfully deleted" });
+    return;
+  } catch (err) {
+    res.status(400).json({ error: "bad request" });
+    return;
+  }
+});
 
 reviewRouter.put('/like/:id', async (req, res) => {
   const { userId } = req.body;
@@ -189,6 +265,59 @@ reviewRouter.put('/like/:id', async (req, res) => {
     res.status(400).json({"error": "bad request"})
   }
 })
+// like a review
+// client should send an object {userId}
+reviewRouter.put("/like/:id", async (req, res) => {
+  const { userId } = req.body;
+  const reviewId = req.params.id;
+  try {
+    if (reviewId === null) {
+      res.status(400).json({ error: "bad request" });
+      return;
+    }
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return res.status(401).json({ error: "review not found" });
+    }
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(401).json({ error: "user not found" });
+    }
+    // check if user has already interacted with this review
+    const includesReview = user.likedReviews.find(
+      (likedReview) => likedReview.review._id.toString() == review._id
+    );
+    if (includesReview) {
+      if (includesReview.favorability == 1) {
+        // user has already liked review
+        // remove like from user list and decrement like count by one
+        await User.findByIdAndUpdate(userId, {
+          $pull: { likedReviews: { review: review._id } },
+        });
+        await Review.findByIdAndUpdate(review, { $inc: { likes: -1 } });
+      } else {
+        // user has already disliked review
+        // change dislike to like and increment like count by 2 (net -1 to +1 likes)
+        await User.findByIdAndUpdate(
+          user,
+          { likedReviews: includesReview },
+          { $set: { "likedReviews.$.favorability": 1 } }
+        );
+        await Review.findByIdAndUpdate(review, { $inc: { likes: 2 } });
+      }
+    } else {
+      // user hasn't interacted with review
+      await User.findByIdAndUpdate(user, {
+        $push: { likedReviews: { review: review, favorability: 1 } },
+      });
+      await Review.findByIdAndUpdate(review, { $inc: { likes: 1 } });
+    }
+
+    return res.status(200).json({ message: "review changed successfully" });
+  } catch (err) {
+    return res.status(400).json({ error: "bad request" });
+  }
+});
 
 reviewRouter.put('/dislike/:id', async (req, res) => {
   const { userId } = req.body;
