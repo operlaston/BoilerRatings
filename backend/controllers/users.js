@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const Major = require('../models/major')
 const sendEmail = require('../utils/email')
+const { findById, findByIdAndUpdate } = require('../models/course')
 
 usersRouter.post('/', async (req, res) => {
   //const { username, email, password, graduationSemester, major } = req.body
@@ -70,6 +71,30 @@ usersRouter.post('/verify', async (req, res) => {
     res.status(200).json(user)
   } catch (error) {
     console.log("Failed to verify email", error)
+    res.status(400).json({error: "Bad request"})
+  }
+})
+
+usersRouter.post('/:id', async (req, res) => {
+  const {username, majors, minors, gradSemester} = req.body;
+  const uid = req.params.id
+  const cleanedMajors = majors.map((major) => {
+    return major.id
+  })
+  const cleanedMinors = minors.map((minor) => {
+    return minor.id
+  })
+  try {
+    const user = await User.findById(uid)
+    console.log(user)
+    user.majors = cleanedMajors
+    user.minors = cleanedMinors
+    user.graduationSemester = gradSemester
+    user.username = username
+    await user.save()
+    res.status(200).json(user)
+  } catch (error) {
+    console.log("Failed to onboard user")
     res.status(400).json({error: "Bad request"})
   }
 })
