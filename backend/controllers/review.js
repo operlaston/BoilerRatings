@@ -3,7 +3,6 @@ const reviewRouter = require("express").Router();
 const User = require("../models/user");
 const Review = require("../models/review");
 const Course = require("../models/course");
-const mongoose = require('mongoose')
 
 reviewRouter.get("/:id", async (req, res) => {
   try {
