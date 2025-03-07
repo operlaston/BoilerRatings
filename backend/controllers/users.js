@@ -35,7 +35,7 @@ usersRouter.post('/', async (req, res) => {
       //graduationSemester,
       //major: majorId,
       verificationCode,
-      codeExpires: new Date(Date.now() + 10 * 60 * 1000),
+      codeExpires: new Date(Date.now() + 10 * 60),
       isVerified: false,
       reviews: [],
       likedReviews: [],
