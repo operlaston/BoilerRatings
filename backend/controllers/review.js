@@ -2,6 +2,7 @@ const reviewRouter = require("express").Router();
 const User = require("../models/user");
 const Review = require("../models/review");
 const Course = require("../models/course");
+const mongoose = require('mongoose')
 
 reviewRouter.get("/:id", async (req, res) => {
   try {
@@ -143,97 +144,96 @@ reviewRouter.delete('/:id', async (req, res) => {
     }
 })
 
-// like a review
-// client should send an object {userId}
 reviewRouter.put('/like/:id', async (req, res) => {
-    const { userId } = req.body
-    const reviewId = req.params.id
-    try {
-        if (reviewId === null) {
-            res.status(400).json({ "error": "bad request" })
-            return
-        }
-        const review = await Review.findById(reviewId)
-        if (!review) {
-            return res.status(401).json({ "error": "review not found" })
-        }
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(401).json({ "error": "user not found" })
-        }
-        // check if user has already interacted with this review
-        const includesReview = user.likedReviews.find((likedReview) => likedReview.review._id.toString() == review._id)
-        if (includesReview) {
-            if (includesReview.favorability == 1) {
-                // user has already liked review
-                // remove like from user list and decrement like count by one
-                await User.findByIdAndUpdate(userId, { $pull: { likedReviews: { review: review._id } } })
-                await Review.findByIdAndUpdate(review, { $inc: { likes: -1 } })
-            } else {
-                // user has already disliked review
-                // change dislike to like and increment like count by 2 (net -1 to +1 likes)
-                await User.findByIdAndUpdate(user, { likedReviews: includesReview }, { $set: { "likedReviews.$.favorability": 1 } })
-                await Review.findByIdAndUpdate(review, { $inc: { likes: 2 } })
-            }
-        }
-        else {
-            // user hasn't interacted with review
-            await User.findByIdAndUpdate(user, { $push: { likedReviews: { review: review, favorability: 1 } } })
-            await Review.findByIdAndUpdate(review, { $inc: { likes: 1 } })
-        }
-
-        return res.status(200).json({ "message": "review changed successfully" })
+  const { userId } = req.body;
+  const reviewId = req.params.id;
+  const reviewObjectId = new mongoose.Types.ObjectId(reviewId);
+  try {
+    const user = await User.findById(userId)
+      .populate('likedReviews.review')
+    // console.log(user)
+    // const review = await Review.findById(reviewId)
+    const likedReviews = user.likedReviews
+    // if the review is in the user's likedReviews list
+    const likedReview = likedReviews.find(likedReview => likedReview.review._id.toString() === reviewId)
+    if (likedReview) {
+      // if it is a like
+      if (likedReview.favorability === 1) {
+        const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: -1}}, {new: true})
+        const newUser = await User.findByIdAndUpdate(userId, 
+          {$pull: {likedReviews: {review: reviewObjectId}}},
+          {new: true})
+        return res.status(200).json({newUser, newReview})
+      }
+      // if it is a dislike
+      else {
+        const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: 2}}, {new: true})
+        const newUser = await User.findOneAndUpdate(
+          { _id: userId, 'likedReviews.review': reviewObjectId },
+          { $set: { 'likedReviews.$.favorability': 1 } },
+          {new: true})
+        return res.status(200).json({newUser, newReview})
+      }
     }
-    catch (err) {
-        return res.status(400).json({"error": "bad request"})
+    const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: 1}}, {new: true})
+    const newLikedReviewObject = {
+      favorability: 1,
+      review: reviewObjectId
     }
+    const newUser = await User.findByIdAndUpdate(userId, 
+      { $addToSet: { likedReviews: newLikedReviewObject } },
+      {new: true})
+    res.status(200).json({newUser, newReview})
+  }
+  catch (err) {
+    res.status(400).json({"error": "bad request"})
+  }
 })
 
-
 reviewRouter.put('/dislike/:id', async (req, res) => {
-    const { userId } = req.body
-    const reviewId = req.params.id
-    try {
-        if (reviewId === null) {
-            res.status(400).json({ "error": "bad request" })
-            return
-        }
-
-        const review = await Review.findById(reviewId)
-        if (!review) {
-            return res.status(401).json({ "error": "review not found" })
-        }
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(401).json({ "error": "user not found" })
-        }
-        // check if user has already interacted with this review
-        const includesReview = user.likedReviews.find((likedReview) => likedReview.review._id.toString() == review._id)
-        if (includesReview) {
-            if (includesReview.favorability == 1) {
-                // user has already liked review
-                // change like to dislike and decrement like count by 2 (net -1 to +1 likes)
-                await User.findByIdAndUpdate(user, { likedReviews: includesReview }, { $set: { "likedReviews.$.favorability": -1 } })
-                await Review.findByIdAndUpdate(review, { $inc: { likes: -2 } })
-            } else {
-                // user has already disliked review
-                // remove dislike from user list and increment like count by one
-                await User.findByIdAndUpdate(user, { likedReviews: includesReview }, { $pull: { likedReviews: { $in: "likedReviews.$" } } })
-                await Review.findByIdAndUpdate(review, { $inc: { likes: 1 } })
-            }
-        }
-        else {
-            // user hasn't interacted with review
-            await User.findByIdAndUpdate(user, { $push: { likedReviews: { review: review, favorability: -1 } } })
-            await Review.findByIdAndUpdate(review, { $inc: { likes: -1 } })
-        }
-
-        return res.status(200).json({ "message": "review changed successfully" })
+  const { userId } = req.body;
+  const reviewId = req.params.id;
+  const reviewObjectId = new mongoose.Types.ObjectId(reviewId);
+  try {
+    const user = await User.findById(userId)
+      .populate('likedReviews.review')
+    // console.log(user)
+    // const review = await Review.findById(reviewId)
+    const likedReviews = user.likedReviews
+    // if the review is in the user's likedReviews list
+    const likedReview = likedReviews.find(likedReview => likedReview.review._id.toString() === reviewId)
+    if (likedReview) {
+      // if it is a like
+      if (likedReview.favorability === 1) {
+        const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: -2}}, {new: true})
+        const newUser = await User.findOneAndUpdate(
+          { _id: userId, 'likedReviews.review': reviewObjectId },
+          { $set: { 'likedReviews.$.favorability': -1 } },
+          {new: true})
+        return res.status(200).json({newUser, newReview})
+      }
+      // if it is a dislike
+      else {
+        const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: 1}}, {new: true})
+        const newUser = await User.findByIdAndUpdate(userId, 
+          {$pull: {likedReviews: {review: reviewObjectId}}},
+          {new: true})
+        return res.status(200).json({newUser, newReview})
+      }
     }
-    catch (err) {
-        return res.status(400).json({ "error": "bad request" })
+    const newReview = await Review.findByIdAndUpdate(reviewId, {$inc: {likes: -1}}, {new: true})
+    const newDislikedReviewObject = {
+      favorability: -1,
+      review: reviewObjectId
     }
+    const newUser = await User.findByIdAndUpdate(userId, 
+      { $addToSet: { likedReviews: newDislikedReviewObject } },
+      {new: true})
+    res.status(200).json({newUser, newReview})
+  }
+  catch (err) {
+    res.status(400).json({"error": "bad request"})
+  }
 })
 
 module.exports = reviewRouter
-

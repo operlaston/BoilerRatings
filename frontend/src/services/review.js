@@ -24,11 +24,13 @@ const addReview = async ( review, courseId ) => {
 // }
 
 const likeReview = async (reviewId, userId) => {
-    await axios.put(`${baseurl}/api/reviews/like/${reviewId}`, {userId})
+    const response = await axios.put(`${baseurl}/api/reviews/like/${reviewId}`, {userId})
+    return response.data // contains new user and review objects
 }
 
 const dislikeReview = async (reviewId, userId) => {
-    await axios.put(`${baseurl}/api/reviews/dislike/${reviewId}`, {userId})
+    const response = await axios.put(`${baseurl}/api/reviews/dislike/${reviewId}`, {userId})
+    return response.data
 }
 
 export {getReviewsForACourse, addReview, likeReview, dislikeReview}

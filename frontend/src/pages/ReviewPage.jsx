@@ -46,29 +46,34 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
 
   // Handle like
   const handleLike = async (reviewId) => {
-    // setReviews((prev) =>
-    //   prev.map((review) =>
-    //     review.id === reviewId ? { ...review, likes: review.likes + 1 } : review
-    //   )
-    // );
-
     try {
-      
+      if (user === null) {
+        return
+      }
+      else {
+        const {newUser, newReview} = await likeReview(reviewId, user.id)
+        setUser(newUser)
+        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+      }
     } catch (error) {
-      console.error("Error updating like:", error);
-      // Rollback optimistic update
-      setReviews((prev) =>
-        prev.map((review) =>
-          review.id === reviewId
-            ? { ...review, likes: review.likes - 1 }
-            : review
-        )
-      );
+      console.log("an error occurred while liking a review", err)
     }
   };
 
+  // handle dislike
   const handleDislike = async (reviewId) => {
-
+    try {
+      if (user === null) {
+        return
+      }
+      else {
+        const {newUser, newReview} = await dislikeReview(reviewId, user.id)
+        setUser(newUser)
+        setReviews(reviews.map(review => review.id === newReview.id ? newReview : review))
+      }
+    } catch (error) {
+      console.log("an error occurred while liking a review", err)
+    }
   }
 
   const handleReviewSubmit = async (formData) => {
@@ -237,7 +242,13 @@ const ReviewPage = ({ user, course, refreshCourses }) => {
 
               {/* Like Count */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp className="w-4 h-4 cursor-pointer" onClick={() => handleLike(review.id)} />
+                <ThumbsUp 
+                  className="w-4 h-4 cursor-pointer" 
+                  onClick={() => handleLike(review.id)}
+                  // fill={user.likedReviews.find(review => 
+                    
+                  // )}
+                />
                 {/* #9CA3AF fill color */}
                 <span>{review.likes}</span>
                 <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
