@@ -12,8 +12,9 @@ import {
 } from "lucide-react";
 import {
   addReview,
-  getReviewByID,
   getReviewsForACourse,
+  likeReview,
+  dislikeReview
 } from "../services/review.js";
 
 const ReviewPage = ({ user, course }) => {
@@ -57,27 +58,14 @@ const ReviewPage = ({ user, course }) => {
 
   // Handle like
   const handleLike = async (reviewId) => {
-    setReviews((prev) =>
-      prev.map((review) =>
-        review.id === reviewId ? { ...review, likes: review.likes + 1 } : review
-      )
-    );
+    // setReviews((prev) =>
+    //   prev.map((review) =>
+    //     review.id === reviewId ? { ...review, likes: review.likes + 1 } : review
+    //   )
+    // );
 
     try {
-      // await fetch(`/api/reviews/${reviewId}/like`, {
-      //   method: 'PUT',
-      //   headers: {
-      //     Authorization: `Bearer ${localStorage.getItem('token')}`
-      //   }
-      // });
-      // await fetch(`/api/users/${currentUser.id}/likes`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //     Authorization: `Bearer ${localStorage.getItem('token')}`
-      //   },
-      //   body: JSON.stringify({ reviewId })
-      // });
+      
     } catch (error) {
       console.error("Error updating like:", error);
       // Rollback optimistic update
@@ -90,6 +78,10 @@ const ReviewPage = ({ user, course }) => {
       );
     }
   };
+
+  const handleDislike = async (reviewId) => {
+
+  }
 
   const handleReviewSubmit = async (formData) => {
     try {
@@ -154,8 +146,8 @@ const ReviewPage = ({ user, course }) => {
         <div className="flex-column space-y-6">
           {reviews.map((review) => (
             <div
-              className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow
-            key={review.id}"
+              className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
+            key={review.id}
             >
               {/* Review Header */}
               <div className="flex justify-between items-start mb-2">
@@ -182,7 +174,7 @@ const ReviewPage = ({ user, course }) => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {canAddReview === true && (
+                    {/* {canAddReview === true && (
                       <button
                         onClick={() => handleLike(review.id)}
                         className="p-1 hover:text-green-500 peer-checked:text-green-500 transition-colors"
@@ -192,7 +184,6 @@ const ReviewPage = ({ user, course }) => {
                       </button>
                     )}
 
-                    {/* Default id is 0 for now */}
                     {canAddReview === true && (
                       <button
                         onClick={() => handleDislike(review.id)}
@@ -201,13 +192,13 @@ const ReviewPage = ({ user, course }) => {
                         <ThumbsDown className="w-5 h-5" />
                         <span className="sr-only">Dislike</span>
                       </button>
-                    )}
+                    )} */}
 
                     {/* Show edit only for current user's reviews */}
                     {review.user.id === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
-                        className="p-1 hover:text-blue-500  peer-checked:text-blue-500 transition-colors"
+                        className="p-1 hover:text-blue-500 peer-checked:text-blue-500 transition-colors cursor-pointer"
                       >
                         <Pencil className="w-5 h-5" />
                         <span className="sr-only">Edit</span>
@@ -217,7 +208,7 @@ const ReviewPage = ({ user, course }) => {
                     {review.user.id === currentUser.id && (
                       <button
                         onClick={() => handleDelete(review.id)}
-                        className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors"
+                        className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-5 h-5" />
                         <span className="sr-only">Delete</span>
@@ -230,10 +221,10 @@ const ReviewPage = ({ user, course }) => {
               {/* Review Body */}
               <div className="mb-4">
                 <div className="flex gap-2 mb-2">
-                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
                     Difficulty: {review.difficulty}/5
                   </span>
-                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
+                  <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
                     Enjoyment: {review.enjoyment}/5
                   </span>
                   {review.recommend && (
@@ -248,9 +239,11 @@ const ReviewPage = ({ user, course }) => {
               </div>
 
               {/* Like Count */}
-              <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp className="w-4 h-4" />
-                <span>{review.likes} likes</span>
+              <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <ThumbsUp className="w-4 h-4 cursor-pointer" onClick={() => handleLike(review.id)} />
+                {/* #9CA3AF fill color */}
+                <span>{review.likes}</span>
+                <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
               </div>
 
               {editingReview === review && (
