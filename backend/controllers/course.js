@@ -23,11 +23,7 @@ courseRouter.get('/', async (req, res) => {
     try {
         const courses = await Course.find()
         .populate({
-            path: 'reviews',
-            populate: {
-                path: 'user',
-                select: 'username email'
-            }
+            path: 'reviews'
         })
         .populate('prerequisites', 'name number')
         if (!courses) {
