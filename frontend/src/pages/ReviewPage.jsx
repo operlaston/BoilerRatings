@@ -2,15 +2,25 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
-import { Loader2, Star, Pencil, ThumbsUp, ThumbsDown, Trash2 } from "lucide-react";
-import { addReview, getReviewByID, getReviewsForACourse } from "../services/review.js";
+import {
+  Loader2,
+  Star,
+  Pencil,
+  ThumbsUp,
+  ThumbsDown,
+  Trash2,
+} from "lucide-react";
+import {
+  addReview,
+  getReviewByID,
+  getReviewsForACourse,
+} from "../services/review.js";
 
 const ReviewPage = () => {
   const [canAddReview, setCanAddReview] = useState(true);
   const [editingReview, setEditingReview] = useState(null);
   const [currentUser] = useState({ id: "user-123" }); // Mock current user
-  const [courseID] = useState({ id: "CS 180" }); // Mock current course
-
+  const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
 
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
   //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
@@ -65,9 +75,7 @@ const ReviewPage = () => {
   const handleDelete = async (reviewId) => {
     const response = addReview(reviewId, courseID);
     console.log(response);
-  }
-
-
+  };
 
   // Handle like
   const handleLike = async (reviewId) => {
@@ -127,7 +135,7 @@ const ReviewPage = () => {
           reports: [],
         };
         setReviews((prev) => [newReview, ...prev]); //only for the mock data
-        addReview(newReview, courseID); //courseID not defined rn, this one uses services
+        addReview(newReview, courseID); //this one uses services, addReview might have isusues
       }
     } catch (error) {
       console.error("Submission failed:", error);
@@ -225,7 +233,7 @@ const ReviewPage = () => {
                         <span className="sr-only">Edit</span>
                       </button>
                     )}
-                    {/* Show delete only for current user's reviews */} 
+                    {/* Show delete only for current user's reviews */}
                     {review.user === currentUser.id && (
                       <button
                         onClick={() => handleDelete(review.id)}
