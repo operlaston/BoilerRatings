@@ -27,36 +27,7 @@ const ReviewPage = ({ user, course }) => {
   //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
   //Course page should have the reivews in it.
   // Temporary mock data - replace with real data later
-  const [reviews, setReviews] = useState([
-    {
-      id: 1,
-      user: "user-123",
-      name: "Sarah Johnson",
-      date: "2023-03-15T12:00:00Z",
-      semesterTaken: "Fall 2024",
-      reviewContent:
-        "This course really helped me understand fundamental concepts. The projects were challenging but rewarding!",
-      recommend: true,
-      difficulty: 4,
-      enjoyment: 5,
-      likes: 12,
-      reports: [],
-    },
-    {
-      id: 2,
-      user: "user-456",
-      name: "Mike Chen",
-      date: "2023-04-01T09:30:00Z",
-      semesterTaken: "Spring 2023",
-      reviewContent:
-        "Good content but the workload was heavier than expected. Make sure to manage your time well.",
-      recommend: false,
-      difficulty: 3,
-      enjoyment: 2,
-      likes: 5,
-      reports: [],
-    },
-  ]);
+  const [reviews, setReviews] = useState([]);
 
   // Fetch all reviews
   const fetchAllReviews = async () => {
@@ -141,8 +112,7 @@ const ReviewPage = ({ user, course }) => {
           likes: 0,
           reports: [],
         };
-        setReviews((prev) => [newReview, ...prev]); //only for the mock data
-        addReview(newReview, courseId); //this one uses services, addReview might have isusues
+        await addReview(newReview, course); // NOTICE addReview might have isusues, changed from courseId
       }
     } catch (error) {
       console.error("Submission failed:", error);
