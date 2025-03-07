@@ -1,45 +1,20 @@
 import React, { useEffect, useState } from "react";
 import Course from "../components/CourseCard";
-import { getCourses } from "../services/courses";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
 import { getMajors } from '../services/majors'
+import { getCourses } from "../services/courses";
+
 import { useNavigate } from "react-router-dom";
 
-const placeholderRequirements = ["CS SWE Track", "CS Elective"];
-
-function Home({course, setCourse}) {
-  const [courses, setCourses] = useState(null);
+function Home({course, setCourse, user, setUser, courses, setCourses, majors, setMajors}) {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState('');
   const [sortOption, setSortOption] = useState('');
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedRequirement, setSelectedRequirement] = useState("");
-  const [majors, setMajors] = useState([])
   const [requirements, setRequirements] = useState([]);
 
-  useEffect(() => {
-    const retrieveCourses = async () => {
-      try {
-        const listOfCourses = await getCourses();
-        setCourses(listOfCourses);
-      } catch (e) {
-        console.log("Could not retrieve list of courses", e);
-      }
-    };
-    const retrieveMajors = async () => {
-      try {
-        const retrievedMajors = await getMajors()
-        setMajors(retrievedMajors)
-      }
-      catch (err) {
-        console.log('an error occurred while trying to retrieve majors')
-      }
-    }
-    
-    console.log("here lol")
-    retrieveMajors()
-    retrieveCourses();
-  }, []);
+
   const navigate = useNavigate();
   const onClick = async (course) => {
     setCourse(course)
