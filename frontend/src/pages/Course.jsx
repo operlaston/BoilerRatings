@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import ReviewPage from "./ReviewPage";
 import { useNavigate } from "react-router-dom";
 
-function CourseInfo() {
+function CourseInfo({user, course}) {
   const navigate = useNavigate();
 
   return (

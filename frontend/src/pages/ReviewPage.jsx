@@ -21,8 +21,8 @@ const ReviewPage = ({user, course}) => {
   const [editingReview, setEditingReview] = useState(null);
   //const [currentUser] = useState({ id: "user-123" }); // Mock current user
   //const [courseID] = useState({ id: "67c935df060def50cc8955e4" }); // Mock current course
-  console.log(course)
-  console.log(user)
+  // console.log(course)
+  // console.log(user)
   const currentUser = user;
   const courseId = course.id
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
