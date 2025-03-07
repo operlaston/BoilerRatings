@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { User, ChevronDown, X } from "lucide-react";
 import { getMajors } from "../services/majors";
 import { onboard } from "../services/signup";
+import { useNavigate } from "react-router-dom";
 
 const MAJORS = [
   "Computer Science",
@@ -28,6 +29,7 @@ function OnboardingForm({user, setUser}) {
   const [error, setError] = useState("");
   const majorsRef = useRef(null);
   const minorsRef = useRef(null);
+  const navigate = useNavigate();
   console.log(user)
   const getAllMajors = async () => {
     try {
@@ -83,6 +85,7 @@ function OnboardingForm({user, setUser}) {
     console.log(displayName, selectedMajors, selectedMinors, graduationSemester)
     try {
       await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      navigate('/')
     } catch (error) {
       console.log("Error onboarding")
     }

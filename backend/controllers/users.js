@@ -78,20 +78,22 @@ usersRouter.post('/verify', async (req, res) => {
 usersRouter.post('/:id', async (req, res) => {
   const {username, majors, minors, gradSemester} = req.body;
   const uid = req.params.id
+  console.log(majors, minors)
   const cleanedMajors = majors.map((major) => {
     return major.id
   })
   const cleanedMinors = minors.map((minor) => {
     return minor.id
   })
+  console.log(cleanedMajors, cleanedMinors)
   try {
-    const user = await User.findById(uid)
+    const user = await User.findByIdAndUpdate(uid, {
+      major: cleanedMajors,
+      minor: cleanedMinors,
+      graduationSemester: gradSemester,
+      username: username
+    }, { new: true, runValidators: true });
     console.log(user)
-    user.majors = cleanedMajors
-    user.minors = cleanedMinors
-    user.graduationSemester = gradSemester
-    user.username = username
-    await user.save()
     res.status(200).json(user)
   } catch (error) {
     console.log("Failed to onboard user")
