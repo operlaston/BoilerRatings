@@ -7,9 +7,6 @@ import { createDegreePlan } from "../services/degreePlan";
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
 
-const INITIAL_CLASSES = [
-]
-
 const INITIAL_SEMESTERS = [
   {
     semester: "Fall 2023",
@@ -80,11 +77,13 @@ const DEGREE_REQUIREMENTS = [
   {
     type: "core",
     name: "Software engineering",
-    courses: [["CS 307"]],
+    courses: [["CS 307", "STAT 417"]],
     numberOfCoursesRequired: -1,
     numberOfCreditsRequired: -1,
   }
 ]
+
+
 
 
 export default function DegreePlanner({user, setUser, degreePlan}) {
@@ -96,10 +95,12 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
   const [active, setActive] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState([]);
+  const [isSaved, setIsSaved] = useState(false);
   const fetchCourses = async () => {
     try {
       console.log("Getting courses")
       const courses = await getCourses();
+      console.log(courses);
       const availableCourses = courses.map((course) => ({
         courseID: course.id,
         name: course.number,
@@ -107,15 +108,17 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         semesterIndex: -1,
         description: course.name,
         creditHours: course.creditHours,
-        prerequisites: course.prerequisites.map((prereq) => [prereq]),
+        prerequisites: course.prerequisites,
         corequisites: [],
         conflicts: []
       }))
       if (degreePlan) {
         console.log("We are attempting")
-        const getCourses = degreePlan.savedCourses
-        const savedCourseIDs = degreePlan.savedCourses.map(course => course.courseID)
-        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID))
+        const getCourses = degreePlan.savedCourses;
+        const savedCourseIDs = degreePlan.savedCourses.map(course => course.courseID.id);
+        //why the fuck does courseID have the entire course object???
+        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
+        
         const updatedCourses = getCourses.map((course) => {
           return {
               courseID: course.courseID.id,
@@ -124,32 +127,105 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               semesterIndex: course.semesterIndex,
               description: course.courseID.name,
               creditHours: course.courseID.creditHours,
-              prerequisites: course.courseID.prerequisites.map((prereq) => [prereq]),
+              prerequisites: course.courseID.prerequisites,
               corequisites: [],
               conflicts: []
           };
       });
-        setCourses(updatedCourses)
+        setCourses(updatePrerequisiteErrors(updatedCourses))
         setAvailableCourses(updatedAvailableCourses)
       } else {
-        setCourses(availableCourses);
+        setCourses([]);
         setAvailableCourses(availableCourses);
       }
-      console.log(courses)
     } catch (error) {
-      console.log("Error fetching courses");
+      console.log("Error fetching courses", error);
     }
   }
+
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      if (!isSaved) {
+        event.preventDefault(); // Prevent the default behavior
+        event.returnValue = ''; // Required for Chrome
+
+        // Use `window.confirm` to ask the user if they want to leave
+        const confirmLeave = window.confirm(
+          'You have unsaved changes. Are you sure you want to leave?'
+        );
+
+        if (confirmLeave) {
+          // Allow the page to unload
+          return;
+        } else {
+          // Cancel the unload
+          event.returnValue = ''; // Required for Chrome
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isSaved]); // Re-run effect when `isSaved` changes
+
+
   useEffect(() => {
     console.log("Fetching courses")
     fetchCourses();
   }, []);
+
+  const checkPrerequisites = (course, courses) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredname = new Set(filteredCourses.map(c => c.name));
+
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredname.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
+  }
+
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.semesterIndex == -1) {
+          return;
+        }
+        if (course.conflicts.length > 0) {
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.name,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
+  }
   
-  
-  // Filter courses based on the search query
-  const filteredCourses = availableCourses.filter((courses) => {
-    return courses.name.toLowerCase().includes(searchQuery.toLowerCase())
-  });
+  const filteredCourses = availableCourses
+  .filter((course) => {
+    // Normalize the course name by removing spaces and converting to lowercase
+    const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
+
+    // Split the search query by "AND" and trim whitespace
+    const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
+
+    // Check if the normalized course name matches any of the normalized search terms
+    return searchTerms.some(term => {
+      const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
+      return normalizedCourseName.includes(normalizedTerm);
+    });
+  })
 
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
@@ -180,7 +256,7 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       courseToTransfer.conflicts = [];
       availableCoursesCopy.push(courseToTransfer);
       setAvailableCourses(availableCoursesCopy);
-      setCourses(currentCourses);
+      setCourses(updatePrerequisiteErrors(currentCourses));
       let updatedSemesters = semesters.map((s) => ({
         ...s,
         courses: s.courses.filter((c) => c.name !== name)
@@ -201,9 +277,8 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
       return;
     }
     console.log("Degree Plan saved as:", degreePlanName);
-    console.log(semesters)
-    console.log(courses)
     createDegreePlan(user, degreePlanName, courses)
+    setIsSaved(true);
   };
 
   // Generate the PDF
@@ -258,7 +333,6 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   }
 
   
-  //TODO: Paralell requirement compatibility (e.g. MA161 OR MA 165)
   useEffect(() => {
     let arr = [];
     DEGREE_REQUIREMENTS.forEach(requirement => {
@@ -266,21 +340,27 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         name: requirement.name,
         courses: []
       };
-      requirement.courses.forEach(course => {
-        if (!courses.some(c => c.courseAlias === course[0])) {
-          // If not found, add it to the missingRequirements array
-          missingRequirement.courses.push(course[0]);
+  
+      // Check each group of equivalent courses
+      requirement.courses.forEach(group => {
+        // Check if none of the courses in the group are found in the user's completed courses
+        if (!group.some(course => courses.some(c => c.name === course))) {
+          // If none are found, add the entire group to missingRequirement.courses
+          missingRequirement.courses.push(group);
         }
       });
-      arr.push(missingRequirement);
+  
+      // If there are missing groups, add the requirement to the array
+      if (missingRequirement.courses.length > 0) {
+        arr.push(missingRequirement);
+      }
     });
+  
     setMissingRequirements(arr);
-    console.log(arr);
-  }, [courses])
+  }, [courses]);
 
-  const handleErrorClick = (course) => {
-    // window.alert(course);
-    setSearchQuery(course);
+  const handleErrorClick = (requirement) => {
+    setSearchQuery(requirement.courses.map(group => group.join(" AND ")).join(" AND "));
   }
 
 
@@ -367,27 +447,30 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
               Create PDF
             </button>
           </div>
-          <div className="mt-4 space-y-2">
+          <div className="mt-4 space-y-2"
+          >
             {errors.length > 0 && (
-              <div className=" bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll">
+              <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll" style={{height: "23vh"}}>
                 <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
                   <AlertCircle className="h-5 w-5" />
                   <h3 className="font-medium">Errors found</h3>
                 </div>
                 {getErrorMessages().map((error, index) => (
-                  <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                    {error}
-
-                  </p>
+                  <div>
+                    <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                      {error}
+                    </p>
+                    <br></br>
+                  </div>
                 ))}
                 {
                   missingRequirements.map((r, index) => (
                     // <ClickAction course={r.courses[0]} key={index}></ClickAction>
                     <p key={index} 
                     className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
-                    onClick={() => handleErrorClick(r.courses[0])}
+                    onClick={() => handleErrorClick(r)}
                     >
-                      {"You must take " + r.courses[0]}
+                      {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
                     </p>
                   ))
                 }
@@ -400,18 +483,6 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
   );
 }
 
-const ClickAction = (course) => {
-  const handleClick = () => {
-    console.log(course + " clicked");
-  }
-  return (
-    <a
-      onClick={handleClick}
-    >
-      {course}
-    </a>
-  )
-}
 
 
 //add a SETERROR method and pass it in 
@@ -566,6 +637,30 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     return unfulfilledPrereqGroups;
   }
 
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+      updatedCourses.forEach((course) => {
+        if (course.semesterIndex == -1) {
+          return;
+        }
+        if (course.conflicts.length > 0) {
+          updatedErrors.push({
+            errorType: "prerequisite_conflict",
+            clickAction: "search_prerequisites",
+            prerequisites: course.conflicts,
+            course: course.name,
+            semester: course.semester,
+          });
+        }
+      });
+      setErrors(updatedErrors);
+      return updatedCourses;
+  }
+
   useEffect(() => {
     INITIAL_SEMESTERS.forEach(s => {
       const filteredCourses = courses.filter((c) => (c.semester == s.semester));
@@ -617,42 +712,18 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     }
   }
 
-  const updatePrerequisiteErrors = (reorderedCourses) => {
-    const updatedCourses = reorderedCourses.map((course) => {
-      const conflicts = checkPrerequisites(course, reorderedCourses);
-      return { ...course, conflicts }; // Update the conflicts field
-    });
-    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
-      updatedCourses.forEach((course) => {
-        if (course.semesterIndex == -1) {
-          return;
-        }
-        if (course.conflicts.length > 0) {
-          updatedErrors.push({
-            errorType: "prerequisite_conflict",
-            clickAction: "search_prerequisites",
-            prerequisites: course.conflicts,
-            course: course.name,
-            semester: course.semester,
-          });
-        }
-      });
-      setErrors(updatedErrors);
-      return updatedCourses;
-  }
-
+  
   const handleDragEnd = (e) => {
     const name = e.dataTransfer.getData("name");
 
     setActive(false);
     clearHighlights();
     const before = getNearestIndicator(e, getIndicators()).element.dataset.before || "-1";
-
     if (!courses.some((c) => c.name === name)) {
       //This means the course is in the search bar
       let availableCoursesCopy = [...availableCourses];
       let reorderedCourses = [...courses];
-      let courseIndex = availableCoursesCopy.findIndex((c) => c.name == name)
+      let courseIndex = availableCoursesCopy.findIndex((c) => c.name == name);
       let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
       courseToTransfer.semester = semester;
       courseToTransfer.semesterIndex = semesterIndex;
@@ -667,7 +738,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
       const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
       setCourses(updatedCourses);
       setAvailableCourses(availableCoursesCopy)
-      console.log(`course ${courseToTransfer.name}`)
     }
     else {
       if (before !== name) {

@@ -115,7 +115,7 @@ function CoursePanel({course}) {
                 <div
                   className="h-full bg-gray-500 dark:bg-gray-400 rounded-full"
                   style={{
-                    width: `${(courseData.enjoyability / 5) * 100}%`,
+                    width: `${(courseData.enjoyment / 5) * 100}%`,
                   }}
                 />
               </div>

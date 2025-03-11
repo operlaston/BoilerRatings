@@ -6,41 +6,43 @@ import { getCourses } from "../services/courses";
 
 import { useNavigate } from "react-router-dom";
 
-function Home({course, setCourse, user, setUser, courses, setCourses, majors, setMajors}) {
+function Home({ course, setCourse, user, setUser, courses, setCourses, majors, setMajors }) {
   const [showFilters, setShowFilters] = useState(false);
-  const [search, setSearch] = useState('');
-  const [sortOption, setSortOption] = useState('');
+  const [search, setSearch] = useState("");
+  const [sortOption, setSortOption] = useState("");
+  const [sortOrder, setSortOrder] = useState("desc");
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedRequirement, setSelectedRequirement] = useState("");
   const [requirements, setRequirements] = useState([]);
 
-
   const navigate = useNavigate();
+
   const onClick = async (course) => {
-    setCourse(course)
-    navigate('/course')
-  }
+    setCourse(course);
+    navigate("/course");
+  };
 
   const sortCourses = (courses) => {
     if (!sortOption) return courses;
-    
+
     return [...courses].sort((a, b) => {
-      if (sortOption === "mostReviews") {
-        return b.numReviews - a.numReviews;
-      } else if (sortOption === "highestDifficulty") {
-        return b.difficulty - a.difficulty;
-      } else if (sortOption === "highestEnjoyability") {
-        return b.enjoyment - a.enjoyment;
+      const order = sortOrder === "asc" ? 1 : -1;
+      if (sortOption === "numReviews") {
+        return order * (a.numReviews - b.numReviews);
+      } else if (sortOption === "difficulty") {
+        return order * (a.difficulty - b.difficulty);
+      } else if (sortOption === "enjoyment") {
+        return order * (a.enjoyment - b.enjoyment);
       }
       return 0;
     });
   };
 
-  let filteredCourses = courses
+  let filteredCourses = courses;
   if (courses !== null && selectedRequirement !== "") {
-    filteredCourses = courses.filter(course => {
-      return course.requirements.find(req => req === selectedRequirement)
-    })
+    filteredCourses = courses.filter((course) =>
+      course.requirements.includes(selectedRequirement)
+    );
   }
 
   return (
@@ -80,33 +82,47 @@ function Home({course, setCourse, user, setUser, courses, setCourses, majors, se
         )}
       </div>
 
-      <div className="pb-4">
-        <label className="mr-2">Sort by:</label>
-        <select 
-          className="bg-gray-800 text-white p-2 rounded"
-          value={sortOption} 
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="">None</option>
-          <option value="mostReviews">Most Reviews</option>
-          <option value="highestDifficulty">Highest Difficulty</option>
-          <option value="highestEnjoyability">Highest Enjoyability</option>
-        </select>
+      <div className="pb-4 flex gap-4">
+        <div>
+          <label className="mr-2">Sort by:</label>
+          <select
+            className="bg-gray-800 text-white p-2 rounded"
+            value={sortOption}
+            onChange={(e) => setSortOption(e.target.value)}
+          >
+            <option value="">None</option>
+            <option value="numReviews">Number of Reviews</option>
+            <option value="difficulty">Difficulty</option>
+            <option value="enjoyment">Enjoyability</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mr-2">Order:</label>
+          <select
+            className="bg-gray-800 text-white p-2 rounded"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-3 gap-4">
-        {
-          filteredCourses === null ? "" : 
-            sortCourses(
-              filteredCourses.filter(course => {
-                const searchToMatch = search.toLowerCase().replace(/\s+/g, '')
+        {filteredCourses === null
+          ? ""
+          : sortCourses(
+              filteredCourses.filter((course) => {
+                const searchToMatch = search.toLowerCase().replace(/\s+/g, "");
                 return (
-                  course.name.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
-                  course.number.toLowerCase().replace(/\s+/g, '').includes(searchToMatch) ||
-                  course.description.toLowerCase().replace(/\s+/g, '').includes(searchToMatch)
+                  course.name.toLowerCase().replace(/\s+/g, "").includes(searchToMatch) ||
+                  course.number.toLowerCase().replace(/\s+/g, "").includes(searchToMatch) ||
+                  course.description.toLowerCase().replace(/\s+/g, "").includes(searchToMatch)
                 );
               })
-            ).map(course =>
+            ).map((course) => (
               <Course
                 key={course.id}
                 number={course.number}
@@ -119,12 +135,10 @@ function Home({course, setCourse, user, setUser, courses, setCourses, majors, se
                 requirements={course.requirements}
                 onClick={() => onClick(course)}
               />
-            )
-        }
+            ))}
       </div>
     </div>
   );
 }
 
 export default Home;
-

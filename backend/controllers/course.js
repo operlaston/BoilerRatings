@@ -25,7 +25,6 @@ courseRouter.get('/', async (req, res) => {
         .populate({
             path: 'reviews'
         })
-        .populate('prerequisites', 'name number')
         // console.log("Courses found", courses)
         res.status(200).json(courses)
     } catch (error) {
