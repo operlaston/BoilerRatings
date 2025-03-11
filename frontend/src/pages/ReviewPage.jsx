@@ -240,10 +240,10 @@ const ReviewPage = ({ user, course }) => {
 
               {/* Like Count */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp className="w-4 h-4 cursor-pointer" onClick={() => handleLike(review.id)} />
+                <ThumbsUp className="w-4 h-4 cursor-pointer" />
                 {/* #9CA3AF fill color */}
                 <span>{review.likes}</span>
-                <ThumbsDown className="w-4 h-4 cursor-pointer" onClick={() => handleDislike(review.id)} />
+                <ThumbsDown className="w-4 h-4 cursor-pointer" />
               </div>
 
               {editingReview === review && (

@@ -12,8 +12,8 @@ import { getMajors } from './services/majors'
 import { getCourses } from "./services/courses";
 
 function App() {
-  const [user, setUser] = useState('test')
-  // const [user, setUser] = useState(null)
+  // const [user, setUser] = useState('test')
+  const [user, setUser] = useState(null)
   const [degreePlan, setDegreePlan] = useState(null)
   const [course, setCourse] = useState(null)
   const [courses, setCourses] = useState(null)

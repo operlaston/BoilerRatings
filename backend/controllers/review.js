@@ -23,7 +23,6 @@ reviewRouter.post('/', async (req, res) => {
     const {review, course} = req.body
     const user = review.user
 
-
     try {
         const courseExists = await Course.findById(course)
         if (!courseExists) {
@@ -69,36 +68,6 @@ reviewRouter.get('/course', async(req, res) => {
         res.status(400).json({error: 'Bad Request'})
     }
 })
-
-
-// client should send a string [OLD_REVIEW_ID]||[NEW_REVIEW]
-// NOTE: use JSON.stringify(review) to convert the new review to a string
-// exports.editReview = async (req, res) => {
-//     var data = req.body
-//     try {
-//         data = data.split("||")
-//         const oldReviewid = data[0]
-//         const newData = JSON.parse(data[1])
-//         if (newData === null) {
-//             res.status(400).json({ "error": "bad request" })
-//             return
-//         }
-//         const newReview = new Review(newData)
-//         review = await Review.findById(oldReviewid)
-//         if (review === null) {
-//             res.status(401).json({ "error": "review not found" })
-//             return
-//         }
-//         newReview._id = oldReviewid
-//         await Review.findOneAndReplace(review, newReview)
-//         res.status(200).json({ "message": "review successfully edited" })
-//         return
-//     }
-//     catch (err) {
-//         res.status(400).json({ "error": "bad request" })
-//         return
-//     }
-// }
 
 // delete a review
 // client should send a review_id

@@ -29,4 +29,4 @@ const dislikeReview = async (reviewId, userId) => {
     await axios.put(`${baseurl}/api/reviews/dislike/${reviewId}`, {userId})
 }
 
-export {getReviewsForACourse, addReview, likeReview}
+export {getReviewsForACourse, addReview, likeReview, dislikeReview}
