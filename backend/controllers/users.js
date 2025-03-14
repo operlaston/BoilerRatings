@@ -120,4 +120,21 @@ usersRouter.post('/:id', async (req, res) => {
 usersRouter.get('/', async (req, res) => {
 })
 
+// update account
+usersRouter.put('/', async (req, res) => {
+    const { username, majors, minors, gradSemester } = req.body
+    const userID = req.params.id
+    try {
+        const user = await User.findById(userID)
+        if (user == null) {
+            return res.status(401).json({ "error": "user not found" })
+        }
+        await User.findByIdAndUpdate(userID, { $set: { username: username, major: majors, minor: minors, graduationSemester: gradSemester } })
+        return res.status(200).json({"message": "account updated"})
+    }
+    catch (err) {
+        return res.status(400).json({ "error": "bad request"})
+    }
+})
+
 module.exports = usersRouter
