@@ -21,7 +21,11 @@ const reviewSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Report",
     },
-  ],
+    ],
+  hidden: {
+      type: Boolean,
+      default: false
+  }
 });
 
 reviewSchema.set("toJSON", {

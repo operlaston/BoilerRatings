@@ -364,4 +364,37 @@ reviewRouter.put('/dislike/:id', async (req, res) => {
   }
 })
 
+// report a review
+// client should send string of report content
+reviewRouter.post('/report', async(req, res) => {
+    const reportString = req.body
+    const reviewID = req.params.id
+
+    try {
+        // find review
+        const review = await Review.findById(reviewID)
+        if (review == null) {
+            return res.status(401).json({ "error": "review not found" })
+        }
+        const report = new Report({
+            reportContent: reportString,
+            isResolved: false
+        });
+
+        const savedReport = await report.save()
+        await Review.findByIdAndUpdate(reviewID, { $push: { reports: savedReport } })
+
+        review = await Review.findById(reviewID)
+        // review should be hidden
+        if (review.reports.length >= 3) {
+            await Review.findByIdAndUpdate(reviewID, { $set: { hidden: true } });
+        }
+
+        return res.status(200).json({ "message": "report created successfully" })
+    }
+    catch (err) {
+        return res.status(400).json({ "error": "bad request" })
+    }
+})
+
 module.exports = reviewRouter
