@@ -12,14 +12,12 @@ usersRouter.post('/', async (req, res) => {
     // search db for major
 
     //const majorId = (await Major.findOne({name: major})).id
-/*
+
     const duplicateUser = await User.findOne({email})
     if (duplicateUser !== null) {
       console.log("email exists already")
-      res.status(409).json({"error": "email already exists"})
-      return
+      return res.status(409).json({"error": "email already exists"})
     }
-*/
 
     // I'm going to comment out the fields that need to be updated during onboarding since this post is made at signup time which is just email and password
     // Onboarding needs to create a new router to include the onboarding data which will come after verify - Bryce

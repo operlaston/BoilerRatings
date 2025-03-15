@@ -69,7 +69,7 @@ function Auth({user, setUser}) {
       navigate('/onboarding')
     } catch (error) {
       console.error("Signup error", error);
-      setError("Signup failed");
+      setError("this email is already registered with a different account");
     } finally {
       setIsLoading(false)
     }
