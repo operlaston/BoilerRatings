@@ -2,6 +2,7 @@ const mongoose = require("mongoose"); // Add this line at the top
 const reviewRouter = require("express").Router();
 const User = require("../models/user");
 const Review = require("../models/review");
+const Report = require("../models/report");
 const Course = require("../models/course");
 
 reviewRouter.get("/:id", async (req, res) => {
@@ -366,16 +367,20 @@ reviewRouter.put('/dislike/:id', async (req, res) => {
 
 // report a review
 // client should send string of report content
-reviewRouter.post('/report', async(req, res) => {
-    const reportString = req.body
+reviewRouter.put('/report/:id', async(req, res) => {
+    const { reportString } = req.body
     const reviewID = req.params.id
 
     try {
         // find review
-        const review = await Review.findById(reviewID)
+        var review = await Review.findById(reviewID)
         if (review == null) {
             return res.status(401).json({ "error": "review not found" })
         }
+        if (reportString == null) {
+            return res.status(401).json({ "error": "null report string" })
+        }
+
         const report = new Report({
             reportContent: reportString,
             isResolved: false

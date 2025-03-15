@@ -4,7 +4,7 @@ const Course = require('../models/course')
 
 courseRouter.get('/:id', async (req, res) => {
     try {
-        const course = await Course.findByID(req.params.id)
+        const course = await Course.findById(req.params.id)
         .populate({
             path: 'reviews'
         })
