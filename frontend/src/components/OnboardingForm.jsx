@@ -87,7 +87,7 @@ function OnboardingForm({user, setUser}) {
       await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
       navigate('/')
     } catch (error) {
-      console.log("Error onboarding")
+      setError("this username is already in use")
     }
     setTimeout(() => setIsLoading(false), 1500);
   };

@@ -13,8 +13,8 @@ usersRouter.post('/', async (req, res) => {
 
     //const majorId = (await Major.findOne({name: major})).id
 
-    const duplicateUser = await User.findOne({email})
-    if (duplicateUser !== null) {
+    const dupEmailUser = await User.findOne({email})
+    if (dupEmailUser !== null) {
       console.log("email exists already")
       return res.status(409).json({"error": "email already exists"})
     }
@@ -92,6 +92,14 @@ usersRouter.post('/verify', async (req, res) => {
 usersRouter.post('/:id', async (req, res) => {
   const {username, majors, minors, gradSemester} = req.body;
   const uid = req.params.id
+
+  // first check if username exists already
+  const duplicateUsername = await User.findOne({username})
+  if (duplicateUsername !== null) {
+    console.log("username already exists")
+    return res.status(409).json({error: "this username already exists"})
+  }
+
   console.log(majors, minors)
   const cleanedMajors = majors.map((major) => {
     return major.id
