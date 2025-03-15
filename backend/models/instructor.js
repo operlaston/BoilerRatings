@@ -4,7 +4,11 @@ const instructorSchema = new mongoose.Schema({
     name: String,
     gpa: Number,
     rmp: Number,
-    rmpLink: String
+    rmpLink: String,
+    courses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course"
+    }]
 })
 
 instructorSchema.set('toJSON', {
