@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash } from "lucide-react";
-import { getCourses } from "../services/courses";
-import { createDegreePlan } from "../services/degreePlan";
+import { getCourses } from "../services/course.service";
+import { createDegreePlan } from "../services/degreeplan.service";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()

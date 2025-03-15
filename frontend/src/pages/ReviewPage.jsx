@@ -16,9 +16,9 @@ import {
   likeReview,
   dislikeReview,
   editReview,
-} from "../services/review.js";
+} from "../services/review.service.js";
 
-import { getCourses } from "../services/courses.js";
+import { getCourses } from "../services/course.service.js";
 
 const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCourses }) => {
   const [canAddReview, setCanAddReview] = useState(false);

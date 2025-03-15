@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Course from "../components/CourseCard";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
-import { getMajors } from '../services/majors'
-import { getCourses } from "../services/courses";
+import { getMajors } from '../services/major.service.js'
+import { getCourses } from "../services/course.service";
 
 import { useNavigate } from "react-router-dom";
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DegreePlanCard from "../components/DegreePlanCard";
 import { useNavigate } from "react-router-dom"; 
-import { getAllPlans } from "../services/degreePlan";
+import { getAllPlans } from "../services/degreeplan.service";
 
 
 const SavedDegreePlans = ({setDegreePlan, user}) => {
