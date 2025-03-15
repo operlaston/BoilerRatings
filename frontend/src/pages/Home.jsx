@@ -57,18 +57,15 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
           onChange={(e) => setSearch(e.target.value)}
         />
         <button
-          className="border-solid border-gray-500 border-b-2 placeholder-white
-          w-full px-1 pb-2 focus:outline-none focus:border-white"
-          onClick={() => setShowFilters(true)}
+          className={`border-solid border-gray-500 border-b-2 placeholder-white
+          w-full px-1 pb-2 focus:outline-none cursor-pointer ${showFilters ? 'border-white' : ''}`}
+          onClick={() => setShowFilters(!showFilters)}
         >
           Open Filters
         </button>
         {showFilters && (
           <CourseFilterForm
             onClose={() => setShowFilters(false)}
-            onApplyFilters={(filters) => {
-              console.log("Applied filters:", filters);
-            }}
             onSortChange={(option) => setSortOption(option)}
             selectedMajor={selectedMajor}
             setSelectedMajor={setSelectedMajor}
