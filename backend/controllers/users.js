@@ -121,7 +121,7 @@ usersRouter.get('/', async (req, res) => {
 })
 
 // update account
-usersRouter.put('/', async (req, res) => {
+usersRouter.put('/update/:id', async (req, res) => {
     const { username, majors, minors, gradSemester } = req.body
     const userID = req.params.id
     try {
