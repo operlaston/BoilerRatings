@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
@@ -21,6 +21,7 @@
     "mock-req-res": "^1.2.1",
     "mongoose": "^8.10.1",
     "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
     "sinon-express-mock": "^2.2.1",
     "unit.js": "^2.1.1"
   }
