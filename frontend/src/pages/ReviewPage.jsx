@@ -124,7 +124,7 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
           instructor: null,
         };
 
-        // Optimistic update, frontend only (intentional)
+        // Optimistic update, frontend only
         //setReviews((prev) =>
         //  prev.map((r) => (r.id === formData.id ? updatedReview : r))
         //);
