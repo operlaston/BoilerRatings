@@ -113,21 +113,22 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         conflicts: []
       }))
       if (degreePlan) {
-        console.log("We are attempting")
         const getCourses = degreePlan.savedCourses;
-        const savedCourseIDs = degreePlan.savedCourses.map(course => course.courseID.id);
+        console.log(degreePlan.savedCourses[0])
+        const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
         //why the fuck does courseID have the entire course object???
-        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
+        //Probably due to populating
+        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
         
         const updatedCourses = getCourses.map((course) => {
           return {
-              courseID: course.courseID.id,
-              name: course.courseID.number,
+              courseID: course.course.id,
+              name: course.course.number,
               semester: course.semester,
               semesterIndex: course.semesterIndex,
-              description: course.courseID.name,
-              creditHours: course.courseID.creditHours,
-              prerequisites: course.courseID.prerequisites,
+              description: course.course.name,
+              creditHours: course.course.creditHours,
+              prerequisites: course.course.prerequisites,
               corequisites: [],
               conflicts: []
           };

@@ -76,7 +76,7 @@ degreePlanRouter.get('/:id', async (req, res) => {
             userID: userID
         })
         .populate({
-            path: 'savedCourses.courseID'
+            path: 'savedCourses.course'
         })
         res.status(200).json(plans)
     } catch (error) {
