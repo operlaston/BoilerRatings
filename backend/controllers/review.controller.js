@@ -21,7 +21,7 @@ reviewRouter.get("/:id", async (req, res) => {
 });
 
 reviewRouter.post("/", async (req, res) => {
-  const { review, course, instrcutor } = req.body;
+  const { review, course, instructor } = req.body; //instructor, was instrcutor
   const user = review.user;
   const instructorID = null;
   if (instructor) {
@@ -95,7 +95,10 @@ reviewRouter.post("/", async (req, res) => {
          $addToSet: {instructors: instructorID},
        });
     }
-    await Instructor.findByIdAndUpdate(instructorID, {$addToSet: {courses: course}})
+    if (instructor) {
+      // was getting instructor not defined earlier
+      await Instructor.findByIdAndUpdate(instructorID, {$addToSet: {courses: course}})
+    }
     await User.findByIdAndUpdate(user, { $push: { reviews: savedReview._id } });
 
     res.status(201).json(savedReview);

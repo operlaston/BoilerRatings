@@ -26,9 +26,6 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
   const currentUser = user ?? {};
   const courseId = course.id;
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
-  //Also when this page gets integrated into the course page itself it shouldn't need this call since the course object given to the
-  //Course page should have the reivews in it.
-  // Temporary mock data - replace with real data later
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
@@ -108,6 +105,8 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
           reports: [],
           instructor: null,
         };
+
+        // Optimistic update, frontend only (intentional)
         setReviews((prev) =>
           prev.map((r) => (r.id === formData.id ? updatedReview : r))
         );
@@ -117,7 +116,7 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
       } else {
         const newReview = {
           ...formData,
-          user: currentUser.id, //.id is incorrect
+          user: currentUser.id,
           date: new Date().toISOString(),
           likes: 0,
           reports: [],
@@ -127,7 +126,7 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
         console.log(courseId);
         // Optimistically update UI first
         setReviews((prev) => [newReview, ...prev]);
-        await addReview(newReview, courseId); // NOTICE addReview might have isusues, changed from courseId
+        await addReview(newReview, courseId); 
       }
     } catch (error) {
       console.error("Submission failed:", error);
@@ -176,7 +175,7 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.user || ""}
+                    {review.anon ? "Anonymous" : (review.user || "")}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
