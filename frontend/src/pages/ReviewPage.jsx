@@ -55,7 +55,10 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
     console.log(response);
     } catch (error) { 
       console.log("Failed to delete", error)
-    } 
+    }
+    finally {
+      await refreshCourses();
+    }
   };
 
   // Handle like
