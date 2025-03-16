@@ -99,6 +99,7 @@ const ReviewPage = ({
         return;
       } else {
         const { newUser, newReview } = await likeReview(reviewId, user.id);
+        console.log(newUser)
         setUser(newUser);
         getCourses()
           .then((listOfCourses) => {
@@ -113,7 +114,7 @@ const ReviewPage = ({
           );
       }
     } catch (error) {
-      console.log("an error occurred while liking a review", err);
+      console.log("an error occurred while liking a review", error);
     }
   };
 
@@ -138,7 +139,7 @@ const ReviewPage = ({
           );
       }
     } catch (error) {
-      console.log("an error occurred while liking a review", err);
+      console.log("an error occurred while liking a review", error);
     }
   };
 
@@ -374,8 +375,8 @@ const ReviewPage = ({
                           );
                         })
                         ? "#9CA3AF"
-                        : "#000000"
-                      : "#000000"
+                        : "#00000000"
+                      : "#00000000"
                   }
                 />
                 {/* #9CA3AF fill color */}
@@ -392,8 +393,8 @@ const ReviewPage = ({
                           );
                         })
                         ? "#9CA3AF"
-                        : "#000000"
-                      : "#000000"
+                        : "#00000000"
+                      : "#00000000"
                   }
                 />
               </div>
