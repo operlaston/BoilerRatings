@@ -1,0 +1,31 @@
+.errorContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.errorContainer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0);
+    /* Light red for track */
+    border-radius: 4px;
+}
+
+.errorContainer::-webkit-scrollbar-thumb {
+    background: rgba(252, 165, 165, 0.7);
+    /* Red for thumb */
+    border-radius: 4px;
+}
+
+.searchContainer::-webkit-scrollbar {
+    width: 6px;
+}
+
+.searchContainer::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0);
+    /* Light red for track */
+    border-radius: 4px;
+}
+
+.searchContainer::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.7);
+    /* Red for thumb */
+    border-radius: 4px;
+}
