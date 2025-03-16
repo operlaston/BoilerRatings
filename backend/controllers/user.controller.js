@@ -12,14 +12,12 @@ usersRouter.post('/', async (req, res) => {
     // search db for major
 
     //const majorId = (await Major.findOne({name: major})).id
-/*
-    const duplicateUser = await User.findOne({email})
-    if (duplicateUser !== null) {
+
+    const dupEmailUser = await User.findOne({email})
+    if (dupEmailUser !== null) {
       console.log("email exists already")
-      res.status(409).json({"error": "email already exists"})
-      return
+      return res.status(409).json({"error": "email already exists"})
     }
-*/
 
     // I'm going to comment out the fields that need to be updated during onboarding since this post is made at signup time which is just email and password
     // Onboarding needs to create a new router to include the onboarding data which will come after verify - Bryce
@@ -94,6 +92,14 @@ usersRouter.post('/verify', async (req, res) => {
 usersRouter.post('/:id', async (req, res) => {
   const {username, majors, minors, gradSemester} = req.body;
   const uid = req.params.id
+
+  // first check if username exists already
+  const duplicateUsername = await User.findOne({username})
+  if (duplicateUsername !== null) {
+    console.log("username already exists")
+    return res.status(409).json({error: "this username already exists"})
+  }
+
   console.log(majors, minors)
   const cleanedMajors = majors.map((major) => {
     return major.id
@@ -117,7 +123,19 @@ usersRouter.post('/:id', async (req, res) => {
   }
 })
 
-usersRouter.get('/', async (req, res) => {
+usersRouter.get('/:id', async (req, res) => {
+  //Do not populate email and password
+  id = req.params.id;
+  try {
+    const user = await User.findById(id).select('-email -passwordHash').populate('reviews')
+    if (!user) {
+      return res.status(404).json({message: 'User not found'});
+    }
+    res.status(200).json(user);
+  } catch (error) {
+    console.log("Error",error);
+    res.status(404).json({message: 'Bad Request'})
+  }
 })
 
 // update account

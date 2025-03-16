@@ -1,10 +1,12 @@
 const mongoose = require('mongoose')
 
 const reportSchema = new mongoose.Schema({
-    reportId: Number,
-    //ADD UID WHEN DISCORD RESPONDS
-    //What should the enum be? 
-    reportContent: String,
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    title: String,
+    content: String,
     isResolved: Boolean
 }, { timestamps: true})
 

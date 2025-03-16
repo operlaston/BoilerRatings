@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { login } from '../services/login'
-import { signup } from '../services/signup'
+import { login } from '../services/login.service'
+import { signup } from '../services/signup.service'
 
 function Auth({user, setUser}) {
   const [isLogin, setIsLogin] = useState(true);
@@ -69,7 +69,7 @@ function Auth({user, setUser}) {
       navigate('/onboarding')
     } catch (error) {
       console.error("Signup error", error);
-      setError("Signup failed");
+      setError("this email is already registered with a different account");
     } finally {
       setIsLoading(false)
     }

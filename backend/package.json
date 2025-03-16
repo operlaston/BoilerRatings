@@ -5,11 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node index.js"
+    "start": "nodemon index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "await-to-js": "^3.0.0",
     "bcrypt": "^5.1.1",
     "boiler-ratings": "file:",
     "cors": "^2.8.5",
@@ -21,7 +22,9 @@
     "mock-req-res": "^1.2.1",
     "mongoose": "^8.10.1",
     "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.9",
     "sinon-express-mock": "^2.2.1",
+    "supertest": "^7.0.0",
     "unit.js": "^2.1.1"
   }
 }

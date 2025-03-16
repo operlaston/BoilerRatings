@@ -22,9 +22,12 @@ reviewRouter.get("/:id", async (req, res) => {
 });
 
 reviewRouter.post("/", async (req, res) => {
-  const { review, course } = req.body;
+  const { review, course, instructor } = req.body; 
   const user = review.user;
-
+  const instructorID = null;
+  if (instructor) {
+    instructorID = instructor.id;
+  }
   console.log("review post controller trigger");
   try {
     const courseExists = await Course.findById(course);
@@ -41,31 +44,62 @@ reviewRouter.post("/", async (req, res) => {
         .status(400)
         .json({ error: "Invalid difficulty/enjoyment values" });
     }
-
-    await Course.findByIdAndUpdate(course, {
-      $push: { reviews: savedReview._id },
-      $inc: { numReviews: 1 },
-      $set: {
-        difficulty:
-          Math.round(
-            ((courseExists.difficulty * courseExists.numReviews +
-              review.difficulty) /
-              (courseExists.numReviews + 1)) *
-              10
-          ) / 10,
-        enjoyment:
-          Math.round(
-            ((courseExists.enjoyment * courseExists.numReviews +
-              review.enjoyment) /
-              (courseExists.numReviews + 1)) *
-              10
-          ) / 10,
-        recommend: 
-          review.recommend === true //In review schema, its called recommend not recommended
-            ? courseExists.recommended + 1
-            : courseExists.recommended,
-      },
-    });
+    if (!instructorID) { 
+      await Course.findByIdAndUpdate(course, {
+       $push: { reviews: savedReview._id },
+       $inc: { numReviews: 1 },
+       $set: {
+         difficulty:
+           Math.round(
+             ((courseExists.difficulty * courseExists.numReviews +
+               review.difficulty) /
+                (courseExists.numReviews + 1)) *
+                10
+           ) / 10,
+         enjoyment:
+           Math.round(
+             ((courseExists.enjoyment * courseExists.numReviews +
+               review.enjoyment) /
+               (courseExists.numReviews + 1)) *
+               10
+           ) / 10,
+         recommend: 
+           review.recommend === true //In review schema, its called recommend not recommended
+             ? courseExists.recommended + 1
+             : courseExists.recommended,
+        },
+      });
+    } else {
+      await Course.findByIdAndUpdate(course, {
+        $push: { reviews: savedReview._id },
+        $inc: { numReviews: 1 },
+        $set: {
+          difficulty:
+            Math.round(
+              ((courseExists.difficulty * courseExists.numReviews +
+                review.difficulty) /
+                 (courseExists.numReviews + 1)) *
+                 10
+            ) / 10,
+          enjoyment:
+            Math.round(
+              ((courseExists.enjoyment * courseExists.numReviews +
+                review.enjoyment) /
+                (courseExists.numReviews + 1)) *
+                10
+            ) / 10,
+          recommend: 
+            review.recommend === true //In review schema, its called recommend not recommended
+              ? courseExists.recommended + 1
+              : courseExists.recommended,
+         },
+         $addToSet: {instructors: instructorID},
+       });
+    }
+    if (instructor) {
+      // was getting instructor not defined earlier
+      await Instructor.findByIdAndUpdate(instructorID, {$addToSet: {courses: course}})
+    }
     await User.findByIdAndUpdate(user, { $push: { reviews: savedReview._id } });
 
     res.status(201).json(savedReview);
@@ -159,10 +193,15 @@ reviewRouter.get("/course", async (req, res) => {
   try {
     const courseFound = await Course.findById(cID).populate({
       path: "reviews",
-      populate: {
+      populate: [{
         path: "user",
         select: "username email",
       },
+      {
+        path: "instructor",
+        select: "name"
+      },
+    ]
     });
     const reviews = courseFound.reviews;
     res.status(200).json({ reviews });

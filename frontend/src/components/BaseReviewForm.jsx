@@ -7,6 +7,7 @@ const BaseReviewForm = ({
     semesterTaken: "",
     reviewContent: "",
     recommend: false,
+    anon: false,
     difficulty: 0,
     enjoyment: 0,
   },
@@ -38,6 +39,7 @@ const BaseReviewForm = ({
         semesterTaken: "",
         reviewContent: "",
         recommend: false,
+        anon: false,
         difficulty: 0,
         enjoyment: 0,
       });
@@ -117,6 +119,25 @@ const BaseReviewForm = ({
             className="text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Would you recommend this course?
+          </label>
+        </div>
+
+        {/* Anonymous Toggle */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="anon"
+            checked={formData.anon}
+            onChange={(e) =>
+              setFormData({ ...formData, anon: e.target.checked })
+            }
+            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+          />
+          <label
+            htmlFor="anon"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Would you like this review to be anonymous?
           </label>
         </div>
 

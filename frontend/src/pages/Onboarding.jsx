@@ -7,6 +7,7 @@ function Onboarding({user, setUser}) {
   useEffect(() => {
     setIsVerified(!user.isVerified)
   }, [user])
+  // const [isVerified, setIsVerified] = useState(false)
 
   //const [isVerify, setIsVerify] = useState(true); //this variable controls whether the page is on the verify step or the onboarding form
   return (

@@ -8,8 +8,8 @@ import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from "./pages/Course";
 import SavedDegree from "./pages/SavedDegree";
-import { getMajors } from "./services/majors";
-import { getCourses } from "./services/courses";
+import { getMajors } from "./services/major.service";
+import { getCourses } from "./services/course.service";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -47,7 +47,6 @@ function App() {
       <div className="flex gap-x-4 text-xl">
         <Link to="/">Home</Link>
         <Link to="/login">Login</Link>
-        <Link to="/onboarding">On-boarding</Link>
         <Link to="/degree">Degree</Link>
         <Link to="/saved-degree">Saved Degree Plans</Link>{" "}
         {/* Update the link */}

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash } from "lucide-react";
-import { getCourses } from "../services/courses";
-import { createDegreePlan } from "../services/degreePlan";
+import { getCourses } from "../services/course.service";
+import { createDegreePlan } from "../services/degreeplan.service";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -113,21 +113,22 @@ export default function DegreePlanner({user, setUser, degreePlan}) {
         conflicts: []
       }))
       if (degreePlan) {
-        console.log("We are attempting")
         const getCourses = degreePlan.savedCourses;
-        const savedCourseIDs = degreePlan.savedCourses.map(course => course.courseID.id);
+        console.log(degreePlan.savedCourses[0])
+        const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
         //why the fuck does courseID have the entire course object???
-        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
+        //Probably due to populating
+        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
         
         const updatedCourses = getCourses.map((course) => {
           return {
-              courseID: course.courseID.id,
-              name: course.courseID.number,
+              courseID: course.course.id,
+              name: course.course.number,
               semester: course.semester,
               semesterIndex: course.semesterIndex,
-              description: course.courseID.name,
-              creditHours: course.courseID.creditHours,
-              prerequisites: course.courseID.prerequisites,
+              description: course.course.name,
+              creditHours: course.course.creditHours,
+              prerequisites: course.course.prerequisites,
               corequisites: [],
               conflicts: []
           };

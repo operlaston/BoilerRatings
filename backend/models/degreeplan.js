@@ -24,7 +24,7 @@ const degreePlanSchema = new mongoose.Schema({
       },
 
     savedCourses: [{
-      courseID: {
+      course: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Course"
       },

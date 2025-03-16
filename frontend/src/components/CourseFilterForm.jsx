@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 
-const CourseFilterForm = ({ onClose, onApplyFilters, selectedMajor, setSelectedMajor,
+const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
     selectedRequirement, setSelectedRequirement, majors, setMajors, requirements, setRequirements }) => {
   // Mock data
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onApplyFilters({
-      major: selectedMajor,
-      requirement: selectedRequirement,
-    });
-    onClose();
-  };
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
+  //   onApplyFilters({
+  //     major: selectedMajor,
+  //     requirement: selectedRequirement,
+  //   });
+  //   onClose();
+  // };
 
   const handleMajorSelect = (e) => {
     if (e.target.value === "") {
@@ -30,7 +30,7 @@ const CourseFilterForm = ({ onClose, onApplyFilters, selectedMajor, setSelectedM
           Filter By Major Requirement
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+        <div className="flex flex-col space-y-4">
           <div className="flex flex-row">
             {/* Major Selection */}
 
@@ -75,19 +75,18 @@ const CourseFilterForm = ({ onClose, onApplyFilters, selectedMajor, setSelectedM
               className="w-1/6 p-2 rounded-lg border border-gray-300 dark:border-gray-600 
                        hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              Cancel
+              Close
             </button>
 
             <button
-              type="submit"
-              onClick={handleSubmit}
+              onClick={() => {setSelectedMajor(""); setSelectedRequirement("")}}
               className="w-1/6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                        p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
             >
-              Apply Filters
+              Reset Filters
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

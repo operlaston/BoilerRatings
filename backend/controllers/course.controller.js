@@ -9,9 +9,10 @@ courseRouter.get('/:id', async (req, res) => {
             path: 'reviews'
         })
         .populate('prerequisites', 'name number')
+        .populate('instructors', 'name')
         if (!course) {
             return res.status(401).json({error: 'Course not found'})
-        }
+        } 
         res.status(200).json(course)
     } catch (err) {
         console.log('Course Fetch error', err)
@@ -25,6 +26,7 @@ courseRouter.get('/', async (req, res) => {
         .populate({
             path: 'reviews'
         })
+        .populate('instructors', 'name')
         // console.log("Courses found", courses)
         res.status(200).json(courses)
     } catch (error) {

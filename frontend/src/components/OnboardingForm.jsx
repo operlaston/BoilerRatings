@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { User, ChevronDown, X } from "lucide-react";
-import { getMajors } from "../services/majors";
-import { onboard } from "../services/signup";
+import { getMajors } from "../services/major.service";
+import { onboard } from "../services/signup.service";
 import { useNavigate } from "react-router-dom";
 
 const MAJORS = [
@@ -87,7 +87,7 @@ function OnboardingForm({user, setUser}) {
       await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
       navigate('/')
     } catch (error) {
-      console.log("Error onboarding")
+      setError("this username is already in use")
     }
     setTimeout(() => setIsLoading(false), 1500);
   };
