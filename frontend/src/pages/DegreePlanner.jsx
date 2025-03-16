@@ -106,13 +106,21 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         corequisites: [],
         conflicts: []
       }))
-      
+      if (!user) {
+        const savedData = localStorage.getItem("degreeData");
+        if (savedData) {
+          const updatedCourses = JSON.parse(savedData);
+          console.log(updatedCourses);
+          const savedCourseIDs = updatedCourses.map(course => course.courseID);
+          const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
+          setCourses(updatePrerequisiteErrors(updatedCourses));
+          setAvailableCourses(updatedAvailableCourses);
+          return;
+        }
+      }
       if (degreePlan) {
         const getCourses = degreePlan.savedCourses;
-        console.log(degreePlan.savedCourses[0])
         const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
-        //why the fuck does courseID have the entire course object???
-        //Probably due to populating
         const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
         
         const updatedCourses = getCourses.map((course) => {
@@ -142,19 +150,15 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (!isSaved) {
-        event.preventDefault(); // Prevent the default behavior
-        event.returnValue = ''; // Required for Chrome
-
-        // Use `window.confirm` to ask the user if they want to leave
+        event.preventDefault();
+        event.returnValue = '';
         const confirmLeave = window.confirm(
           'You have unsaved changes. Are you sure you want to leave?'
         );
         if (confirmLeave) {
-          // Allow the page to unload
           return;
         } else {
-          // Cancel the unload
-          event.returnValue = ''; // Required for Chrome
+          event.returnValue = '';
         }
       }
     };
@@ -207,13 +211,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
   const filteredCourses = availableCourses
     .filter((course) => {
-      // Normalize the course name by removing spaces and converting to lowercase
       const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
 
-      // Split the search query by "AND" and trim whitespace
       const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
 
-      // Check if the normalized course name matches any of the normalized search terms
       return searchTerms.some(term => {
         const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
         return normalizedCourseName.includes(normalizedTerm);
@@ -264,6 +265,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     if (!user) {
       localStorage.setItem("degreeData", JSON.stringify(courses));
       window.alert("Degree plan saved to local storage");
+      setIsSaved(true);
     }
     else {
       setIsPopupVisible(true);
@@ -444,7 +446,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               )}
             </div>
             <div className="mt-4 space-y-2">
-              {errors.length > 0 && (
+              {(errors.length > 0) && (
                 <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll" style={{ height: "23vh" }}>
                   <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
                     <AlertCircle className="h-5 w-5" />
