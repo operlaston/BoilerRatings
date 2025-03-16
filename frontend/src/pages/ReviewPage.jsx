@@ -26,7 +26,8 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
   const [editingReview, setEditingReview] = useState(null);
   const currentUser = user ?? {};
   const courseId = course.id;
-  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
+  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for 
+  // (unused rn), dont know if it actually works
   const [reviews, setReviews] = useState([]);
 
   useEffect(() => {
@@ -43,21 +44,28 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
       .catch((err) => console.log("Could not retrieve list of courses", err));
   }, [])
 
-  // useEffect(() => {
-  //   console.log("refreshed reviews in reviewPage");
-  // }, [course]);
 
   const handleDelete = async (reviewId) => {
     setReviews((prevReviews) => prevReviews.filter((review) => review._id !== reviewId));
     console.log(reviewId)
     try {
     const response = await deleteReview(reviewId)
+    //Optimistic frontend update 
+    //setReviews((prev) => 
+    //  prev.filter((r) => r.id !== reviewId)
+    //);
     console.log(response);
     } catch (error) { 
       console.log("Failed to delete", error)
     }
     finally {
       await refreshCourses();
+      getCourses()
+      .then((listOfCourses) => {
+        setCourses(listOfCourses);
+        setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+      })
+      .catch((err) => console.log("Could not retrieve list of courses", err));
     }
   };
 
@@ -117,9 +125,9 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
         };
 
         // Optimistic update, frontend only (intentional)
-        setReviews((prev) =>
-          prev.map((r) => (r.id === formData.id ? updatedReview : r))
-        );
+        //setReviews((prev) =>
+        //  prev.map((r) => (r.id === formData.id ? updatedReview : r))
+        //);
         console.log("sent editReview");
         console.log(updatedReview);
         await editReview(formData.id, updatedReview);
@@ -135,7 +143,7 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
         console.log(newReview);
         console.log(courseId);
         // Optimistically update UI first
-        setReviews((prev) => [newReview, ...prev]);
+        //setReviews((prev) => [newReview, ...prev]);
         await addReview(newReview, courseId); 
       }
     } catch (error) {
@@ -144,7 +152,13 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
     } finally {
       setEditingReview(null);
       await refreshCourses();
-    }
+      // repeating the frontend refresh on updated courses
+      getCourses()
+      .then((listOfCourses) => {
+        setCourses(listOfCourses);
+        setReviews(listOfCourses.find(currCourse => currCourse.id === courseId).reviews);
+      })
+      .catch((err) => console.log("Could not retrieve list of courses", err));    }
   };
 
   const handleEdit = (reviewId) => {
