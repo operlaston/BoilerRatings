@@ -16,6 +16,7 @@ import {
   likeReview,
   dislikeReview,
   editReview,
+  deleteReview
 } from "../services/review.service.js";
 
 import { getCourses } from "../services/course.service.js";
@@ -47,8 +48,14 @@ const ReviewPage = ({ user, course, refreshCourses, setUser, setCourse, setCours
   // }, [course]);
 
   const handleDelete = async (reviewId) => {
-    const response = addReview(reviewId, courseId);
+    setReviews((prevReviews) => prevReviews.filter((review) => review._id !== reviewId));
+    console.log(reviewId)
+    try {
+    const response = await deleteReview(reviewId)
     console.log(response);
+    } catch (error) { 
+      console.log("Failed to delete", error)
+    } 
   };
 
   // Handle like

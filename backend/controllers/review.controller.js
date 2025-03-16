@@ -21,7 +21,7 @@ reviewRouter.get("/:id", async (req, res) => {
 });
 
 reviewRouter.post("/", async (req, res) => {
-  const { review, course, instructor } = req.body; //instructor, was instrcutor
+  const { review, course, instructor } = req.body; 
   const user = review.user;
   const instructorID = null;
   if (instructor) {

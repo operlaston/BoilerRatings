@@ -22,15 +22,6 @@ const editReview = async (reviewId, updatedReview) => {
   return response.data;
 };
 
-//I don't know how you have a review id without the rest of the data but just incase
-//here is a way to get the rest of the review
-
-// THIS FUNCTION DEFINITELY DOES NOT WORK PLEASE DON'T USE IT, CONSULT ME ABOUT IT IF YOU'RE WONDERING WHY (THIS IS MATTHEW)
-// const getReviewByID = async (review) => {
-//     const respone = await axios.post(`${baseurl}/reviews/${review._id}`)
-//     return response
-// }
-
 const likeReview = async (reviewId, userId) => {
     const response = await axios.put(`${baseurl}/api/reviews/like/${reviewId}`, {userId})
     return response.data // contains new user and review objects
@@ -41,4 +32,10 @@ const dislikeReview = async (reviewId, userId) => {
     return response.data
 }
 
-export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview };
+const deleteReview = async (reviewId) => {
+  console.log(reviewId)
+  const response = await axios.delete(`${baseurl}/api/reviews/${reviewId}`)
+  return response.data
+}
+
+export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview };
