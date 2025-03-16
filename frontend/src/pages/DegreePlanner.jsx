@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { jsPDF } from "jspdf";
-import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync } from "lucide-react";
-
+import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
+import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan } from "../services/degreeplan.service";
 
@@ -122,18 +122,18 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         const getCourses = degreePlan.savedCourses;
         const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
         const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
-        
+
         const updatedCourses = getCourses.map((course) => {
           return {
-              courseID: course.course.id,
-              name: course.course.number,
-              semester: course.semester,
-              semesterIndex: course.semesterIndex,
-              description: course.course.name,
-              creditHours: course.course.creditHours,
-              prerequisites: course.course.prerequisites,
-              corequisites: [],
-              conflicts: []
+            courseID: course.course.id,
+            name: course.course.number,
+            semester: course.semester,
+            semesterIndex: course.semesterIndex,
+            description: course.course.name,
+            creditHours: course.course.creditHours,
+            prerequisites: course.course.prerequisites,
+            corequisites: [],
+            conflicts: []
           };
         });
         setCourses(updatePrerequisiteErrors(updatedCourses))
@@ -380,13 +380,17 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           <button className=" p-2 cursor-pointer" onClick={handleCreatePDF}>
             <FileDown className="text-gray-300 h-8 w-8" />
           </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400"/>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className=" p-2 cursor-pointer" onClick={handleSaveClick}>
             <Save className="text-gray-300 h-8 w-8 " />
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className=" p-2 cursor-pointer ">
             <CalendarSync className="text-gray-300 h-8 w-8 " />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+          <button className=" p-2 cursor-pointer ">
+            <Settings2 className="text-gray-300 h-8 w-8 " />
           </button>
         </div>
         <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
@@ -427,13 +431,13 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               />
             </div>
             <div
-              className="relative mt-2 space-y-2 h-1/2"
+              className="relative mt-2 space-y-2 h-2/3"
               onDragOver={handleDragOver}
               onDrop={handleDragEnd}
               onDragLeave={handleDragLeave}
             >
               {filteredCourses.length > 0 && (
-                <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-scroll">
+                <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
                   {filteredCourses.map((c) => (
                     <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
                   ))}
@@ -447,7 +451,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             </div>
             <div className="mt-4 space-y-2">
               {(errors.length > 0) && (
-                <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-scroll" style={{ height: "23vh" }}>
+                <div
+                  className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
+                  style={{
+                    height: "23vh",
+                  }}
+                >
                   <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
                     <AlertCircle className="h-5 w-5" />
                     <h3 className="font-medium">Errors found</h3>
@@ -462,7 +471,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                   ))}
                   {
                     missingRequirements.map((r, index) => (
-                      // <ClickAction course={r.courses[0]} key={index}></ClickAction>
                       <p key={index}
                         className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
                         onClick={() => handleErrorClick(r)}
@@ -508,7 +516,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     </div>
   );
 }
-  
+
 
 
 //add a SETERROR method and pass it in 
@@ -584,10 +592,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
   const [active, setActive] = useState(false);
   const [creditHours, setCreditHours] = useState(0);
-
-  useEffect(() => {
-    updatePrerequisiteErrors(courses);
-  }, [])
 
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("name", course.name);
@@ -785,13 +789,6 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
 
         setCourses(updatePrerequisiteErrors(reorderedCourses));
       }
-      /*const updatedSemesters = allSemesters.map((s) => {
-        if (s.semester === semester) {
-          return { ...s, courses: updatedCourses.filter((c) => c.semester == semester) };
-        }
-        return { ...s, courses: updatedCourses.filter((c) => c.semester == s.semester) };
-      });
-      setSemesters(updatedSemesters);*/
     }
   }
 

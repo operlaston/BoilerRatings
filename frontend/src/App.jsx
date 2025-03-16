@@ -44,13 +44,12 @@ function App() {
 
   return (
     <Router>
-      <div className="flex gap-x-4 text-xl">
+      {/* <div className="flex gap-x-4 text-xl">
         <Link to="/">Home</Link>
         <Link to="/login">Login</Link>
         <Link to="/degree">Degree</Link>
         <Link to="/saved-degree">Saved Degree Plans</Link>{" "}
-        {/* Update the link */}
-      </div>
+      </div> */}
 
       <Routes>
         {/* Route for the home page */}
