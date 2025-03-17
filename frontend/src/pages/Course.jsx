@@ -19,7 +19,7 @@ function CourseInfo({ user, setUser, course, setCourse, refreshCourses, setCours
             onClick={() => navigate("/")}
           />
         </button>
-        <CoursePanel course={course} />
+        <CoursePanel course={course} user={user}/>
         <ReviewPage
           course={course}
           user={user}

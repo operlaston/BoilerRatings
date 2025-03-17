@@ -5,7 +5,9 @@ import {
   Clock,
   BookOpen,
   MessageCircle,
+  Star,
 } from "lucide-react";
+import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 
 const COURSE_DATA = {
@@ -18,14 +20,19 @@ const COURSE_DATA = {
   ratings: {
     difficulty: 3.8,
     enjoyability: 4.2,
-  }
+  },
 };
 
-function CoursePanel({course}) {
+function CoursePanel({ course, user }) {
   const [courseData, setCourseData] = useState(COURSE_DATA);
+  const [favorited, setFavorited] = useState(false);
+  const [canFavorite, setCanFavorite] = useState(false);
   useEffect(() => {
-    setCourseData(course)
-  },[])
+    setCourseData(course);
+    if (user) {
+      setCanFavorite(true);
+    }
+  }, []);
   return (
     <div className="relative w-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg">
       <div className="grid lg:grid-cols-3 gap-8">
@@ -48,6 +55,27 @@ function CoursePanel({course}) {
               <BookOpen className="w-4 h-4 mr-2" />
               Course Catalog
             </button>
+            <button className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+              <Icon icon="mdi:reddit" className="w-4 h-4 mr-2" />
+              Reddit
+            </button>
+
+            {/* Favorite button, frontend only rn */}
+            {canFavorite === true && (
+              <button
+                onClick={() => setFavorited((prev) => !prev)}
+                className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <Star
+                  className={`w-6 h-6 mr-2 ${
+                    favorited
+                      ? "text-yellow-400 fill-current"
+                      : "text-gray-300 dark:text-gray-600"
+                  } transition-all duration-300 ease-in-out`}
+                />
+                {favorited ? "Remove from Favorites" : "Add to Favorites"}
+              </button>
+            )}
           </div>
           <div className="space-y-4">
             <div>
