@@ -8,6 +8,7 @@ import ReviewPage from "./pages/ReviewPage";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from "./pages/Course";
 import SavedDegree from "./pages/SavedDegree";
+import User from "./pages/User"
 import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
 
@@ -44,12 +45,13 @@ function App() {
 
   return (
     <Router>
-      {/* <div className="flex gap-x-4 text-xl">
+      <div className="flex gap-x-4 text-xl">
         <Link to="/">Home</Link>
         <Link to="/login">Login</Link>
         <Link to="/degree">Degree</Link>
-        <Link to="/saved-degree">Saved Degree Plans</Link>{" "}
-      </div> */}
+        <Link to="/saved-degree">Saved Degree Plans</Link>
+        <Link to={`/user`}>User</Link>
+      </div>
 
       <Routes>
         {/* Route for the home page */}
@@ -111,6 +113,13 @@ function App() {
             />
           }
         />{" "}
+
+        <Route 
+          path="/user"
+          element={
+            <User />
+          }
+        />
         {/* Update route */}
       </Routes>
     </Router>
