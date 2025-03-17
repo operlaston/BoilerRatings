@@ -1,5 +1,3 @@
-import { RiAccountCircleLine } from "react-icons/ri";
-
 const placeholderReviews = [
   {
     courseTitle: "CS 180",

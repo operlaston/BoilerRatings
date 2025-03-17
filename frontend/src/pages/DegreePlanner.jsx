@@ -4,6 +4,8 @@ import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Setting
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan } from "../services/degreeplan.service";
+import SaveDegreeForm from "../components/SaveDegreeForm";
+import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -64,15 +66,19 @@ const DEGREE_REQUIREMENTS = [
   },
   {
     type: "core",
-    name: "Software engineering",
-    courses: [["CS 307", "STAT 417"]],
+    name: "SWE core",
+    courses: [["CS 307"], ["CS 352", "Cs 354"], ["CS 381"], ["CS 408"], ["CS 407"]],
     numberOfCoursesRequired: -1,
+    numberOfCreditsRequired: -1,
+  },
+  {
+    type: "core",
+    name: "SWE elective",
+    courses: [["CS 311", "CS 411"], ["CS 348"], ["CS 351"], ["CS 352"], ["CS 353"], ["CS 354"], ["CS 373"], ["CS 422"], ["CS 426"], ["CS 448"], ["CS 456"], ["CS 473"], ["CS 489"], ["CS 490-DSO"], ["CS 490-SWS"], ["CS 510"], ["CS 590-SRS"]],
+    numberOfCoursesRequired: 1,
     numberOfCreditsRequired: -1,
   }
 ]
-
-
-
 
 export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
@@ -80,11 +86,11 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [courses, setCourses] = useState([]); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
   const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
-  const [degreePlanName, setDegreePlanName] = useState(""); // Degree plan name state
   const [active, setActive] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState([]);
   const [isSaved, setIsSaved] = useState(true);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [popupState, setPopupState] = useState("Save");
 
   const closePopup = () => {
     setIsPopupVisible(false);
@@ -146,7 +152,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       console.log("Error fetching courses", error);
     }
   }
-
+  //hook for unsaved warning
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       if (!isSaved) {
@@ -167,9 +173,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [isSaved]); // Re-run effect when `isSaved` changes
+  }, [isSaved]);
 
-
+  //fetch courses on load
   useEffect(() => {
     fetchCourses();
   }, []);
@@ -268,23 +274,30 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       setIsSaved(true);
     }
     else {
+      setPopupState("Save");
       setIsPopupVisible(true);
     }
   }
 
+  const handleSettingsClick = () => {
+    setPopupState("Settings");
+    setIsPopupVisible(true);
+  }
+
   // Handle saving the degree plan
-  const handleSaveDegreePlan = () => {
+  const handleSaveDegreePlan = (degreePlanName) => {
     if (degreePlanName.trim() === "") {
       alert("Please provide a name for the degree plan.");
       return;
     }
     if (!user) {
-      alert("Please log in to save");
+      //This should not happen
       return;
     }
     console.log("Degree Plan saved as:", degreePlanName);
     createDegreePlan(user, degreePlanName, courses)
     setIsSaved(true);
+    setIsPopupVisible(false);
   };
 
   // Generate the PDF
@@ -389,7 +402,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             <CalendarSync className="text-gray-300 h-8 w-8 " />
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className=" p-2 cursor-pointer ">
+          <button className=" p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8 " />
           </button>
         </div>
@@ -491,25 +504,15 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           onClick={closePopup}
         >
           <div
-            className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg w-1/4 p-8"
+            className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg p-8"
             onClick={(e) => e.stopPropagation()} // Prevent clicks inside the popup from closing it
           >
-            <h1 className="text-2xl font-semibold text-gray-900 mb-6 text-center dark:text-white">
-              Save your work
-            </h1>
-            <input
-              type="text"
-              placeholder="Enter degree plan name..."
-              value={degreePlanName}
-              onChange={(e) => setDegreePlanName(e.target.value)}
-              className="mt-6 w-full p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-            <button
-              onClick={handleSaveDegreePlan}
-              className="mt-4 w-full py-2 px-4 bg-blue-500 text-white rounded-lg focus:ring-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100"
-            >
-              Save Degree Plan
-            </button>
+            { (popupState == "Save") && 
+              <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
+            }
+            { (popupState == "Settings") && 
+              <DegreePlannersettingsForm />
+            }
           </div>
         </div>
       )}
@@ -518,8 +521,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 }
 
 
-
-//add a SETERROR method and pass it in 
 const Course = ({ course, handleDragStart }) => {
   const { name, semester, conflicts } = course;
   const [hovered, setHovered] = useState(false);
