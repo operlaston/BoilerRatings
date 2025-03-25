@@ -91,6 +91,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isSaved, setIsSaved] = useState(true);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupState, setPopupState] = useState("Save");
+  const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");  
 
   const closePopup = () => {
     setIsPopupVisible(false);
@@ -302,26 +303,58 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
   // Generate the PDF
   const handleCreatePDF = () => {
-    const doc = new jsPDF();
+    try {
+      // Validate data
+      if (!semesters?.length) {
+        throw new Error("No semester data available");
+      }
 
-    doc.setFont("helvetica", "normal");
-
-    // Add the title
-    doc.text("Degree Plan: " + degreePlanName, 10, 10);
-
-    // Add semester courses
-    semesters.forEach((semester, index) => {
-      const semesterTitle = `Semester ${semester.semesterIndex + 1}`;
-      doc.text(semesterTitle, 10, 20 + index * 10); // Adjust spacing dynamically
-
-      semester.courses.forEach((course, courseIndex) => {
-        const courseText = `${course.name}`;
-        doc.text(courseText, 10, 30 + index * 10 + courseIndex * 10); // Adjust spacing dynamically
+      const doc = new jsPDF();
+      
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.text(`Degree Plan: ${degreePlanName}`, 105, 15, { align: 'center' });
+      
+      // Student info
+      doc.setFontSize(12);
+      if (user) {
+        doc.text(`Student: ${user.firstName} ${user.lastName}`, 14, 25);
+      }
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30);
+      
+      // Content
+      let yPosition = 40;
+      semesters.forEach(semester => {
+        // Add new page if needed
+        if (yPosition > 280) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        // Semester header
+        doc.setFontSize(14);
+        doc.text(`${semester.semester}:`, 14, yPosition);
+        
+        // Courses list
+        doc.setFontSize(12);
+        semester.courses.forEach(course => {
+          yPosition += 7;
+          const courseText = `${course.name}: ${course.description} (${course.creditHours}cr)`;
+          doc.text(courseText, 20, yPosition);
+        });
+        
+        yPosition += 10; // Extra space between semesters
       });
-    });
 
-    // Save the PDF
-    doc.save(`${degreePlanName}_DegreePlan.pdf`);
+      // Save with sanitized filename
+      const fileName = `${degreePlanName.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`;
+      doc.save(fileName);
+      
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      alert(`Failed to generate PDF: ${error.message}`);
+    }
   };
 
   const getErrorMessages = (array) => { //
@@ -383,143 +416,153 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   }
 
 
-  return (
-    <div className="relative">
-      <div
-        className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
-        style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
-      >
-        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
-          <button className=" p-2 cursor-pointer" onClick={handleCreatePDF}>
-            <FileDown className="text-gray-300 h-8 w-8" />
-          </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className=" p-2 cursor-pointer" onClick={handleSaveClick}>
-            <Save className="text-gray-300 h-8 w-8 " />
-          </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className=" p-2 cursor-pointer ">
-            <CalendarSync className="text-gray-300 h-8 w-8 " />
-          </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className=" p-2 cursor-pointer" onClick={handleSettingsClick}>
-            <Settings2 className="text-gray-300 h-8 w-8 " />
-          </button>
-        </div>
-        <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
-          {semesters.map((s) => {
-            return (
-              <Semester
-                key={s.semesterIndex}
-                semester={s.semester}
-                semesterIndex={s.semesterIndex}
-                id={s.semesterIndex}
-                courses={courses}
-                setCourses={setCourses}
-                errors={errors}
-                setErrors={setErrors}
-                setSemesters={setSemesters}
-                allSemesters={semesters}
-                semesterCourses={s.courses}
-                availableCourses={availableCourses}
-                setAvailableCourses={setAvailableCourses}
-                setIsSaved={setIsSaved}
-              />
-            );
-          })}
-        </div>
-        <div
-          className="col-span-4 space-y-6"
-          style={{ height: "95vh" }}
+return (
+  <div className="relative">
+    <div
+      className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
+      style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
+    >
+      {/* LEFT SIDEBAR BUTTON GROUP - PDF BUTTON ADDED HERE AS FIRST ITEM */}
+      <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
+        {/* PDF Button - THIS IS THE NEW ADDITION */}
+        <button 
+          className="p-2 cursor-pointer" 
+          onClick={handleCreatePDF}
+          title="Save as PDF"
         >
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input
-                type="text"
-                placeholder="Search courses..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              />
-            </div>
-            <div
-              className="relative mt-2 space-y-2 h-2/3"
-              onDragOver={handleDragOver}
-              onDrop={handleDragEnd}
-              onDragLeave={handleDragLeave}
-            >
-              {filteredCourses.length > 0 && (
-                <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
-                  {filteredCourses.map((c) => (
-                    <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
-                  ))}
+          <FileDown className="text-gray-300 h-8 w-8" />
+        </button>
+        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+        
+        {/* Existing buttons below */}
+        <button className="p-2 cursor-pointer" onClick={handleSaveClick}>
+          <Save className="text-gray-300 h-8 w-8" />
+        </button>
+        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+        
+        <button className="p-2 cursor-pointer">
+          <CalendarSync className="text-gray-300 h-8 w-8" />
+        </button>
+        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+        
+        <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
+          <Settings2 className="text-gray-300 h-8 w-8" />
+        </button>
+      </div>
+
+      {/* REST OF YOUR COMPONENT REMAINS EXACTLY THE SAME */}
+      <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
+        {semesters.map((s) => {
+          return (
+            <Semester
+              key={s.semesterIndex}
+              semester={s.semester}
+              semesterIndex={s.semesterIndex}
+              id={s.semesterIndex}
+              courses={courses}
+              setCourses={setCourses}
+              errors={errors}
+              setErrors={setErrors}
+              setSemesters={setSemesters}
+              allSemesters={semesters}
+              semesterCourses={s.courses}
+              availableCourses={availableCourses}
+              setAvailableCourses={setAvailableCourses}
+              setIsSaved={setIsSaved}
+            />
+          );
+        })}
+      </div>
+      
+      <div className="col-span-4 space-y-6" style={{ height: "95vh" }}>
+        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+            <input
+              type="text"
+              placeholder="Search courses..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+            />
+          </div>
+          <div
+            className="relative mt-2 space-y-2 h-2/3"
+            onDragOver={handleDragOver}
+            onDrop={handleDragEnd}
+            onDragLeave={handleDragLeave}
+          >
+            {filteredCourses.length > 0 && (
+              <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
+                {filteredCourses.map((c) => (
+                  <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
+                ))}
+              </div>
+            )}
+            {active && (
+              <div className="top-0 absolute z-10 w-full h-full bg-red-100/20 dark:bg-red-900/20 backdrop-blur-lg rounded-lg border dark:border-red-500 border-red-300">
+                <Trash className="dark:text-red-400 text-red-600 h-20 w-20 m-auto mt-24" />
+              </div>
+            )}
+          </div>
+          <div className="mt-4 space-y-2">
+            {(errors.length > 0) && (
+              <div
+                className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
+                style={{
+                  height: "23vh",
+                }}
+              >
+                <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
+                  <AlertCircle className="h-5 w-5" />
+                  <h3 className="font-medium">Errors found</h3>
                 </div>
-              )}
-              {active && (
-                <div className="top-0 absolute z-10 w-full h-full bg-red-100/20 dark:bg-red-900/20 backdrop-blur-lg rounded-lg border dark:border-red-500 border-red-300">
-                  <Trash className="dark:text-red-400 text-red-600 h-20 w-20 m-auto mt-24" />
-                </div>
-              )}
-            </div>
-            <div className="mt-4 space-y-2">
-              {(errors.length > 0) && (
-                <div
-                  className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
-                  style={{
-                    height: "23vh",
-                  }}
-                >
-                  <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
-                    <AlertCircle className="h-5 w-5" />
-                    <h3 className="font-medium">Errors found</h3>
+                {getErrorMessages().map((error, index) => (
+                  <div>
+                    <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                      {error}
+                    </p>
+                    <br></br>
                   </div>
-                  {getErrorMessages().map((error, index) => (
-                    <div>
-                      <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                        {error}
-                      </p>
-                      <br></br>
-                    </div>
-                  ))}
-                  {
-                    missingRequirements.map((r, index) => (
-                      <p key={index}
-                        className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
-                        onClick={() => handleErrorClick(r)}
-                      >
-                        {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
-                      </p>
-                    ))
-                  }
-                </div>
-              )}
-            </div>
+                ))}
+                {
+                  missingRequirements.map((r, index) => (
+                    <p key={index}
+                      className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
+                      onClick={() => handleErrorClick(r)}
+                    >
+                      {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
+                    </p>
+                  ))
+                }
+              </div>
+            )}
           </div>
         </div>
       </div>
-      {isPopupVisible && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-          onClick={closePopup}
-        >
-          <div
-            className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg p-8"
-            onClick={(e) => e.stopPropagation()} // Prevent clicks inside the popup from closing it
-          >
-            { (popupState == "Save") && 
-              <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
-            }
-            { (popupState == "Settings") && 
-              <DegreePlannersettingsForm />
-            }
-          </div>
-        </div>
-      )}
     </div>
-  );
-}
 
+    {isPopupVisible && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+        onClick={closePopup}
+      >
+        <div
+          className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg p-8"
+          onClick={(e) => e.stopPropagation()}
+        >
+          { (popupState == "Save") && 
+            <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
+          }
+          { (popupState == "Settings") && 
+            <DegreePlannersettingsForm />
+          }
+        </div>
+      </div>
+    )}
+  </div>
+);
+}
 
 const Course = ({ course, handleDragStart }) => {
   const { name, semester, conflicts } = course;
