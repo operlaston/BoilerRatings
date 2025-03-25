@@ -272,49 +272,51 @@ const ReviewPage = ({
         </div>
         
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-  {/* First dropdown - filter type */}
-  <select
-    value={filterType || ''}
-    onChange={(e) => {
-      setFilterType(e.target.value || null);
-      setSelectedFilter(null);
-    }}
-    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-  >
-    <option value="" className="dark:text-white-300">Filter by...</option>
-    <option value="semester" className="dark:text-white">Semester Taken</option>
-    <option value="likes" className="dark:text-white">Number of Likes</option>
-  </select>
+          {/* First dropdown - filter type */}
+          <select
+            value={filterType || ''}
+            onChange={(e) => {
+              setFilterType(e.target.value || null);
+              setSelectedFilter(null);
+            }}
+            className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+          >
+            <option value="" className="dark:text-white-300">Filter by...</option>
+            <option value="semester" className="dark:text-white">Semester Taken</option>
+            <option value="likes" className="dark:text-white">Number of Likes</option>
+          </select>
 
-  {/* Second dropdown - filter value (conditionally rendered) */}
-  {filterType && (
-    <select
-      value={selectedFilter || ''}
-      onChange={(e) => setSelectedFilter(e.target.value || null)}
-      className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
-    >
-      <option value="">Select {filterType === 'semester' ? 'semester' : 'likes range'}...</option>
-      {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
-        <option key={option} value={option} className="dark:text-white">
-          {option}
-        </option>
-      ))}
-    </select>
-  )}
+          {/* Second dropdown - filter value (conditionally rendered) */}
+          {filterType && (
+            <select
+              value={selectedFilter || ''}
+              onChange={(e) => setSelectedFilter(e.target.value || null)}
+              className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            >
+              <option value="">
+                Select {filterType === 'semester' ? 'semester' : 'likes range'}...
+              </option>
+              {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
+                <option key={option} value={option} className="dark:text-white">
+                  {option}
+                </option>
+              ))}
+            </select>
+          )}
 
-  {/* Clear filters button */}
-  {(filterType || selectedFilter) && (
-    <button
-      onClick={() => {
-        setFilterType(null);
-        setSelectedFilter(null);
-      }}
-      className="p-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-    >
-      Clear Filters
-    </button>
-  )}
-</div>
+          {/* Clear filters button */}
+          {(filterType || selectedFilter) && (
+            <button
+              onClick={() => {
+                setFilterType(null);
+                setSelectedFilter(null);
+              }}
+              className="p-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
 
         {/* Reviews List */}
         <div className="flex-column space-y-6">
