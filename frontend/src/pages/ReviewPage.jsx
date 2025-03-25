@@ -38,22 +38,68 @@ const ReviewPage = ({
   //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
   // (unused rn), dont know if it actually works
   const [reviews, setReviews] = useState([]);
+  const [filterType, setFilterType] = useState(null);
+  const [selectedFilter, setSelectedFilter] = useState(null);
+  const [filteredReviews, setFilteredReviews] = useState([]);
+
+  // Filter options
+  const semesterOptions = [
+    'Fall 2023',
+    'Winter 2023',
+    'Spring 2023',
+    'Summer 2023',
+    'Fall 2024',
+    'Winter 2024',
+    'Spring 2024',
+    'Summer 2024',
+    'Winter 2025',
+    'Spring 2025'
+  ];
+  
+  // Likes range options
+  const likesOptions = [
+    '0-2',
+    '3-5',
+    '6-8',
+    '9+'
+  ];
 
   useEffect(() => {
+    // Existing logic
     if (user) {
-      //if user LOGGED IN add review section appears
       console.log("logged in right now");
       setCanAddReview(true);
     }
+
+    // Fetch courses and set reviews
     getCourses()
       .then((listOfCourses) => {
         setCourses(listOfCourses);
-        setReviews(
-          listOfCourses.find((currCourse) => currCourse.id === courseId).reviews
-        );
+        const courseReviews = listOfCourses.find(c => c.id === courseId)?.reviews || [];
+        setReviews(courseReviews);
+        
+        // Apply filters to the newly loaded reviews
+        if (!filterType || !selectedFilter) {
+          setFilteredReviews(courseReviews);
+        } else {
+          const filtered = courseReviews.filter(review => {
+            if (filterType === 'semester') {
+              return review.semesterTaken === selectedFilter;
+            } else if (filterType === 'likes') {
+              const likes = review.likes || 0;
+              if (selectedFilter === '0-2') return likes >= 0 && likes <= 2;
+              if (selectedFilter === '3-5') return likes >= 3 && likes <= 5;
+              if (selectedFilter === '6-8') return likes >= 6 && likes <= 8;
+              if (selectedFilter === '9+') return likes >= 9;
+            }
+            return true;
+          });
+          setFilteredReviews(filtered);
+        }
       })
       .catch((err) => console.log("Could not retrieve list of courses", err));
-  }, []);
+
+  }, [user, courseId, filterType, selectedFilter]);
 
   const handleDeleteClick = (reviewId) => {
     setSelectedReviewId(reviewId);
@@ -220,13 +266,59 @@ const ReviewPage = ({
             ))}
           </div>
           <p className="text-gray-600 dark:text-gray-400">
-            Based on {reviews.length} reviews
+            Based on {filteredReviews.length} reviews
+            {filteredReviews.length !== reviews.length && ` (filtered from ${reviews.length})`}
           </p>
         </div>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+  {/* First dropdown - filter type */}
+  <select
+    value={filterType || ''}
+    onChange={(e) => {
+      setFilterType(e.target.value || null);
+      setSelectedFilter(null);
+    }}
+    className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+  >
+    <option value="" className="dark:text-white-300">Filter by...</option>
+    <option value="semester" className="dark:text-white">Semester Taken</option>
+    <option value="likes" className="dark:text-white">Number of Likes</option>
+  </select>
+
+  {/* Second dropdown - filter value (conditionally rendered) */}
+  {filterType && (
+    <select
+      value={selectedFilter || ''}
+      onChange={(e) => setSelectedFilter(e.target.value || null)}
+      className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+    >
+      <option value="">Select {filterType === 'semester' ? 'semester' : 'likes range'}...</option>
+      {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
+        <option key={option} value={option} className="dark:text-white">
+          {option}
+        </option>
+      ))}
+    </select>
+  )}
+
+  {/* Clear filters button */}
+  {(filterType || selectedFilter) && (
+    <button
+      onClick={() => {
+        setFilterType(null);
+        setSelectedFilter(null);
+      }}
+      className="p-2 text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+    >
+      Clear Filters
+    </button>
+  )}
+</div>
 
         {/* Reviews List */}
         <div className="flex-column space-y-6">
-          {reviews.map((review) => (
+          {filteredReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
