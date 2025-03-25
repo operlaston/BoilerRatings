@@ -304,52 +304,111 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   // Generate the PDF
   const handleCreatePDF = () => {
     try {
-      // Validate data
       if (!semesters?.length) {
         throw new Error("No semester data available");
       }
-
+  
       const doc = new jsPDF();
       
-      // Header
+      // Purdue colors
+      const PURDUE_GOLD = [206, 184, 136];
+      const PURDUE_BLACK = [0, 0, 0];
+      const LIGHT_GRAY = [240, 240, 240];
+      
+      // Header with Purdue colors
+      doc.setFillColor(...PURDUE_GOLD);
+      doc.rect(0, 0, 210, 15, 'F');
       doc.setFont("helvetica", "bold");
       doc.setFontSize(20);
-      doc.text(`Degree Plan: ${degreePlanName}`, 105, 15, { align: 'center' });
+      doc.setTextColor(...PURDUE_BLACK);
+      doc.text(`My Purdue Degree Plan:`, 105, 10, { align: 'center' });
       
       // Student info
       doc.setFontSize(12);
       if (user) {
-        doc.text(`Student: ${user.firstName} ${user.lastName}`, 14, 25);
+        doc.text(`Boilermaker: ${user.username}`, 14, 25);
+        if (user.firstName && user.lastName) {
+          doc.text(`Name: ${user.firstName} ${user.lastName}`, 14, 35);
+        }
       }
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, 30);
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, user?.firstName ? 45 : 35);
+      
+      // Gold line separator
+      doc.setDrawColor(...PURDUE_GOLD);
+      doc.setLineWidth(0.5);
+      doc.line(14, user?.firstName ? 50 : 40, 196, user?.firstName ? 50 : 40);
       
       // Content
-      let yPosition = 40;
+      let yPosition = user?.firstName ? 60 : 50;
+      
       semesters.forEach(semester => {
-        // Add new page if needed
-        if (yPosition > 280) {
+        const semesterCourses = courses.filter(c => c.semester === semester.semester);
+        
+        if (yPosition > 260) {
           doc.addPage();
           yPosition = 20;
         }
         
         // Semester header
+        doc.setFillColor(...PURDUE_GOLD);
+        doc.rect(14, yPosition - 5, 182, 10, 'F');
         doc.setFontSize(14);
-        doc.text(`${semester.semester}:`, 14, yPosition);
+        doc.text(`${semester.semester}:`, 16, yPosition);
         
-        // Courses list
-        doc.setFontSize(12);
-        semester.courses.forEach(course => {
-          yPosition += 7;
-          const courseText = `${course.name}: ${course.description} (${course.creditHours}cr)`;
-          doc.text(courseText, 20, yPosition);
-        });
+        if (semesterCourses.length > 0) {
+          // Table header
+          doc.setFillColor(...LIGHT_GRAY);
+          doc.rect(14, yPosition + 5, 182, 8, 'F');
+          doc.setFontSize(12);
+          doc.text("Course", 16, yPosition + 10);
+          doc.text("Title", 56, yPosition + 10);
+          doc.text("Credits", 170, yPosition + 10, { align: "right" });
+          
+          yPosition += 15;
+          
+          // Courses
+          let semesterHours = 0;
+          
+          semesterCourses.forEach(course => {
+            doc.setTextColor(...PURDUE_BLACK);
+            doc.text(course.name, 16, yPosition + 5);
+            
+            let description = course.description;
+            if (doc.getStringUnitWidth(description) * 3 > 100) {
+              description = doc.splitTextToSize(description, 100)[0] + "...";
+            }
+            doc.text(description, 56, yPosition + 5);
+            
+            doc.text(course.creditHours.toString(), 170, yPosition + 5, { align: "right" });
+            
+            semesterHours += course.creditHours;
+            yPosition += 8;
+            
+            if (yPosition > 260) {
+              doc.addPage();
+              yPosition = 20;
+            }
+          });
+          
+          // Semester total
+          doc.text(`Total Credits: ${semesterHours}`, 170, yPosition + 5, { align: "right" });
+          yPosition += 10;
+        } else {
+          doc.setFontSize(12);
+          doc.text("No courses scheduled", 20, yPosition + 10);
+          yPosition += 20;
+        }
         
-        yPosition += 10; // Extra space between semesters
+        yPosition += 10;
       });
-
-      // Save with sanitized filename
-      const fileName = `${degreePlanName.replace(/[/\\?%*:|"<>]/g, '-')}.pdf`;
-      doc.save(fileName);
+  
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(...PURDUE_GOLD);
+      doc.text("Boiler Up!", 105, 285, { align: 'center' });
+      
+      // Fixed this line - was using mismatched quotes
+      doc.save(`${degreePlanName || 'purdue_degree_plan'}.pdf`);
       
     } catch (error) {
       console.error("PDF Generation Error:", error);
