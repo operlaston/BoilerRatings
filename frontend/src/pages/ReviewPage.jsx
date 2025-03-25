@@ -18,7 +18,6 @@ import {
   editReview,
   deleteReview,
 } from "../services/review.service.js";
-
 import { getCourses } from "../services/course.service.js";
 
 const ReviewPage = ({
@@ -35,8 +34,6 @@ const ReviewPage = ({
 
   const currentUser = user ?? {};
   const courseId = course.id;
-  //getReviewsForACourse(course) <- this gets all the reveiws for a course given the course you want the reivews for
-  // (unused rn), dont know if it actually works
   const [reviews, setReviews] = useState([]);
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
@@ -55,7 +52,7 @@ const ReviewPage = ({
     'Winter 2025',
     'Spring 2025'
   ];
-  
+
   // Likes range options
   const likesOptions = [
     '0-2',
@@ -67,6 +64,7 @@ const ReviewPage = ({
   useEffect(() => {
     // Existing logic
     if (user) {
+      //if user LOGGED IN add review section appears
       console.log("logged in right now");
       setCanAddReview(true);
     }
@@ -75,6 +73,9 @@ const ReviewPage = ({
     getCourses()
       .then((listOfCourses) => {
         setCourses(listOfCourses);
+        setReviews(
+          listOfCourses.find((currCourse) => currCourse.id === courseId).reviews
+        );
         const courseReviews = listOfCourses.find(c => c.id === courseId)?.reviews || [];
         setReviews(courseReviews);
         
@@ -98,179 +99,128 @@ const ReviewPage = ({
         }
       })
       .catch((err) => console.log("Could not retrieve list of courses", err));
-
   }, [user, courseId, filterType, selectedFilter]);
 
   const handleDeleteClick = (reviewId) => {
     setSelectedReviewId(reviewId);
   };
 
-  const handleDelete = async (reviewId) => {
-    setReviews((prevReviews) =>
-      prevReviews.filter((review) => review._id !== reviewId)
-    );
-    console.log(reviewId);
-    if (reviewId) {
-      try {
-        const response = await deleteReview(reviewId);
-        //Optimistic frontend update
-        //setReviews((prev) =>
-        //  prev.filter((r) => r.id !== reviewId)
-        //);
-        console.log(response);
-      } catch (error) {
-        console.log("Failed to delete", error);
-      } finally {
+  const handleDelete = (reviewId) => {
+    deleteReview(reviewId)
+      .then(() => {
+        setReviews(reviews.filter((review) => review.id !== reviewId));
+        setFilteredReviews(filteredReviews.filter((review) => review.id !== reviewId));
         setSelectedReviewId(null);
-        await refreshCourses();
-        getCourses()
-          .then((listOfCourses) => {
-            setCourses(listOfCourses);
-            setReviews(
-              listOfCourses.find((currCourse) => currCourse.id === courseId)
-                .reviews
-            );
-          })
-          .catch((err) =>
-            console.log("Could not retrieve list of courses", err)
-          );
-      }
-    }
-  };
-
-  // Handle like
-  const handleLike = async (reviewId) => {
-    try {
-      if (user === null) {
-        return;
-      } else {
-        const { newUser, newReview } = await likeReview(reviewId, user.id);
-        console.log(newUser)
-        setUser(newUser);
-        getCourses()
-          .then((listOfCourses) => {
-            setCourses(listOfCourses);
-            setReviews(
-              listOfCourses.find((currCourse) => currCourse.id === courseId)
-                .reviews
-            );
-          })
-          .catch((err) =>
-            console.log("Could not retrieve list of courses", err)
-          );
-      }
-    } catch (error) {
-      console.log("an error occurred while liking a review", error);
-    }
-  };
-
-  // handle dislike
-  const handleDislike = async (reviewId) => {
-    try {
-      if (user === null) {
-        return;
-      } else {
-        const { newUser, newReview } = await dislikeReview(reviewId, user.id);
-        setUser(newUser);
-        getCourses()
-          .then((listOfCourses) => {
-            setCourses(listOfCourses);
-            setReviews(
-              listOfCourses.find((currCourse) => currCourse.id === courseId)
-                .reviews
-            );
-          })
-          .catch((err) =>
-            console.log("Could not retrieve list of courses", err)
-          );
-      }
-    } catch (error) {
-      console.log("an error occurred while liking a review", error);
-    }
-  };
-
-  const handleReviewSubmit = async (formData) => {
-    try {
-      if (formData.id) {
-        // Update existing review
-        const updatedReview = {
-          ...formData,
-          user: currentUser.id, //same as currentUser.id
-          date: new Date().toISOString(),
-          likes: 0,
-          reports: [],
-          instructor: null,
-        };
-
-        // Optimistic update, frontend only
-        //setReviews((prev) =>
-        //  prev.map((r) => (r.id === formData.id ? updatedReview : r))
-        //);
-        console.log("sent editReview");
-        console.log(updatedReview);
-        await editReview(formData.id, updatedReview);
-      } else {
-        const newReview = {
-          ...formData,
-          user: currentUser.id,
-          date: new Date().toISOString(),
-          likes: 0,
-          reports: [],
-          instructor: null,
-        };
-        console.log(newReview);
-        console.log(courseId);
-        // Optimistically update UI first
-        //setReviews((prev) => [newReview, ...prev]);
-        await addReview(newReview, courseId);
-      }
-    } catch (error) {
-      console.error("Submission failed:", error);
-      throw error;
-    } finally {
-      setEditingReview(null);
-      await refreshCourses();
-      // repeating the frontend refresh on updated courses
-      getCourses()
-        .then((listOfCourses) => {
-          setCourses(listOfCourses);
-          setReviews(
-            listOfCourses.find((currCourse) => currCourse.id === courseId)
-              .reviews
-          );
-        })
-        .catch((err) => console.log("Could not retrieve list of courses", err));
-    }
+        refreshCourses();
+      })
+      .catch((err) => console.log("Could not delete review", err));
   };
 
   const handleEdit = (reviewId) => {
-    const review = reviews.find((r) => r.id === reviewId);
-    setEditingReview(review);
-    console.log("Handling editing", review);
+    const reviewToEdit = reviews.find((review) => review.id === reviewId);
+    setEditingReview(reviewToEdit);
   };
 
-  const handleCancelEdit = () => setEditingReview(null);
+  const handleCancelEdit = () => {
+    setEditingReview(null);
+  };
+
+  const handleReviewSubmit = (reviewData) => {
+    if (editingReview) {
+      // Update existing review
+      editReview(editingReview.id, reviewData)
+        .then((updatedReview) => {
+          setReviews(
+            reviews.map((review) =>
+              review.id === updatedReview.id ? updatedReview : review
+            )
+          );
+          setFilteredReviews(
+            filteredReviews.map((review) =>
+              review.id === updatedReview.id ? updatedReview : review
+            )
+          );
+          setEditingReview(null);
+          refreshCourses();
+        })
+        .catch((err) => console.log("Could not update review", err));
+    } else {
+      // Add new review
+      addReview(courseId, reviewData)
+        .then((newReview) => {
+          setReviews([newReview, ...reviews]);
+          setFilteredReviews([newReview, ...filteredReviews]);
+          refreshCourses();
+        })
+        .catch((err) => console.log("Could not add review", err));
+    }
+  };
+
+  const handleLike = (reviewId) => {
+    likeReview(reviewId)
+      .then((updatedReview) => {
+        setReviews(
+          reviews.map((review) =>
+            review.id === updatedReview.id ? updatedReview : review
+          )
+        );
+        setFilteredReviews(
+          filteredReviews.map((review) =>
+            review.id === updatedReview.id ? updatedReview : review
+          )
+        );
+        refreshCourses();
+      })
+      .catch((err) => console.log("Could not like review", err));
+  };
+
+  const handleDislike = (reviewId) => {
+    dislikeReview(reviewId)
+      .then((updatedReview) => {
+        setReviews(
+          reviews.map((review) =>
+            review.id === updatedReview.id ? updatedReview : review
+          )
+        );
+        setFilteredReviews(
+          filteredReviews.map((review) =>
+            review.id === updatedReview.id ? updatedReview : review
+          )
+        );
+        refreshCourses();
+      })
+      .catch((err) => console.log("Could not dislike review", err));
+  };
 
   return (
-    <div className="w-full flex flex-col items-center p-4 dark:bg-gray-900 overflow-y-auto">
-      {/* Content Container */}
-      <div className="absolute w-full max-w-auto  p-6 space-y-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl z-10">
-        {/* Average Rating Section */}
-        <div className="text-center space-y-2 ">
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-            4.2/5
-          </h2>
-          <div className="flex items-center justify-center space-x-1">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-6 h-6 text-yellow-400 fill-current" />
-            ))}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        {/* Course Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+                {course.name}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {course.department} {course.number}
+              </p>
+            </div>
           </div>
-          <p className="text-gray-600 dark:text-gray-400">
-            Based on {filteredReviews.length} reviews
-            {filteredReviews.length !== reviews.length && ` (filtered from ${reviews.length})`}
-          </p>
+          <div className="flex items-center gap-4 mb-2">
+            <div className="flex items-center">
+              <Star className="w-5 h-5 text-yellow-400 fill-current" />
+              <span className="ml-1 text-gray-900 dark:text-white">
+                {course.avgEnjoyment?.toFixed(1) || "N/A"}
+              </span>
+            </div>
+            <p className="text-gray-600 dark:text-gray-400">
+              Based on {filteredReviews.length} reviews
+              {filteredReviews.length !== reviews.length && ` (filtered from ${reviews.length})`}
+            </p>
+          </div>
         </div>
-        
+
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
           {/* First dropdown - filter type */}
           <select
@@ -293,9 +243,7 @@ const ReviewPage = ({
               onChange={(e) => setSelectedFilter(e.target.value || null)}
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
             >
-              <option value="">
-                Select {filterType === 'semester' ? 'semester' : 'likes range'}...
-              </option>
+              <option value="">Select {filterType === 'semester' ? 'semester' : 'likes range'}...</option>
               {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
                 <option key={option} value={option} className="dark:text-white">
                   {option}
@@ -361,7 +309,6 @@ const ReviewPage = ({
                         <div className="mt-6 flex gap-4">
                           <button
                             type="button"
-                            
                             onClick={(e) => {
                               e.stopPropagation(); // Prevent clicks on overlay from bubbling
                               setSelectedReviewId(null)
@@ -388,26 +335,6 @@ const ReviewPage = ({
                   )}
                   {/* Action Buttons, visible only on hover */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* {canAddReview === true && (
-                      <button
-                        onClick={() => handleLike(review.id)}
-                        className="p-1 hover:text-green-500 peer-checked:text-green-500 transition-colors"
-                      >
-                        <ThumbsUp className="w-5 h-5" />
-                        <span className="sr-only">Like</span>
-                      </button>
-                    )}
-
-                    {canAddReview === true && (
-                      <button
-                        onClick={() => handleDislike(review.id)}
-                        className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors"
-                      >
-                        <ThumbsDown className="w-5 h-5" />
-                        <span className="sr-only">Dislike</span>
-                      </button>
-                    )} */}
-
                     {/* Show edit only for current user's reviews */}
                     {currentUser?.id && review.user === currentUser.id && (
                       <button
