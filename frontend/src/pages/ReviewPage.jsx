@@ -62,14 +62,11 @@ const ReviewPage = ({
   ];
 
   useEffect(() => {
-    // Existing logic
     if (user) {
-      //if user LOGGED IN add review section appears
       console.log("logged in right now");
       setCanAddReview(true);
     }
 
-    // Fetch courses and set reviews
     getCourses()
       .then((listOfCourses) => {
         setCourses(listOfCourses);
@@ -79,7 +76,6 @@ const ReviewPage = ({
         const courseReviews = listOfCourses.find(c => c.id === courseId)?.reviews || [];
         setReviews(courseReviews);
         
-        // Apply filters to the newly loaded reviews
         if (!filterType || !selectedFilter) {
           setFilteredReviews(courseReviews);
         } else {
@@ -95,7 +91,8 @@ const ReviewPage = ({
             }
             return true;
           });
-          setFilteredReviews(filtered);
+          const sortedFiltered = filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+          setFilteredReviews(sortedFiltered);
         }
       })
       .catch((err) => console.log("Could not retrieve list of courses", err));
@@ -127,7 +124,6 @@ const ReviewPage = ({
 
   const handleReviewSubmit = (reviewData) => {
     if (editingReview) {
-      // Update existing review
       editReview(editingReview.id, reviewData)
         .then((updatedReview) => {
           setReviews(
@@ -145,7 +141,6 @@ const ReviewPage = ({
         })
         .catch((err) => console.log("Could not update review", err));
     } else {
-      // Add new review
       addReview(courseId, reviewData)
         .then((newReview) => {
           setReviews([newReview, ...reviews]);
@@ -196,9 +191,9 @@ const ReviewPage = ({
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Course Header */}
-        <div className="mb-8">
+        <div className="mb-8 text-center">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div>
+            <div className="w-full">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                 {course.name}
               </h1>
@@ -207,11 +202,11 @@ const ReviewPage = ({
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 mb-2">
+          <div className="flex items-center justify-center gap-4 mb-2">
             <div className="flex items-center">
               <Star className="w-5 h-5 text-yellow-400 fill-current" />
               <span className="ml-1 text-gray-900 dark:text-white">
-                {course.avgEnjoyment?.toFixed(1) || "N/A"}
+                {course.avgEnjoyment?.toFixed(1) || "N/A"} out of 5
               </span>
             </div>
             <p className="text-gray-600 dark:text-gray-400">
@@ -222,26 +217,25 @@ const ReviewPage = ({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-          {/* First dropdown - filter type */}
+          {/* Filter dropdowns remain unchanged */}
           <select
             value={filterType || ''}
             onChange={(e) => {
               setFilterType(e.target.value || null);
               setSelectedFilter(null);
             }}
-            className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+            className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value="" className="dark:text-white-300">Filter by...</option>
+            <option value="" className="dark:text-white">Filter by...</option>
             <option value="semester" className="dark:text-white">Semester Taken</option>
             <option value="likes" className="dark:text-white">Number of Likes</option>
           </select>
 
-          {/* Second dropdown - filter value (conditionally rendered) */}
           {filterType && (
             <select
               value={selectedFilter || ''}
               onChange={(e) => setSelectedFilter(e.target.value || null)}
-              className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700"
+              className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">Select {filterType === 'semester' ? 'semester' : 'likes range'}...</option>
               {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
@@ -252,7 +246,6 @@ const ReviewPage = ({
             </select>
           )}
 
-          {/* Clear filters button */}
           {(filterType || selectedFilter) && (
             <button
               onClick={() => {
@@ -273,7 +266,7 @@ const ReviewPage = ({
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
             >
-              {/* Review Header */}
+              {/* Review Header and Body remain unchanged */}
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
@@ -285,7 +278,6 @@ const ReviewPage = ({
                   </p>
                 </div>
 
-                {/* Rating and Actions */}
                 <div className="flex items-center gap-4">
                   <div className="flex items-center space-x-1">
                     <Star className="w-5 h-5 text-yellow-400 fill-current" />
@@ -294,7 +286,6 @@ const ReviewPage = ({
                     </span>
                   </div>
 
-                  {/* Confirmation popup */}
                   {selectedReviewId === review.id && (
                     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
@@ -310,22 +301,19 @@ const ReviewPage = ({
                           <button
                             type="button"
                             onClick={(e) => {
-                              e.stopPropagation(); // Prevent clicks on overlay from bubbling
+                              e.stopPropagation();
                               setSelectedReviewId(null)
                             }}
-                            className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 
-                       hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                            className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={(e) => {
-                              e.stopPropagation(); // Prevent clicks on overlay from bubbling
+                              e.stopPropagation();
                               handleDelete(review.id);
                             }}
-                            className="w-full bg-red-600 text-white 
-                       p-2 rounded-lg hover:bg-red-700 transition-colors 
-                       flex items-center justify-center gap-2"
+                            className="w-full bg-red-600 text-white p-2 rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
                           >
                             Delete
                           </button>
@@ -333,9 +321,7 @@ const ReviewPage = ({
                       </div>
                     </div>
                   )}
-                  {/* Action Buttons, visible only on hover */}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {/* Show edit only for current user's reviews */}
                     {currentUser?.id && review.user === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
@@ -345,14 +331,13 @@ const ReviewPage = ({
                         <span className="sr-only">Edit</span>
                       </button>
                     )}
-                    {/* Show delete only for current user's reviews */}
                     {currentUser?.id && review.user === currentUser.id && (
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteClick(review.id);
                         }}
-                        className="p-1 hover:text-red-500  peer-checked:text-red-500 transition-colors cursor-pointer"
+                        className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-5 h-5" />
                         <span className="sr-only">Delete</span>
@@ -362,7 +347,6 @@ const ReviewPage = ({
                 </div>
               </div>
 
-              {/* Review Body */}
               <div className="mb-4">
                 <div className="flex gap-2 mb-2">
                   <span className="text-sm px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded">
@@ -382,7 +366,6 @@ const ReviewPage = ({
                 </p>
               </div>
 
-              {/* Like Count */}
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                 <ThumbsUp
                   className="w-4 h-4 cursor-pointer"
@@ -400,7 +383,6 @@ const ReviewPage = ({
                       : "#00000000"
                   }
                 />
-                {/* #9CA3AF fill color */}
                 <span>{review.likes}</span>
                 <ThumbsDown
                   className="w-4 h-4 cursor-pointer"
