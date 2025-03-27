@@ -9,16 +9,15 @@ import {
   ThumbsUp,
   ThumbsDown,
   Trash2,
+  Flag,
 } from "lucide-react";
 import {
   addReview,
-  getReviewsForACourse,
   likeReview,
   dislikeReview,
   editReview,
   deleteReview,
 } from "../services/review.service.js";
-import { getCourses } from "../services/course.service.js";
 
 const ReviewPage = ({
   user,
@@ -31,13 +30,17 @@ const ReviewPage = ({
   const [canAddReview, setCanAddReview] = useState(false);
   const [editingReview, setEditingReview] = useState(null);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
+  const [reportingReview, setReportingReview] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [reportDetails, setReportDetails] = useState('');
+  const [isReporting, setIsReporting] = useState(false);
 
   const currentUser = user ?? {};
   const courseId = course.id;
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(course.reviews || []);
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
-  const [filteredReviews, setFilteredReviews] = useState([]);
+  const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
 
   // Filter options
   const semesterOptions = [
@@ -63,40 +66,33 @@ const ReviewPage = ({
 
   useEffect(() => {
     if (user) {
-      console.log("logged in right now");
       setCanAddReview(true);
     }
+    // Initialize with the course's reviews passed from parent
+    setReviews(course.reviews || []);
+    setFilteredReviews(course.reviews || []);
+  }, [user, course]);
 
-    getCourses()
-      .then((listOfCourses) => {
-        setCourses(listOfCourses);
-        setReviews(
-          listOfCourses.find((currCourse) => currCourse.id === courseId).reviews
-        );
-        const courseReviews = listOfCourses.find(c => c.id === courseId)?.reviews || [];
-        setReviews(courseReviews);
-        
-        if (!filterType || !selectedFilter) {
-          setFilteredReviews(courseReviews);
-        } else {
-          const filtered = courseReviews.filter(review => {
-            if (filterType === 'semester') {
-              return review.semesterTaken === selectedFilter;
-            } else if (filterType === 'likes') {
-              const likes = review.likes || 0;
-              if (selectedFilter === '0-2') return likes >= 0 && likes <= 2;
-              if (selectedFilter === '3-5') return likes >= 3 && likes <= 5;
-              if (selectedFilter === '6-8') return likes >= 6 && likes <= 8;
-              if (selectedFilter === '9+') return likes >= 9;
-            }
-            return true;
-          });
-          const sortedFiltered = filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
-          setFilteredReviews(sortedFiltered);
+  useEffect(() => {
+    if (!filterType || !selectedFilter) {
+      setFilteredReviews(reviews);
+    } else {
+      const filtered = reviews.filter(review => {
+        if (filterType === 'semester') {
+          return review.semesterTaken === selectedFilter;
+        } else if (filterType === 'likes') {
+          const likes = review.likes || 0;
+          if (selectedFilter === '0-2') return likes >= 0 && likes <= 2;
+          if (selectedFilter === '3-5') return likes >= 3 && likes <= 5;
+          if (selectedFilter === '6-8') return likes >= 6 && likes <= 8;
+          if (selectedFilter === '9+') return likes >= 9;
         }
-      })
-      .catch((err) => console.log("Could not retrieve list of courses", err));
-  }, [user, courseId, filterType, selectedFilter]);
+        return true;
+      });
+      const sortedFiltered = filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      setFilteredReviews(sortedFiltered);
+    }
+  }, [filterType, selectedFilter, reviews]);
 
   const handleDeleteClick = (reviewId) => {
     setSelectedReviewId(reviewId);
@@ -187,6 +183,27 @@ const ReviewPage = ({
       .catch((err) => console.log("Could not dislike review", err));
   };
 
+  const handleReportClick = (reviewId) => {
+    setReportingReview(reviewId);
+    setReportReason('');
+    setReportDetails('');
+  };
+
+  const handleReportSubmit = () => {
+    if (!reportReason) return;
+    
+    setIsReporting(true);
+    // This is just UI simulation - no actual backend call
+    setTimeout(() => {
+      setReportingReview(null);
+      setIsReporting(false);
+    }, 1000);
+  };
+
+  const handleCancelReport = () => {
+    setReportingReview(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
@@ -217,7 +234,6 @@ const ReviewPage = ({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
-          {/* Filter dropdowns remain unchanged */}
           <select
             value={filterType || ''}
             onChange={(e) => {
@@ -259,14 +275,12 @@ const ReviewPage = ({
           )}
         </div>
 
-        {/* Reviews List */}
         <div className="flex-column space-y-6">
           {filteredReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
             >
-              {/* Review Header and Body remain unchanged */}
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white">
@@ -322,10 +336,21 @@ const ReviewPage = ({
                     </div>
                   )}
                   <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {currentUser?.id && (
+                      <button
+                        onClick={() => handleReportClick(review.id)}
+                        className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
+                        title="Report this review"
+                      >
+                        <Flag className="w-5 h-5" />
+                        <span className="sr-only">Report</span>
+                      </button>
+                    )}
                     {currentUser?.id && review.user === currentUser.id && (
                       <button
                         onClick={() => handleEdit(review.id)}
-                        className="p-1 hover:text-blue-500 peer-checked:text-blue-500 transition-colors cursor-pointer"
+                        className="p-1 hover:text-blue-500 transition-colors cursor-pointer"
+                        title="Edit this review"
                       >
                         <Pencil className="w-5 h-5" />
                         <span className="sr-only">Edit</span>
@@ -337,7 +362,8 @@ const ReviewPage = ({
                           e.stopPropagation();
                           handleDeleteClick(review.id);
                         }}
-                        className="p-1 hover:text-red-500 peer-checked:text-red-500 transition-colors cursor-pointer"
+                        className="p-1 hover:text-red-500 transition-colors cursor-pointer"
+                        title="Delete this review"
                       >
                         <Trash2 className="w-5 h-5" />
                         <span className="sr-only">Delete</span>
@@ -412,6 +438,68 @@ const ReviewPage = ({
               )}
             </div>
           ))}
+
+          {reportingReview && (
+            <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                  Report Review
+                </h3>
+                <p className="mt-2 text-gray-600 dark:text-gray-300">
+                  Please select a reason for reporting this review
+                </p>
+
+                <div className="mt-4 space-y-4">
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="">Select a reason...</option>
+                    <option value="inappropriate">Inappropriate content</option>
+                    <option value="false_info">False information</option>
+                    <option value="spam">Spam or advertisement</option>
+                    <option value="harassment">Harassment or bullying</option>
+                    <option value="other">Other</option>
+                  </select>
+
+                  {reportReason && (
+                    <textarea
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      placeholder="Additional details (optional)"
+                      className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      rows={3}
+                    />
+                  )}
+                </div>
+
+                <div className="mt-6 flex gap-4">
+                  <button
+                    type="button"
+                    onClick={handleCancelReport}
+                    className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleReportSubmit}
+                    disabled={!reportReason || isReporting}
+                    className="w-full bg-orange-600 text-white p-2 rounded-lg hover:bg-orange-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isReporting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'Submit Report'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {canAddReview === true && (
             <AddReviewForm
