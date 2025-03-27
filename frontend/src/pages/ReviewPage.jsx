@@ -10,6 +10,7 @@ import {
   ThumbsDown,
   Trash2,
   Flag,
+  CheckCircle,
 } from "lucide-react";
 import {
   addReview,
@@ -189,14 +190,16 @@ const ReviewPage = ({
     setReportDetails('');
   };
 
+  const [showReportSuccess, setShowReportSuccess] = useState(false);
+
   const handleReportSubmit = () => {
     if (!reportReason) return;
-    
     setIsReporting(true);
-    // This is just UI simulation - no actual backend call
     setTimeout(() => {
       setReportingReview(null);
       setIsReporting(false);
+      setShowReportSuccess(true);
+      setTimeout(() => setShowReportSuccess(false), 3000); // Hide after 3 seconds
     }, 1000);
   };
 
@@ -206,6 +209,15 @@ const ReviewPage = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Add this success message component near the top of your return */}
+      {showReportSuccess && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <CheckCircle className="w-5 h-5" />
+            <span>Report submitted! This review is under investigation.</span>
+          </div>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Course Header */}
         <div className="mb-8 text-center">
