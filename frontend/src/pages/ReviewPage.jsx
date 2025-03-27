@@ -209,11 +209,12 @@ const ReviewPage = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Add this success message component near the top of your return */}
+      {/* This is the success message that 
+      shows when a report has been submitted */}
       {showReportSuccess && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
-            <CheckCircle className="w-5 h-5" />
+            <CheckCircle className="w-6 h-6" />
             <span>Report submitted! This review is under investigation.</span>
           </div>
         </div>
