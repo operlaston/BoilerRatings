@@ -471,7 +471,8 @@ const ReviewPage = ({
                     <option value="">Select a reason...</option>
                     <option value="inappropriate">Inappropriate content</option>
                     <option value="false_info">False information</option>
-                    <option value="spam">Spam or advertisement</option>
+                    <option value="spam">Spam</option>
+                    <option value="advertisement">Advertisement</option>
                     <option value="harassment">Harassment or bullying</option>
                     <option value="other">Other</option>
                   </select>
