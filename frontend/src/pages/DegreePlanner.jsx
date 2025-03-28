@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
 import "../styles/App.css"
@@ -60,14 +60,14 @@ const DEGREE_REQUIREMENTS = [
   {
     type: "core",
     name: "Core CS",
-    courses: [["CS 180"], ["CS 182"], ["CS 240"], ["CS 250"], ["CS 251"], ["CS 252"], ["MA 261"], ["MA 265"]],
+    courses: [["MA 261"], ["MA 265"], ["CS 180"], ["CS 182"], ["CS 240"], ["CS 250"], ["CS 252"], ["CS 251"]],
     numberOfCoursesRequired: -1,
     numberOfCreditsRequired: -1,
   },
   {
     type: "core",
     name: "SWE core",
-    courses: [["CS 307"], ["CS 352", "Cs 354"], ["CS 381"], ["CS 408"], ["CS 407"]],
+    courses: [["CS 307"], ["CS 352", "CS 354"], ["CS 381"], ["CS 408"], ["CS 407"]],
     numberOfCoursesRequired: -1,
     numberOfCreditsRequired: -1,
   },
@@ -77,7 +77,8 @@ const DEGREE_REQUIREMENTS = [
     courses: [["CS 311", "CS 411"], ["CS 348"], ["CS 351"], ["CS 352"], ["CS 353"], ["CS 354"], ["CS 373"], ["CS 422"], ["CS 426"], ["CS 448"], ["CS 456"], ["CS 473"], ["CS 489"], ["CS 490-DSO"], ["CS 490-SWS"], ["CS 510"], ["CS 590-SRS"]],
     numberOfCoursesRequired: 1,
     numberOfCreditsRequired: -1,
-  }
+  },
+
 ]
 
 export default function DegreePlanner({ user, setUser, degreePlan }) {
@@ -91,13 +92,11 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isSaved, setIsSaved] = useState(true);
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupState, setPopupState] = useState("Save");
-  const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");  
+  const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
+  const coursesRef = useRef(courses);
 
-  const closePopup = () => {
-    setIsPopupVisible(false);
-  };
 
-  const fetchCourses = async () => {
+  const fetchCourses = async () => { //Fetch courses from database
     try {
       console.log("Getting courses")
       const courses = await getCourses();
@@ -153,8 +152,31 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       console.log("Error fetching courses", error);
     }
   }
-  //hook for unsaved warning
-  useEffect(() => {
+  useEffect(() => {// Fetch courses on load
+    fetchCourses();
+  }, []);
+  const filteredCourses = availableCourses //Filter courses to show in search bar
+    .filter((course) => {
+      const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
+
+      const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
+
+      return searchTerms.some(term => {
+        const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
+        return normalizedCourseName.includes(normalizedTerm);
+      });
+    })
+  const closePopup = () => {
+    setIsPopupVisible(false);
+  };
+  const handleSettingsClick = () => {
+    setPopupState("Settings");
+    setIsPopupVisible(true);
+  }
+
+  //Functions related to saving degree
+
+  useEffect(() => { //hook for warning unsaved changes
     const handleBeforeUnload = (event) => {
       if (!isSaved) {
         event.preventDefault();
@@ -175,75 +197,46 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
   }, [isSaved]);
-
-  //fetch courses on load
-  useEffect(() => {
-    fetchCourses();
-  }, []);
-
-  const checkPrerequisites = (course, courses) => {
-    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
-    const filteredname = new Set(filteredCourses.map(c => c.name));
-
-    // Find all prerequisite groups that are not fulfilled
-    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
-      !prereqGroup.some(prereq => filteredname.has(prereq))
-    );
-    return unfulfilledPrereqGroups;
+  const handleSaveClick = () => { //handle save button clicked
+    if (!user) {
+      localStorage.setItem("degreeData", JSON.stringify(courses));
+      window.alert("Degree plan saved to local storage");
+      setIsSaved(true);
+    }
+    else {
+      setPopupState("Save");
+      setIsPopupVisible(true);
+    }
   }
+  const handleSaveDegreePlan = (degreePlanName) => { //handle save to database
+    if (degreePlanName.trim() === "") {
+      alert("Please provide a name for the degree plan.");
+      return;
+    }
+    if (!user) {
+      //This should not happen
+      return;
+    }
+    console.log("Degree Plan saved as:", degreePlanName);
+    createDegreePlan(user, degreePlanName, courses)
+    setIsSaved(true);
+    setIsPopupVisible(false);
+  };
 
-  const updatePrerequisiteErrors = (reorderedCourses) => {
-    const updatedCourses = reorderedCourses.map((course) => {
-      const conflicts = checkPrerequisites(course, reorderedCourses);
-      return { ...course, conflicts }; // Update the conflicts field
-    });
-    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
-    updatedCourses.forEach((course) => {
-      if (course.semesterIndex == -1) {
-        return;
-      }
-      if (course.conflicts.length > 0) {
-        updatedErrors.push({
-          errorType: "prerequisite_conflict",
-          clickAction: "search_prerequisites",
-          prerequisites: course.conflicts,
-          course: course.name,
-          semester: course.semester,
-        });
-      }
-    });
-    setErrors(updatedErrors);
-    return updatedCourses;
-  }
-
-  const filteredCourses = availableCourses
-    .filter((course) => {
-      const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
-
-      const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
-
-      return searchTerms.some(term => {
-        const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
-        return normalizedCourseName.includes(normalizedTerm);
-      });
-    })
+  //Functions related to dragging and dropping courses
 
   const handleDragStart = (e, course) => {
     e.dataTransfer.setData("name", course.name); // Set the name in dataTransfer
   };
-
-
   const handleDragOver = (e) => {
     e.preventDefault(); // Allow drop
     setActive(true);
   };
-
   const handleDragLeave = (e) => {
     if (!e.currentTarget.contains(e.relatedTarget)) {
       setActive(false); // Only deactivate if the dragged element leaves the parent div
     }
   }
-
   const handleDragEnd = (e) => {
     setIsSaved(false);
     let name = e.dataTransfer.getData("name");
@@ -268,153 +261,43 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setActive(false);
   }
 
-  const handleSaveClick = () => {
-    if (!user) {
-      localStorage.setItem("degreeData", JSON.stringify(courses));
-      window.alert("Degree plan saved to local storage");
-      setIsSaved(true);
-    }
-    else {
-      setPopupState("Save");
-      setIsPopupVisible(true);
-    }
+  //Functions related to handling prerequisites
+
+  const checkPrerequisites = (course, courses) => {
+    const filteredCourses = courses.filter((c) => c.semesterIndex < course.semesterIndex);
+    const filteredname = new Set(filteredCourses.map(c => c.name));
+
+    // Find all prerequisite groups that are not fulfilled
+    const unfulfilledPrereqGroups = course.prerequisites.filter(prereqGroup =>
+      !prereqGroup.some(prereq => filteredname.has(prereq))
+    );
+    return unfulfilledPrereqGroups;
+  }
+  const updatePrerequisiteErrors = (reorderedCourses) => {
+    const updatedCourses = reorderedCourses.map((course) => {
+      const conflicts = checkPrerequisites(course, reorderedCourses);
+      return { ...course, conflicts }; // Update the conflicts field
+    });
+    const updatedErrors = errors.filter((err) => err.errorType !== "prerequisite_conflict");
+    updatedCourses.forEach((course) => {
+      if (course.semesterIndex == -1) {
+        return;
+      }
+      if (course.conflicts.length > 0) {
+        updatedErrors.push({
+          errorType: "prerequisite_conflict",
+          clickAction: "search_prerequisites",
+          prerequisites: course.conflicts,
+          course: course.name,
+          semester: course.semester,
+        });
+      }
+    });
+    setErrors(updatedErrors);
+    return updatedCourses;
   }
 
-  const handleSettingsClick = () => {
-    setPopupState("Settings");
-    setIsPopupVisible(true);
-  }
-
-  // Handle saving the degree plan
-  const handleSaveDegreePlan = (degreePlanName) => {
-    if (degreePlanName.trim() === "") {
-      alert("Please provide a name for the degree plan.");
-      return;
-    }
-    if (!user) {
-      //This should not happen
-      return;
-    }
-    console.log("Degree Plan saved as:", degreePlanName);
-    createDegreePlan(user, degreePlanName, courses)
-    setIsSaved(true);
-    setIsPopupVisible(false);
-  };
-
-  // Generate the PDF
-  const handleCreatePDF = () => {
-    try {
-      if (!semesters?.length) {
-        throw new Error("No semester data available");
-      }
-  
-      const doc = new jsPDF();
-      
-      // Purdue colors
-      const PURDUE_GOLD = [206, 184, 136];
-      const PURDUE_BLACK = [0, 0, 0];
-      const LIGHT_GRAY = [240, 240, 240];
-      
-      // Header with Purdue colors
-      doc.setFillColor(...PURDUE_GOLD);
-      doc.rect(0, 0, 210, 15, 'F');
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
-      doc.setTextColor(...PURDUE_BLACK);
-      doc.text(`My Purdue Degree Plan:`, 105, 10, { align: 'center' });
-      
-      // Student info
-      doc.setFontSize(12);
-      if (user) {
-        doc.text(`Boilermaker: ${user.username}`, 14, 25);
-        if (user.firstName && user.lastName) {
-          doc.text(`Name: ${user.firstName} ${user.lastName}`, 14, 35);
-        }
-      }
-      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, user?.firstName ? 45 : 35);
-      
-      // Gold line separator
-      doc.setDrawColor(...PURDUE_GOLD);
-      doc.setLineWidth(0.5);
-      doc.line(14, user?.firstName ? 50 : 40, 196, user?.firstName ? 50 : 40);
-      
-      // Content
-      let yPosition = user?.firstName ? 60 : 50;
-      
-      semesters.forEach(semester => {
-        const semesterCourses = courses.filter(c => c.semester === semester.semester);
-        
-        if (yPosition > 260) {
-          doc.addPage();
-          yPosition = 20;
-        }
-        
-        // Semester header
-        doc.setFillColor(...PURDUE_GOLD);
-        doc.rect(14, yPosition - 5, 182, 10, 'F');
-        doc.setFontSize(14);
-        doc.text(`${semester.semester}:`, 16, yPosition);
-        
-        if (semesterCourses.length > 0) {
-          // Table header
-          doc.setFillColor(...LIGHT_GRAY);
-          doc.rect(14, yPosition + 5, 182, 8, 'F');
-          doc.setFontSize(12);
-          doc.text("Course", 16, yPosition + 10);
-          doc.text("Title", 56, yPosition + 10);
-          doc.text("Credits", 170, yPosition + 10, { align: "right" });
-          
-          yPosition += 15;
-          
-          // Courses
-          let semesterHours = 0;
-          
-          semesterCourses.forEach(course => {
-            doc.setTextColor(...PURDUE_BLACK);
-            doc.text(course.name, 16, yPosition + 5);
-            
-            let description = course.description;
-            if (doc.getStringUnitWidth(description) * 3 > 100) {
-              description = doc.splitTextToSize(description, 100)[0] + "...";
-            }
-            doc.text(description, 56, yPosition + 5);
-            
-            doc.text(course.creditHours.toString(), 170, yPosition + 5, { align: "right" });
-            
-            semesterHours += course.creditHours;
-            yPosition += 8;
-            
-            if (yPosition > 260) {
-              doc.addPage();
-              yPosition = 20;
-            }
-          });
-          
-          // Semester total
-          doc.text(`Total Credits: ${semesterHours}`, 170, yPosition + 5, { align: "right" });
-          yPosition += 10;
-        } else {
-          doc.setFontSize(12);
-          doc.text("No courses scheduled", 20, yPosition + 10);
-          yPosition += 20;
-        }
-        
-        yPosition += 10;
-      });
-  
-      // Footer
-      doc.setFontSize(10);
-      doc.setTextColor(...PURDUE_GOLD);
-      doc.text("Boiler Up!", 105, 285, { align: 'center' });
-      
-      // Fixed this line - was using mismatched quotes
-      doc.save(`${degreePlanName || 'purdue_degree_plan'}.pdf`);
-      
-    } catch (error) {
-      console.error("PDF Generation Error:", error);
-      alert(`Failed to generate PDF: ${error.message}`);
-    }
-  };
+  //Functions related to error checking
 
   const getErrorMessages = (array) => { //
     let formattedErrorArray = [];
@@ -442,185 +325,399 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
     return formattedErrorArray;
   }
-
-
-  useEffect(() => {
+  useEffect(() => { //Hook for updating requirements
     let arr = [];
     DEGREE_REQUIREMENTS.forEach(requirement => {
       let missingRequirement = {
         name: requirement.name,
         courses: []
       };
-
-      // Check each group of equivalent courses
       requirement.courses.forEach(group => {
-        // Check if none of the courses in the group are found in the user's completed courses
         if (!group.some(course => courses.some(c => c.name === course))) {
-          // If none are found, add the entire group to missingRequirement.courses
           missingRequirement.courses.push(group);
         }
       });
-
-      // If there are missing groups, add the requirement to the array
       if (missingRequirement.courses.length > 0) {
         arr.push(missingRequirement);
       }
     });
-
     setMissingRequirements(arr);
   }, [courses]);
-
   const handleErrorClick = (requirement) => {
     setSearchQuery(requirement.courses.map(group => group.join(" AND ")).join(" AND "));
   }
 
+  // Generate the PDF
+  const handleCreatePDF = () => {
+    try {
+      if (!semesters?.length) {
+        throw new Error("No semester data available");
+      }
 
-return (
-  <div className="relative">
-    <div
-      className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
-      style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
-    >
-      {/* LEFT SIDEBAR BUTTON GROUP - PDF BUTTON ADDED HERE AS FIRST ITEM */}
-      <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
-        {/* PDF Button - THIS IS THE NEW ADDITION */}
-        <button 
-          className="p-2 cursor-pointer" 
-          onClick={handleCreatePDF}
-          title="Save as PDF"
-        >
-          <FileDown className="text-gray-300 h-8 w-8" />
-        </button>
-        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-        
-        {/* Existing buttons below */}
-        <button className="p-2 cursor-pointer" onClick={handleSaveClick}>
-          <Save className="text-gray-300 h-8 w-8" />
-        </button>
-        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-        
-        <button className="p-2 cursor-pointer">
-          <CalendarSync className="text-gray-300 h-8 w-8" />
-        </button>
-        <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-        
-        <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
-          <Settings2 className="text-gray-300 h-8 w-8" />
-        </button>
-      </div>
+      const doc = new jsPDF();
 
-      {/* REST OF YOUR COMPONENT REMAINS EXACTLY THE SAME */}
-      <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
-        {semesters.map((s) => {
-          return (
-            <Semester
-              key={s.semesterIndex}
-              semester={s.semester}
-              semesterIndex={s.semesterIndex}
-              id={s.semesterIndex}
-              courses={courses}
-              setCourses={setCourses}
-              errors={errors}
-              setErrors={setErrors}
-              setSemesters={setSemesters}
-              allSemesters={semesters}
-              semesterCourses={s.courses}
-              availableCourses={availableCourses}
-              setAvailableCourses={setAvailableCourses}
-              setIsSaved={setIsSaved}
-            />
-          );
-        })}
-      </div>
-      
-      <div className="col-span-4 space-y-6" style={{ height: "95vh" }}>
-        <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-            <input
-              type="text"
-              placeholder="Search courses..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            />
-          </div>
-          <div
-            className="relative mt-2 space-y-2 h-2/3"
-            onDragOver={handleDragOver}
-            onDrop={handleDragEnd}
-            onDragLeave={handleDragLeave}
-          >
-            {filteredCourses.length > 0 && (
-              <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
-                {filteredCourses.map((c) => (
-                  <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
-                ))}
-              </div>
-            )}
-            {active && (
-              <div className="top-0 absolute z-10 w-full h-full bg-red-100/20 dark:bg-red-900/20 backdrop-blur-lg rounded-lg border dark:border-red-500 border-red-300">
-                <Trash className="dark:text-red-400 text-red-600 h-20 w-20 m-auto mt-24" />
-              </div>
-            )}
-          </div>
-          <div className="mt-4 space-y-2">
-            {(errors.length > 0) && (
-              <div
-                className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
-                style={{
-                  height: "23vh",
-                }}
-              >
-                <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
-                  <AlertCircle className="h-5 w-5" />
-                  <h3 className="font-medium">Errors found</h3>
-                </div>
-                {getErrorMessages().map((error, index) => (
-                  <div>
-                    <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
-                      {error}
-                    </p>
-                    <br></br>
-                  </div>
-                ))}
-                {
-                  missingRequirements.map((r, index) => (
-                    <p key={index}
-                      className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
-                      onClick={() => handleErrorClick(r)}
-                    >
-                      {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
-                    </p>
-                  ))
-                }
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
+      // Purdue colors
+      const PURDUE_GOLD = [206, 184, 136];
+      const PURDUE_BLACK = [0, 0, 0];
+      const LIGHT_GRAY = [240, 240, 240];
 
-    {isPopupVisible && (
+      // Header with Purdue colors
+      doc.setFillColor(...PURDUE_GOLD);
+      doc.rect(0, 0, 210, 15, 'F');
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(20);
+      doc.setTextColor(...PURDUE_BLACK);
+      doc.text(`My Purdue Degree Plan:`, 105, 10, { align: 'center' });
+
+      // Student info
+      doc.setFontSize(12);
+      if (user) {
+        doc.text(`Boilermaker: ${user.username}`, 14, 25);
+        if (user.firstName && user.lastName) {
+          doc.text(`Name: ${user.firstName} ${user.lastName}`, 14, 35);
+        }
+      }
+      doc.text(`Generated: ${new Date().toLocaleDateString()}`, 14, user?.firstName ? 45 : 35);
+
+      // Gold line separator
+      doc.setDrawColor(...PURDUE_GOLD);
+      doc.setLineWidth(0.5);
+      doc.line(14, user?.firstName ? 50 : 40, 196, user?.firstName ? 50 : 40);
+
+      // Content
+      let yPosition = user?.firstName ? 60 : 50;
+
+      semesters.forEach(semester => {
+        const semesterCourses = courses.filter(c => c.semester === semester.semester);
+
+        if (yPosition > 260) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Semester header
+        doc.setFillColor(...PURDUE_GOLD);
+        doc.rect(14, yPosition - 5, 182, 10, 'F');
+        doc.setFontSize(14);
+        doc.text(`${semester.semester}:`, 16, yPosition);
+
+        if (semesterCourses.length > 0) {
+          // Table header
+          doc.setFillColor(...LIGHT_GRAY);
+          doc.rect(14, yPosition + 5, 182, 8, 'F');
+          doc.setFontSize(12);
+          doc.text("Course", 16, yPosition + 10);
+          doc.text("Title", 56, yPosition + 10);
+          doc.text("Credits", 170, yPosition + 10, { align: "right" });
+
+          yPosition += 15;
+
+          // Courses
+          let semesterHours = 0;
+
+          semesterCourses.forEach(course => {
+            doc.setTextColor(...PURDUE_BLACK);
+            doc.text(course.name, 16, yPosition + 5);
+
+            let description = course.description;
+            if (doc.getStringUnitWidth(description) * 3 > 100) {
+              description = doc.splitTextToSize(description, 100)[0] + "...";
+            }
+            doc.text(description, 56, yPosition + 5);
+
+            doc.text(course.creditHours.toString(), 170, yPosition + 5, { align: "right" });
+
+            semesterHours += course.creditHours;
+            yPosition += 8;
+
+            if (yPosition > 260) {
+              doc.addPage();
+              yPosition = 20;
+            }
+          });
+
+          // Semester total
+          doc.text(`Total Credits: ${semesterHours}`, 170, yPosition + 5, { align: "right" });
+          yPosition += 10;
+        } else {
+          doc.setFontSize(12);
+          doc.text("No courses scheduled", 20, yPosition + 10);
+          yPosition += 20;
+        }
+
+        yPosition += 10;
+      });
+
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(...PURDUE_GOLD);
+      doc.text("Boiler Up!", 105, 285, { align: 'center' });
+
+      // Fixed this line - was using mismatched quotes
+      doc.save(`${degreePlanName || 'purdue_degree_plan'}.pdf`);
+
+    } catch (error) {
+      console.error("PDF Generation Error:", error);
+      alert(`Failed to generate PDF: ${error.message}`);
+    }
+  };
+
+  const handleAutoFillClick = () => {
+    let orderedCourses = (sortCoursesForAutofill(["MA 261", "CS 180","CS 252", "CS 182", "CS 240", "CS 250" , "CS 251"], courses.concat(availableCourses)));
+    console.log(orderedCourses);
+    let lastCourse = orderedCourses[0];
+    let courseOrder = [[lastCourse]]
+    for (let i = 1; i < orderedCourses.length; i++) {
+      let curr = orderedCourses[i];
+      let pushed = false
+      curr.prerequisites.forEach(prereqGroup => {
+        if (prereqGroup.includes(lastCourse.name)) {
+          courseOrder.push([curr]);
+          pushed = true;
+          return;
+        }
+      });
+      if (!pushed) {
+        courseOrder[courseOrder.length - 1].push(curr);
+      }
+      lastCourse = curr;
+    }
+    
+    // setIsSaved(false);
+    let availableCoursesCopy = [...availableCourses];
+    let reorderedCourses = [...courses];
+    
+    courseOrder.forEach((semester, index) => {
+      semester.forEach((course) => {
+        if (!courses.some((c) => c.name === course.name)) {
+          //This means the course is in the search bar
+          
+          let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
+          let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
+          courseToTransfer.semester = semesters[index].semester;
+          courseToTransfer.semesterIndex = index;
+          reorderedCourses.push(courseToTransfer);
+        }
+        else {
+          let reorderedCourses = [...courses];
+          let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
+          let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
+          courseToTransfer.semester = semesters[index].semester;
+          courseToTransfer.semesterIndex = index;
+        }
+      })
+    });
+    const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
+    console.log(updatedCourses);
+    setCourses(updatedCourses);
+    setAvailableCourses(availableCoursesCopy);
+  }
+  function sortCoursesForAutofill(coreCourses, allCourses) {
+    const coursePrereqMap = {};
+    const coreSet = new Set(coreCourses);
+    const courseMap = new Map();
+    allCourses.forEach(course => courseMap.set(course.name, course));
+
+    console.log(coreCourses);
+    console.log(allCourses);
+    // First, build a map of all core courses with their filtered prerequisites
+    allCourses.forEach(course => {
+      if (coreSet.has(course.name)) {
+        // Filter prerequisites to only include those that are core courses
+        const filteredPrereqs = (course.prerequisites || []).map(prereqGroup =>
+          prereqGroup.filter(prereq => coreSet.has(prereq))
+            .filter(prereqGroup => prereqGroup.length > 0)); // Remove empty groups
+          
+        coursePrereqMap[course.name] = filteredPrereqs;
+      }
+    });
+    console.log(coursePrereqMap);
+
+    // Initialize visited and visiting sets for cycle detection
+    const visited = new Set();
+    const visiting = new Set();
+    const result = [];
+
+    // Helper function for topological sort
+    function visit(courseName) {
+      if (visiting.has(courseName)) {
+        console.warn(`Circular dependency detected involving course ${courseName}`);
+        return;
+      }
+
+      if (visited.has(courseName)) {
+        return; // Already processed
+      }
+
+      visiting.add(courseName);
+
+      // Visit all prerequisites first
+      const prereqGroups = coursePrereqMap[courseName] || [];
+      for (const group of prereqGroups) {
+        // For each OR group, we can choose any one (we'll pick the first one)
+        if (group.length > 0) {
+          visit(group[0]);
+        }
+      }
+
+      visiting.delete(courseName);
+      visited.add(courseName);
+      result.push(courseMap.get(courseName));
+    }
+
+    // Visit each core course
+    coreCourses.forEach(courseName => {
+      if (!visited.has(courseName)) {
+        visit(courseName);
+      }
+    });
+
+    return (result);
+  }
+
+
+  return (
+    <div className="relative">
       <div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
-        onClick={closePopup}
+        className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
+        style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
       >
-        <div
-          className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg p-8"
-          onClick={(e) => e.stopPropagation()}
-        >
-          { (popupState == "Save") && 
-            <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
-          }
-          { (popupState == "Settings") && 
-            <DegreePlannersettingsForm />
-          }
+        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
+          <button
+            className="p-2 cursor-pointer"
+            onClick={handleCreatePDF}
+            title="Save as PDF"
+          >
+            <FileDown className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+
+          <button className="p-2 cursor-pointer" onClick={handleSaveClick}>
+            <Save className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+
+          <button className="p-2 cursor-pointer" onClick={handleAutoFillClick}>
+            <CalendarSync className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
+
+          <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
+            <Settings2 className="text-gray-300 h-8 w-8" />
+          </button>
+        </div>
+
+        <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
+          {semesters.map((s) => {
+            return (
+              <Semester
+                key={s.semesterIndex}
+                semester={s.semester}
+                semesterIndex={s.semesterIndex}
+                id={s.semesterIndex}
+                courses={courses}
+                setCourses={setCourses}
+                errors={errors}
+                setErrors={setErrors}
+                setSemesters={setSemesters}
+                allSemesters={semesters}
+                semesterCourses={s.courses}
+                availableCourses={availableCourses}
+                setAvailableCourses={setAvailableCourses}
+                setIsSaved={setIsSaved}
+              />
+            );
+          })}
+        </div>
+
+        <div className="col-span-4 space-y-6" style={{ height: "95vh" }}>
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 p-2 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div
+              className="relative mt-2 space-y-2 h-2/3"
+              onDragOver={handleDragOver}
+              onDrop={handleDragEnd}
+              onDragLeave={handleDragLeave}
+            >
+              {filteredCourses.length > 0 && (
+                <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
+                  {filteredCourses.map((c) => (
+                    <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
+                  ))}
+                </div>
+              )}
+              {active && (
+                <div className="top-0 absolute z-10 w-full h-full bg-red-100/20 dark:bg-red-900/20 backdrop-blur-lg rounded-lg border dark:border-red-500 border-red-300">
+                  <Trash className="dark:text-red-400 text-red-600 h-20 w-20 m-auto mt-24" />
+                </div>
+              )}
+            </div>
+            <div className="mt-4 space-y-2">
+              {(errors.length > 0) && (
+                <div
+                  className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
+                  style={{
+                    height: "23vh",
+                  }}
+                >
+                  <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
+                    <AlertCircle className="h-5 w-5" />
+                    <h3 className="font-medium">Errors found</h3>
+                  </div>
+                  {getErrorMessages().map((error, index) => (
+                    <div>
+                      <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                        {error}
+                      </p>
+                      <br></br>
+                    </div>
+                  ))}
+                  {
+                    missingRequirements.map((r, index) => (
+                      <p key={index}
+                        className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
+                        onClick={() => handleErrorClick(r)}
+                      >
+                        {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
+                      </p>
+                    ))
+                  }
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
-    )}
-  </div>
-);
+
+      {isPopupVisible && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={closePopup}
+        >
+          <div
+            className="bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-lg p-8"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {(popupState == "Save") &&
+              <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
+            }
+            {(popupState == "Settings") &&
+              <DegreePlannersettingsForm />
+            }
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 const Course = ({ course, handleDragStart }) => {
@@ -688,7 +785,6 @@ const DropIndicator = ({ beforeId, semester }) => {
     />
   );
 };
-
 
 function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, setSemesters, allSemesters, availableCourses, setAvailableCourses, setIsSaved }) {
   let semesterToUpdate = allSemesters.find((s) => s.semester === semester)
