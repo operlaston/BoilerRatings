@@ -1,3 +1,6 @@
+import { useState } from "react"
+import AccountDeletionPopup from "../components/AccountDeletionPopup"
+
 const placeholderReviews = [
   {
     courseTitle: "CS 180",
@@ -48,11 +51,19 @@ const placeholderReviews = [
 ]
 
 const User = () => {
+
+  const [deletePopupOpen, setDeletePopupOpen] = useState(false)
+
   return (
     <div className="
       bg-gray-900 text-gray-300 min-h-screen p-8 flex justify-center flex-row
       gap-x-24    
     ">
+      {deletePopupOpen ? 
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+        <AccountDeletionPopup setDeletePopupOpen={setDeletePopupOpen} />
+      </div> 
+      : ''}
       <div className="flex flex-col">
         <div className="flex pt-16 gap-x-6 items-center">
           <div className="max-w-40">
@@ -71,7 +82,9 @@ const User = () => {
                 Edit Account
               </button>
               <button className="px-3 py-2 bg-gray-200/10 cursor-pointer
-              rounded-lg text-red-600 border-1 border-red-600">
+              rounded-lg text-red-600 border-1 border-red-600"
+                onClick={() => setDeletePopupOpen(true)}
+              >
                 Delete Account
               </button>
             </div>
