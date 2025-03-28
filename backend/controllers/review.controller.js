@@ -32,7 +32,7 @@ reviewRouter.post("/", async (req, res) => {
   try {
     const courseExists = await Course.findById(course);
     if (!courseExists) {
-      return res.status(401).json({ error: "Course not found" });
+      return res.status(404).json({ error: "Course not found" });
     }
     const newReview = new Review(review);
     const savedReview = await newReview.save();

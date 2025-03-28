@@ -138,7 +138,7 @@ const ReviewPage = ({
         })
         .catch((err) => console.log("Could not update review", err));
     } else {
-      addReview(courseId, reviewData)
+      addReview(reviewData, courseId )
         .then((newReview) => {
           setReviews([newReview, ...reviews]);
           setFilteredReviews([newReview, ...filteredReviews]);
