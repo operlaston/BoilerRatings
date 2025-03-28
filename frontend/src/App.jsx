@@ -50,7 +50,7 @@ function App() {
         <Link to="/login">Login</Link>
         <Link to="/degree">Degree</Link>
         <Link to="/saved-degree">Saved Degree Plans</Link>
-        <Link to={`/user`}>User</Link>
+        {user !== null ? <Link to={`/user/${user.username}`}>User</Link> : ''}
       </div>
 
       <Routes>
@@ -115,9 +115,12 @@ function App() {
         />{" "}
 
         <Route 
-          path="/user"
+          path="/user/:username"
           element={
-            <User />
+            <User
+              user={user}
+              setUser={setUser}
+            />
           }
         />
         {/* Update route */}

@@ -4,6 +4,7 @@ const User = require('../models/user')
 const Major = require('../models/major')
 const sendEmail = require('../utils/email')
 const { findById, findByIdAndUpdate } = require('../models/course')
+const {to} = require('await-to-js')
 
 
 usersRouter.post('/', async (req, res) => {
@@ -178,9 +179,18 @@ usersRouter.delete('/:id', async (req, res) => {
 })
 
 // retrieve a user by their username
-// usersRouter.get('/username/:username', async (req, res) => {
-
-// })
+usersRouter.get('/username/:username', async (req, res) => {
+  const username = req.params.username
+  const [error, user] = await to(User.findOne({username: username}).populate('reviews major'))
+  if (error) {
+    console.error(error)
+    return res.status(500).json({error: 'server error'})
+  }
+  if (user === null) {
+    return res.status(404).json({error: 'user not found'})
+  }
+  res.status(200).json(user)
+})
 
 // this is only for testing the backend without having to create an account through the frontend
 usersRouter.post('/test/add', async (req, res) => {

@@ -65,6 +65,9 @@ function OnboardingForm({user, setUser}) {
       setError("Please enter a display name");
       return;
     }
+    if ( displayName === "[deleted]" ) {
+      setError("Forbidden username. Please use a different username.")
+    }
     if ( selectedMajors.length == 0) {
       setError("Please select at least one major");
       return;
