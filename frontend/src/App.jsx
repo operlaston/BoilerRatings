@@ -114,15 +114,16 @@ function App() {
           }
         />{" "}
 
-        <Route 
-          path="/user/:username"
-          element={
-            <User
-              user={user}
-              setUser={setUser}
-            />
-          }
-        />
+        <Route path="/user/">
+          <Route
+            index //username is empty
+            element={<User user={"notfound"} setUser={setUser} />}
+          />
+          <Route
+            path=":username" 
+            element={<User user={user} setUser={setUser} />}
+          />
+        </Route>
         {/* Update route */}
       </Routes>
     </Router>
