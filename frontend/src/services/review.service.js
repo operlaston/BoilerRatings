@@ -44,4 +44,9 @@ const deleteReview = async (reviewId) => {
   return response.data
 }
 
-export { getReviewsForACourse, getUserById, addReview, likeReview, dislikeReview, editReview, deleteReview };
+const reportReview = async (reviewId, reportString, reportReason) => {
+  const response = await axios.put(`${baseurl}/api/reviews/report/${reviewId}`, {reportString, reportReason})
+  return response.data
+}
+
+export { getReviewsForACourse, getUserById, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview };

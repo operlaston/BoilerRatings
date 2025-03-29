@@ -20,6 +20,7 @@ import {
   dislikeReview,
   editReview,
   deleteReview,
+  reportReview,
 } from "../services/review.service.js";
 
 const ReviewPage = ({
@@ -37,6 +38,7 @@ const ReviewPage = ({
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
   const [isReporting, setIsReporting] = useState(false);
+  const [reportId, setReportId] = useState(null)
 
   const [userMap, setUserMap] = useState({});
 
@@ -232,6 +234,7 @@ const ReviewPage = ({
 
   const handleReportClick = (reviewId) => {
     setReportingReview(reviewId);
+    setReportId(reviewId)
     setReportReason("");
     setReportDetails("");
   };
@@ -241,6 +244,9 @@ const ReviewPage = ({
   const handleReportSubmit = () => {
     if (!reportReason) return;
     setIsReporting(true);
+    console.log("Reason",reportReason)
+    console.log("Details",reportDetails)
+    reportReview(reportId, reportDetails, reportReason)
     setTimeout(() => {
       setReportingReview(null);
       setIsReporting(false);
