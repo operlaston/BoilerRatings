@@ -48,4 +48,14 @@ requirementRouter.put('/:id', async (req, res) => {
   }
 })
 
+requirementRouter.delete('/deleteall', async (req, res) => {
+  try {
+    await Requirement.deleteMany({})
+    res.status(204).end()
+  }
+  catch(e) {
+    res.status(500).json({'error': 'server error'})
+  }
+})
+
 module.exports = requirementRouter
