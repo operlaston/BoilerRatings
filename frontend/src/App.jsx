@@ -90,12 +90,11 @@ function App() {
           }
         />
         <Route
-          path="/course"
+          path="/course/:course"
           element={
             <CourseInfo
               user={user}
               setUser={setUser}
-              course={course}
               setCourse={setCourse}
               setCourses={setCourses}
               refreshCourses={refreshCourses}
@@ -114,15 +113,16 @@ function App() {
           }
         />{" "}
 
-        <Route 
-          path="/user/:username"
-          element={
-            <User
-              user={user}
-              setUser={setUser}
-            />
-          }
-        />
+        <Route path="/user/">
+          <Route
+            index //username is empty
+            element={<User user={"notfound"} setUser={setUser} />}
+          />
+          <Route
+            path=":username" 
+            element={<User user={user} setUser={setUser} />}
+          />
+        </Route>
         {/* Update route */}
       </Routes>
     </Router>

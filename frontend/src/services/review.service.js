@@ -8,6 +8,12 @@ const getReviewsForACourse = async (course) => {
   return response.data;
 };
 
+const getUserById= async (userId) => {
+  const response = await axios.get(`${baseurl}/api/users/${userId}`)
+  console.log(response.data)
+  return response.data
+}
+
 const addReview = async (review, courseId) => {
   console.log('enjoyment type')
   console.log(typeof review.enjoyment)
@@ -42,4 +48,9 @@ const deleteReview = async (reviewId) => {
   return response.data
 }
 
-export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview };
+const reportReview = async (reviewId, reportString, reportReason) => {
+  const response = await axios.put(`${baseurl}/api/reviews/report/${reviewId}`, {reportString, reportReason})
+  return response.data
+}
+
+export { getReviewsForACourse, getUserById, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview };

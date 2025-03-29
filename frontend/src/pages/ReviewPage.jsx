@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Star,
@@ -13,11 +14,13 @@ import {
   CheckCircle,
 } from "lucide-react";
 import {
+  getUserById,
   addReview,
   likeReview,
   dislikeReview,
   editReview,
   deleteReview,
+  reportReview,
 } from "../services/review.service.js";
 
 const ReviewPage = ({
@@ -32,9 +35,12 @@ const ReviewPage = ({
   const [editingReview, setEditingReview] = useState(null);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
   const [reportingReview, setReportingReview] = useState(null);
-  const [reportReason, setReportReason] = useState('');
-  const [reportDetails, setReportDetails] = useState('');
+  const [reportReason, setReportReason] = useState("");
+  const [reportDetails, setReportDetails] = useState("");
   const [isReporting, setIsReporting] = useState(false);
+  const [reportId, setReportId] = useState(null)
+
+  const [userMap, setUserMap] = useState({});
 
   const currentUser = user ?? {};
   const courseId = course.id;
@@ -42,28 +48,24 @@ const ReviewPage = ({
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
+  const navigate = useNavigate();
 
   // Filter options
   const semesterOptions = [
-    'Fall 2023',
-    'Winter 2023',
-    'Spring 2023',
-    'Summer 2023',
-    'Fall 2024',
-    'Winter 2024',
-    'Spring 2024',
-    'Summer 2024',
-    'Winter 2025',
-    'Spring 2025'
+    "Fall 2023",
+    "Winter 2023",
+    "Spring 2023",
+    "Summer 2023",
+    "Fall 2024",
+    "Winter 2024",
+    "Spring 2024",
+    "Summer 2024",
+    "Winter 2025",
+    "Spring 2025",
   ];
 
   // Likes range options
-  const likesOptions = [
-    '0-2',
-    '3-5',
-    '6-8',
-    '9+'
-  ];
+  const likesOptions = ["0-2", "3-5", "6-8", "9+"];
 
   useEffect(() => {
     if (user) {
@@ -75,22 +77,66 @@ const ReviewPage = ({
   }, [user, course]);
 
   useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Get unique user IDs from reviews
+        const userIds = course.reviews
+          .map((review) => review.user)
+          .filter(Boolean);
+
+        const uniqueUserIds = [...new Set(userIds)];
+
+        // Batch fetch users
+        const users = await Promise.all(
+          uniqueUserIds.map(
+            (id) => getUserById(id).catch(() => null) // Handle individual errors
+          )
+        );
+
+        // Create username map
+        const newUserMap = {};
+        users.forEach((user) => {
+          if (user?.id) newUserMap[user.id] = user.username;
+        });
+
+        setUserMap(newUserMap);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
+    };
+
+    if (course?.reviews?.length) {
+      fetchUserData();
+    }
+  }, [course.reviews]); // Only re-run when reviews change
+
+  // Memoized filtered reviews with usernames
+  const processedReviews = useMemo(() => {
+    return filteredReviews.map((review) => ({
+      ...review,
+      username: review.anon ? "Anonymous" : userMap[review.user] || "Anonymous",
+    }));
+  }, [filteredReviews, userMap]);
+
+  useEffect(() => {
     if (!filterType || !selectedFilter) {
       setFilteredReviews(reviews);
     } else {
-      const filtered = reviews.filter(review => {
-        if (filterType === 'semester') {
+      const filtered = reviews.filter((review) => {
+        if (filterType === "semester") {
           return review.semesterTaken === selectedFilter;
-        } else if (filterType === 'likes') {
+        } else if (filterType === "likes") {
           const likes = review.likes || 0;
-          if (selectedFilter === '0-2') return likes >= 0 && likes <= 2;
-          if (selectedFilter === '3-5') return likes >= 3 && likes <= 5;
-          if (selectedFilter === '6-8') return likes >= 6 && likes <= 8;
-          if (selectedFilter === '9+') return likes >= 9;
+          if (selectedFilter === "0-2") return likes >= 0 && likes <= 2;
+          if (selectedFilter === "3-5") return likes >= 3 && likes <= 5;
+          if (selectedFilter === "6-8") return likes >= 6 && likes <= 8;
+          if (selectedFilter === "9+") return likes >= 9;
         }
         return true;
       });
-      const sortedFiltered = filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+      const sortedFiltered = filtered.sort(
+        (a, b) => (b.likes || 0) - (a.likes || 0)
+      );
       setFilteredReviews(sortedFiltered);
     }
   }, [filterType, selectedFilter, reviews]);
@@ -103,7 +149,9 @@ const ReviewPage = ({
     deleteReview(reviewId)
       .then(() => {
         setReviews(reviews.filter((review) => review.id !== reviewId));
-        setFilteredReviews(filteredReviews.filter((review) => review.id !== reviewId));
+        setFilteredReviews(
+          filteredReviews.filter((review) => review.id !== reviewId)
+        );
         setSelectedReviewId(null);
         refreshCourses();
       })
@@ -186,8 +234,9 @@ const ReviewPage = ({
 
   const handleReportClick = (reviewId) => {
     setReportingReview(reviewId);
-    setReportReason('');
-    setReportDetails('');
+    setReportId(reviewId)
+    setReportReason("");
+    setReportDetails("");
   };
 
   const [showReportSuccess, setShowReportSuccess] = useState(false);
@@ -195,6 +244,9 @@ const ReviewPage = ({
   const handleReportSubmit = () => {
     if (!reportReason) return;
     setIsReporting(true);
+    console.log("Reason",reportReason)
+    console.log("Details",reportDetails)
+    reportReview(reportId, reportDetails, reportReason)
     setTimeout(() => {
       setReportingReview(null);
       setIsReporting(false);
@@ -241,37 +293,53 @@ const ReviewPage = ({
             </div>
             <p className="text-gray-600 dark:text-gray-400">
               Based on {filteredReviews.length} reviews
-              {filteredReviews.length !== reviews.length && ` (filtered from ${reviews.length})`}
+              {filteredReviews.length !== reviews.length &&
+                ` (filtered from ${reviews.length})`}
             </p>
           </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
           <select
-            value={filterType || ''}
+            value={filterType || ""}
             onChange={(e) => {
               setFilterType(e.target.value || null);
               setSelectedFilter(null);
             }}
             className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
-            <option value="" className="dark:text-white">Filter by...</option>
-            <option value="semester" className="dark:text-white">Semester Taken</option>
-            <option value="likes" className="dark:text-white">Number of Likes</option>
+            <option value="" className="dark:text-white">
+              Filter by...
+            </option>
+            <option value="semester" className="dark:text-white">
+              Semester Taken
+            </option>
+            <option value="likes" className="dark:text-white">
+              Number of Likes
+            </option>
           </select>
 
           {filterType && (
             <select
-              value={selectedFilter || ''}
+              value={selectedFilter || ""}
               onChange={(e) => setSelectedFilter(e.target.value || null)}
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
-              <option value="">Select {filterType === 'semester' ? 'semester' : 'likes range'}...</option>
-              {(filterType === 'semester' ? semesterOptions : likesOptions).map(option => (
-                <option key={option} value={option} className="dark:text-white">
-                  {option}
-                </option>
-              ))}
+              <option value="">
+                Select {filterType === "semester" ? "semester" : "likes range"}
+                ...
+              </option>
+              {(filterType === "semester" ? semesterOptions : likesOptions).map(
+                (option) => (
+                  <option
+                    key={option}
+                    value={option}
+                    className="dark:text-white"
+                  >
+                    {option}
+                  </option>
+                )
+              )}
             </select>
           )}
 
@@ -289,15 +357,16 @@ const ReviewPage = ({
         </div>
 
         <div className="flex-column space-y-6">
-          {filteredReviews.map((review) => (
+          {processedReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">
-                    {review.anon ? "Anonymous" : review.user || ""}
+                  <h3 className="font-medium text-gray-900 dark:text-white"
+                  onClick={() => navigate(`/user/${review.username}`)}>
+                    {review.username}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
@@ -329,7 +398,7 @@ const ReviewPage = ({
                             type="button"
                             onClick={(e) => {
                               e.stopPropagation();
-                              setSelectedReviewId(null)
+                              setSelectedReviewId(null);
                             }}
                             className="w-full p-2 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                           >
@@ -507,7 +576,7 @@ const ReviewPage = ({
                         Submitting...
                       </>
                     ) : (
-                      'Submit Report'
+                      "Submit Report"
                     )}
                   </button>
                 </div>
