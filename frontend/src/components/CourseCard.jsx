@@ -1,4 +1,4 @@
-const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, numReviews, requirements, onClick}) => {
+const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, numReviews, /*requirements,*/ onClick}) => {
   return (
     <div className="bg-gray-800 text-white py-4 px-5 rounded-lg cursor-pointer
       hover:scale-102 transition-all
@@ -14,7 +14,7 @@ const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, 
       <div className = "text-gray-700 dark:text-gray-300">Enjoyment: {enjoyment} | Difficulty: {difficulty}</div>
       <div className = "text-gray-700 dark:text-gray-300">Recommended: {recommended*100}%</div>
       <div className = "text-gray-700 dark:text-gray-300">Number of Reviews: {numReviews}</div>
-      <div className="flex gap-x-2 flex-wrap pt-2">
+      {/* <div className="flex gap-x-2 flex-wrap pt-2">
         {
           requirements.map((req, index) =>
             <div className="text-sm text-gray-700 dark:text-gray-300 rounded-full bg-gray-700 shadow-lg py-1 px-3" key={index}>
@@ -22,7 +22,7 @@ const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, 
             </div>
           )
         }
-      </div>
+      </div> */}
     </div>
   )
 }

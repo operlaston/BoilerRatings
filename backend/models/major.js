@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const majorSchema = new mongoose.Schema({
   name: String,
-  requirements: [{type: mongoose.Schema.Types.ObjectId, required: true}]
+  requirements: [{type: mongoose.Schema.Types.ObjectId, ref: 'Requirement'}]
 })
 
 majorSchema.set('toJSON', {

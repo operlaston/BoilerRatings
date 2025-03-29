@@ -131,7 +131,7 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
                 difficulty={course.difficulty}
                 recommended={course.recommended}
                 numReviews={course.numReviews}
-                requirements={course.requirements}
+                // requirements={course.requirements}
                 onClick={() => onClick(course)}
               />
             ))}
