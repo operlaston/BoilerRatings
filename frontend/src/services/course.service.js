@@ -7,4 +7,9 @@ const getCourses = async () => {
   return response.data
 }
 
-export { getCourses }
+const getCourseByName = async (name) => {
+  const response = await axios.get(`${baseurl}/api/courses/${name}`)
+  return response.data
+}
+
+export { getCourses, getCourseByName }

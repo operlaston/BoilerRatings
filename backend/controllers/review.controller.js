@@ -32,7 +32,7 @@ reviewRouter.post("/", async (req, res) => {
   try {
     const courseExists = await Course.findById(course);
     if (!courseExists) {
-      return res.status(401).json({ error: "Course not found" });
+      return res.status(404).json({ error: "Course not found" });
     }
     const newReview = new Review(review);
     const savedReview = await newReview.save();
@@ -422,8 +422,9 @@ reviewRouter.put('/dislike/:id', async (req, res) => {
 // report a review
 // client should send string of report content
 reviewRouter.put('/report/:id', async(req, res) => {
-    const { reportString } = req.body
+    const { reportString, reportReason } = req.body
     const reviewID = req.params.id
+
 
     try {
         // find review
@@ -434,9 +435,14 @@ reviewRouter.put('/report/:id', async(req, res) => {
         if (reportString == null) {
             return res.status(401).json({ "error": "null report string" })
         }
+        if (reportReason == null) {
+          return res.status(401).json({ "error": "null Reason string" })
+      }
 
         const report = new Report({
-            reportContent: reportString,
+            content: reportString,
+            reason: reportReason,
+            review: reviewID,
             isResolved: false
         });
 

@@ -22,7 +22,7 @@ courseRouter.get('/requirement', async (req, res) => {
     }
 })
 
-courseRouter.get('/:id', async (req, res) => {
+/*courseRouter.get('/:id', async (req, res) => { // Commenting this out it might break something 
     try {
         const course = await Course.findById(req.params.id)
         .populate({
@@ -38,7 +38,7 @@ courseRouter.get('/:id', async (req, res) => {
         console.log('Course Fetch error', err)
         res.status(400).json({error: "1 bad request"})
     }
-})
+})*/
 
 courseRouter.get('/', async (req, res) => {
     try {
@@ -64,6 +64,26 @@ courseRouter.post('/', async (req,res) => {
     } catch (error) {
         console.log(error)
         res.status(400).json({error: 'Invalid Course Data'})
+    }
+})
+
+courseRouter.get('/:courseNumber', async (req,res) => {
+    let num = req.params.courseNumber
+    num = num.toUpperCase();
+    num = num.replace(/([A-Z]+)(\d+)/, '$1 $2');
+    //Number is now in form like such that cs180 -> CS 180
+    try {
+        const course = await Course.findOne({number: num}).populate({
+            path: 'reviews'
+        })
+        .populate('instructors', 'name')
+        if (!course) {
+            res.status(404).json({message: "Course Not Found"});
+        }
+        res.status(200).json(course)
+    }
+    catch( error ) {
+        res.status(400).json({error: "Invalid Course Number"})
     }
 })
 

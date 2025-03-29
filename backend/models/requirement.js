@@ -1,8 +1,11 @@
 const mongoose = require('mongoose')
 
 const requirementSchema = new mongoose.Schema({
-  name: String,
-  courses: [{type: [{type: String}]}],
+  name: {type: String, required: true},
+  subrequirements: [{
+    credits: {type: Number, required: true},
+    courses: {type: [String], required: true}
+  }],
 })
 
 requirementSchema.set('toJSON', {
@@ -14,6 +17,6 @@ requirementSchema.set('toJSON', {
   }
 })
 
-const Requirement = mongoose.Model('Requirement', requirementSchema)
+const Requirement = mongoose.model('Requirement', requirementSchema)
 
 module.exports = Requirement
