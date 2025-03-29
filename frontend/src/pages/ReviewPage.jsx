@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   Star,
@@ -45,6 +46,7 @@ const ReviewPage = ({
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
+  const navigate = useNavigate();
 
   // Filter options
   const semesterOptions = [
@@ -356,7 +358,8 @@ const ReviewPage = ({
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white">
+                  <h3 className="font-medium text-gray-900 dark:text-white"
+                  onClick={() => navigate(`/user/${review.username}`)}>
                     {review.username}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
