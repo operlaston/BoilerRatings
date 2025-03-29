@@ -29,7 +29,6 @@ const courseSchema = new mongoose.Schema({
         ref: 'Review'
     }],
     prerequisites: [[String]],
-    requirements: [String],
     creditHours: Number,
     conflicts: [{
         type: mongoose.Schema.Types.ObjectId,
