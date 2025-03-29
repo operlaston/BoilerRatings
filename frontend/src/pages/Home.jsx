@@ -19,7 +19,9 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
 
   const onClick = async (course) => {
     setCourse(course);
-    navigate("/course");
+    let num = course.number;
+    num = num.toLowerCase().replace(/\s+/g, '');
+    navigate(`/course/${num}`);
   };
 
   const sortCourses = (courses) => {

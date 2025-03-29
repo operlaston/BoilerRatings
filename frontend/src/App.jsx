@@ -90,12 +90,11 @@ function App() {
           }
         />
         <Route
-          path="/course"
+          path="/course/:course"
           element={
             <CourseInfo
               user={user}
               setUser={setUser}
-              course={course}
               setCourse={setCourse}
               setCourses={setCourses}
               refreshCourses={refreshCourses}
