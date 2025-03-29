@@ -5,6 +5,7 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ReviewPage from "./pages/ReviewPage";
+import CourseCompare from "./pages/CourseCompare";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from "./pages/Course";
 import SavedDegree from "./pages/SavedDegree";
@@ -51,6 +52,7 @@ function App() {
         <Link to="/degree">Degree</Link>
         <Link to="/saved-degree">Saved Degree Plans</Link>
         {user !== null ? <Link to={`/user/${user.username}`}>User</Link> : ''}
+        <Link to ="/compare">Compare Courses</Link>
       </div>
 
       <Routes>
@@ -113,7 +115,13 @@ function App() {
             />
           }
         />{" "}
-
+        <Route
+          path="/compare"
+          element={
+            <CourseCompare
+            />
+          }
+        />
         <Route path="/user/">
           <Route
             index //username is empty
