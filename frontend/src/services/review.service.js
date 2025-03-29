@@ -9,6 +9,10 @@ const getReviewsForACourse = async (course) => {
 };
 
 const addReview = async (review, courseId) => {
+  console.log('enjoyment type')
+  console.log(typeof review.enjoyment)
+  console.log('difficulty type')
+  console.log(typeof review.difficulty)
   const response = await axios.post(`${baseurl}/api/reviews`, {
     review,
     course: courseId, //this was the issue, it was course by itself before

@@ -10,6 +10,7 @@ const reviewRouter = require('./controllers/review.controller')
 const courseRouter = require('./controllers/course.controller')
 const degreePlanRouter = require('./controllers/degreeplan.controller')
 const instructorRouter = require('./controllers/instructor.controller')
+const requirementRouter = require('./controllers/requirement.controller')
 const { requestLogger, unknownEndpoint } = require('./utils/middleware')
 const app = express()
 
@@ -33,6 +34,7 @@ app.use('/api/reviews', reviewRouter)
 app.use('/api/courses', courseRouter)
 app.use('/api/degreeplans', degreePlanRouter)
 app.use('/api/instructors', instructorRouter)
+app.use('/api/requirements', requirementRouter)
 
 app.use(unknownEndpoint)
 
