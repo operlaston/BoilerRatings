@@ -8,6 +8,12 @@ const getReviewsForACourse = async (course) => {
   return response.data;
 };
 
+const getUserById= async (userId) => {
+  const response = await axios.get(`${baseurl}/api/users/${userId}`)
+  console.log(response.data)
+  return response.data
+}
+
 const addReview = async (review, courseId) => {
   const response = await axios.post(`${baseurl}/api/reviews`, {
     review,
@@ -38,4 +44,4 @@ const deleteReview = async (reviewId) => {
   return response.data
 }
 
-export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview };
+export { getReviewsForACourse, getUserById, addReview, likeReview, dislikeReview, editReview, deleteReview };
