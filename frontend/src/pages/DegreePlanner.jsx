@@ -575,11 +575,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       for (const group of prereqGroups) {
         console.log("Group", group)
         console.log("CourseMap", courseMap)
-        // For each OR group, we can choose any one (we'll pick the first one)
         group.forEach(courseName => {
           if (courseMap.has(courseName)) {
             console.log("Hitting");
-            visit(courseName); // Assuming visit takes a course name as argument
+            visit(courseName);
           }
         });
       }
