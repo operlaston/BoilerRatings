@@ -206,7 +206,8 @@ usersRouter.post('/test/add', async (req, res) => {
       major: [],
       reviews: [],
       plans: [],
-      likedReviews: []
+      likedReviews: [],
+      isVerified: true
     })
     const savedUser = await user.save()
     res.status(201).json(savedUser)
