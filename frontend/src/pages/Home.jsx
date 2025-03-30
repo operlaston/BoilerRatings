@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Course from "../components/CourseCard";
+import CourseCard from "../components/CourseCard";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
 import { getMajors } from '../services/major.service.js'
 import { getCourses } from "../services/course.service";
@@ -122,7 +122,7 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
                 );
               })
             ).map((course) => (
-              <Course
+              <CourseCard
                 key={course.id}
                 number={course.number}
                 name={course.name}
@@ -130,7 +130,7 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
                 enjoyment={course.enjoyment}
                 difficulty={course.difficulty}
                 recommended={course.recommended}
-                numReviews={course.numReviews}
+                numReviews={course.reviews.length}
                 // requirements={course.requirements}
                 onClick={() => onClick(course)}
               />
