@@ -17,7 +17,7 @@ const sendEmail = async (to, subject, text) => {
         await transport.sendMail(mailOptions);
         console.log(`Email sent to ${to}`);
     } catch (error) {
-        console.log("Failed to send email");
+        console.log("Failed to send email", error);
         throw new Error("Email failed to send");
     }
 };

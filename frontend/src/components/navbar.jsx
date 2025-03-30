@@ -1,10 +1,11 @@
 import React, { useEffect, useState, useRef } from 'react'
 import { User, ChevronDown, LogOut, Settings } from 'lucide-react'
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-export function Navbar({user, onLogout,}) {
+export function Navbar({user, onLogout}) {
   const [isProfileOpen, setIsProfileOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const navigate = useNavigate()
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -51,11 +52,11 @@ export function Navbar({user, onLogout,}) {
           </div>
           {/* Right side - Profile section */}
           <div className="flex items-center pr-8">
-            {(user != null) ? (
+            {(user !== null) ? (
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 focus:outline-none"
+                  className="flex items-center space-x-2 focus:outline-none cursor-pointer"
                 >
                   <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                       <img
@@ -69,16 +70,17 @@ export function Navbar({user, onLogout,}) {
                 {/* Dropdown Menu */}
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-2 w-48 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-                    <a
+                    <button
                       href="#"
-                      className="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center cursor-pointer"
+                      onClick={() => navigate(`/user/${user.username}`)}
                     >
                       <Settings className="h-4 w-4 mr-2" />
                       Profile Information
-                    </a>
+                    </button>
                     <button
                       onClick={onLogout}
-                      className="w-full text-left block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center cursor-pointer"
                     >
                       <LogOut className="h-4 w-4 mr-2" />
                       Logout

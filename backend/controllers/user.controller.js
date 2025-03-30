@@ -47,7 +47,7 @@ usersRouter.post('/', async (req, res) => {
   }
   catch (err) {
     // catches major not existing (error) and bad requests
-    console.log("an error occured while creating user")
+    console.log("an error occured while creating user", err)
     res.status(400).json({"error": "bad request"})
   }
 })

@@ -70,7 +70,7 @@ courseRouter.post('/', async (req,res) => {
 courseRouter.get('/:courseNumber', async (req,res) => {
     let num = req.params.courseNumber
     num = num.toUpperCase();
-    num = num.replace(/([A-Z]+)(\d+)/, '$1 $2');
+    num = num.replace(/([A-Z]+)([0-9]+)/, '$1 $2');
     //Number is now in form like such that cs180 -> CS 180
     try {
         const course = await Course.findOne({number: num}).populate({
