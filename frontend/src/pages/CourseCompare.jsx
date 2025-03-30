@@ -130,7 +130,7 @@ function CourseCompare({requirements}) {
                       difficulty={course1.difficulty}
                       recommended={course1.recommended}
                       numReviews={course1.numReviews}
-                      requirements={course1.requirements}
+                      requirements={course1.prerequisites}
                     />
                     : ""
                   }
@@ -146,7 +146,7 @@ function CourseCompare({requirements}) {
                       difficulty={course2.difficulty}
                       recommended={course2.recommended}
                       numReviews={course2.numReviews}
-                      requirements={course2.requirements}
+                      requirements={course2.prerequisites}
                     />
                     : ""
                 }

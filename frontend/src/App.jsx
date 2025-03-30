@@ -81,7 +81,6 @@ function App() {
       <Navbar
         user={user}
         onLogout={onLogout}
-        
       />
 
       <Routes>
@@ -130,6 +129,15 @@ function App() {
             />
           }
         />
+        {/* Route for class comparison page */}
+        <Route
+          path="/compare"
+          element={
+            <CourseCompare
+              requirements={requirements}
+            />
+          }
+        />
         {/* Route for the Saved Degree Plans page */}
         <Route
           path="/saved-degree"
@@ -141,14 +149,6 @@ function App() {
             />
           }
         />{" "}
-        <Route
-          path="/compare"
-          element={
-            <CourseCompare
-              requirements={requirements}
-            />
-          }
-        />
         <Route path="/user/">
           <Route
             index //username is empty
