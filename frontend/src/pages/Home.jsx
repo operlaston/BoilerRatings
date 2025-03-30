@@ -137,7 +137,7 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
                   course.description.toLowerCase().replace(/\s+/g, "").includes(searchToMatch)
                 );
               })
-            ).map((course) => (
+            ).slice(0,90).map((course) => (
               <CourseCard
                 key={course.id}
                 number={course.number}
