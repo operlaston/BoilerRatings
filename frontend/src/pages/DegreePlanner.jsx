@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
-import { createDegreePlan } from "../services/degreeplan.service";
+import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
 import SaveDegreeForm from "../components/SaveDegreeForm";
 import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
 
@@ -93,8 +93,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupState, setPopupState] = useState("Save");
   const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
-  const coursesRef = useRef(courses);
-
+  const [major, setMajor] = useState("");
 
   const fetchCourses = async () => { //Fetch courses from database
     try {
@@ -152,8 +151,26 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       console.log("Error fetching courses", error);
     }
   }
+  const fetchMajor = async () => {
+    try {
+      console.log("Getting user's major")
+      let majorIds = user.major;
+      const promises = [];
+      for (const id of majorIds) {
+        promises.push(getMajorById(id));
+      }
+      const userMajorObjects = await Promise.all(promises);
+
+      console.log(userMajorObjects);
+    } catch (error) {
+      console.log("Error fetching major", error);
+    }
+  }
   useEffect(() => {// Fetch courses on load
     fetchCourses();
+    if (user) {
+      fetchMajor(user);
+    }
   }, []);
   const filteredCourses = availableCourses //Filter courses to show in search bar
     .filter((course) => {
