@@ -11,26 +11,28 @@ const GRADUATION_SEMESTERS = [
   "Spring 2025",
   "Fall 2025",
   "Spring 2026",
+  "Fall 2026",
+  "Spring 2027"
 ];
 
-const REQUIREMENTS = [
-  "Calculus I", 
-  "Calculus II", 
-  "Physics I",
-  "Physics II" 
-]
+// const REQUIREMENTS = [
+//   "Calculus I", 
+//   "Calculus II", 
+//   "Physics I",
+//   "Physics II" 
+// ]
 
-function DegreePlannersettingsForm({ user }) {
-  const [displayName, setDisplayName] = useState("");
+function DegreePlannersettingsForm({  }) {
   const [allMajors, setAllMajors] = useState([]);
-  const [allRequirements, setAllRequirements] = useState(REQUIREMENTS);
   const [selectedMajors, setSelectedMajors] = useState([]);
-  const [selectedRequirements, setSelectedRequirements] = useState([]);
   const [graduationSemester, setGraduationSemester] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   const [isMajorsOpen, setIsMajorsOpen] = useState(false);
-  const [isRequirementsOpen, setIsRequirementsOpen] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // const [allRequirements, setAllRequirements] = useState(REQUIREMENTS);
+  // const [selectedRequirements, setSelectedRequirements] = useState([]);
+  // const [isRequirementsOpen, setIsRequirementsOpen] = useState(false);
   const majorsRef = useRef(null);
   const requirementsRef = useRef(null);
   const navigate = useNavigate();
@@ -61,20 +63,22 @@ function DegreePlannersettingsForm({ user }) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
   const handleSubmit = async (e) => {
 
   };
 
   const handleMajorToggle = (major) => {
+    console.log(allMajors);
     setSelectedMajors((prev) =>
       prev.includes(major) ? prev.filter((m) => m !== major) : [...prev, major],
     );
   };
-  const handleRequirementToggle = (requirement) => {
-    setSelectedRequirements((prev) =>
-      prev.includes(requirement) ? prev.filter((m) => m !== requirement) : [...prev, requirement],
-    );
-  };
+  // const handleRequirementToggle = (requirement) => {
+  //   setSelectedRequirements((prev) =>
+  //     prev.includes(requirement) ? prev.filter((m) => m !== requirement) : [...prev, requirement],
+  //   );
+  // };
   return (
     <div className="relative w-lg p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">
@@ -139,7 +143,7 @@ function DegreePlannersettingsForm({ user }) {
             )}
           </div>
         </div>
-        <div ref={requirementsRef}>
+        {/* <div ref={requirementsRef}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Select your completed requirement(s)
           </label>
@@ -190,7 +194,7 @@ function DegreePlannersettingsForm({ user }) {
               </div>
             )}
           </div>
-        </div>
+        </div> */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Graduation Semester

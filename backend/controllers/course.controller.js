@@ -37,7 +37,7 @@ courseRouter.get('/', async (req, res) => {
 
 courseRouter.post('/', async (req,res) => {
     const course = new Course(req.body)
-
+    
     try {
         const savedCourse = await course.save()
         res.status(201).json(savedCourse)
@@ -50,7 +50,7 @@ courseRouter.post('/', async (req,res) => {
 courseRouter.get('/:courseNumber', async (req,res) => {
     let num = req.params.courseNumber
     num = num.toUpperCase();
-    num = num.replace(/([A-Z]+)(\d+)/, '$1 $2');
+    num = num.replace(/([A-Z]+)([0-9]+)/, '$1 $2');
     //Number is now in form like such that cs180 -> CS 180
     try {
         const course = await Course.findOne({number: num}).populate({
@@ -66,5 +66,32 @@ courseRouter.get('/:courseNumber', async (req,res) => {
         res.status(400).json({error: "Invalid Course Number"})
     }
 })
+
+// courseRouter.post('/groupadd', async (req, res) => {
+//     const courses = req.body
+//     try {
+//         for (const course of courses) {
+//             const cleanedCourse = new Course({
+//                 name: course.Title,
+//                 number: course.Code,
+//                 description: course.Description,
+//                 instructors: [],
+//                 difficulty: 0,
+//                 enjoyment: 0,
+//                 recommended: 0,
+//                 reviews: [],
+//                 prerequisites: [],
+//                 creditHours: course.CreditHours,
+//                 conflicts: []
+//             })
+//             await cleanedCourse.save()
+//         }
+//         res.status(201).json({})
+//     }
+//     catch(e) {
+//         console.log('error occurred during group add of courses', e)
+//         res.status(500).json({error: 'server error'})
+//     }
+// })
 
 module.exports = courseRouter

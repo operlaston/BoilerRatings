@@ -15,4 +15,9 @@ const getAllPlans = async (user) => {
     return response.data
 }
 
-export { createDegreePlan,  getAllPlans }
+const getMajorById = async (id) => {
+  const response = await axios.get(`${baseurl}/api/majors/${id}`)
+  return response.data
+}
+
+export { createDegreePlan,  getAllPlans, getMajorById }

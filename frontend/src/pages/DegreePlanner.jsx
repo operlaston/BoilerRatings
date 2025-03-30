@@ -3,7 +3,7 @@ import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
-import { createDegreePlan } from "../services/degreeplan.service";
+import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
 import SaveDegreeForm from "../components/SaveDegreeForm";
 import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
 
@@ -93,8 +93,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupState, setPopupState] = useState("Save");
   const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
-  const coursesRef = useRef(courses);
-
+  const [major, setMajor] = useState("");
 
   const fetchCourses = async () => { //Fetch courses from database
     try {
@@ -152,8 +151,26 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       console.log("Error fetching courses", error);
     }
   }
+  const fetchMajor = async () => {
+    try {
+      console.log("Getting user's major")
+      let majorIds = user.major;
+      const promises = [];
+      for (const id of majorIds) {
+        promises.push(getMajorById(id));
+      }
+      const userMajorObjects = await Promise.all(promises);
+
+      console.log(userMajorObjects);
+    } catch (error) {
+      console.log("Error fetching major", error);
+    }
+  }
   useEffect(() => {// Fetch courses on load
     fetchCourses();
+    if (user) {
+      fetchMajor(user);
+    }
   }, []);
   const filteredCourses = availableCourses //Filter courses to show in search bar
     .filter((course) => {
@@ -464,7 +481,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
   const handleAutoFillClick = () => {
     let orderedCourses = (sortCoursesForAutofill(["MA 261", "CS 180","CS 252", "CS 182", "CS 240", "CS 250" , "CS 251"], courses.concat(availableCourses)));
-    console.log(orderedCourses);
+    console.log("Ordered Courses",orderedCourses);
     let lastCourse = orderedCourses[0];
     let courseOrder = [[lastCourse]]
     for (let i = 1; i < orderedCourses.length; i++) {
@@ -517,22 +534,41 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     const coreSet = new Set(coreCourses);
     const courseMap = new Map();
     allCourses.forEach(course => courseMap.set(course.name, course));
+    const missingPrereqs = new Set();
 
     console.log(coreCourses);
     console.log(allCourses);
     // First, build a map of all core courses with their filtered prerequisites
     allCourses.forEach(course => {
       if (coreSet.has(course.name)) {
-        // Filter prerequisites to only include those that are core courses
+        // Process all prerequisites without filtering for coreSet
         const filteredPrereqs = (course.prerequisites || []).map(prereqGroup =>
-          prereqGroup.filter(prereq => coreSet.has(prereq))
-            .filter(prereqGroup => prereqGroup.length > 0)); // Remove empty groups
-          
+          prereqGroup.map(prereq => {
+            // Track missing prerequisites if they are not in the coreSet
+            if (!coreSet.has(prereq)) {
+              missingPrereqs.add(prereq);
+            }
+            return prereq;
+          })
+        );
+    
+        console.log("FilteredPreqs", filteredPrereqs);
         coursePrereqMap[course.name] = filteredPrereqs;
       }
     });
-    console.log(coursePrereqMap);
-
+    console.log("Course Prereq Map", coursePrereqMap);
+    console.log("New prereq",missingPrereqs)
+    missingPrereqs.forEach(prereq => {
+      if (courseMap.has(prereq)) {
+          coreCourses.push(prereq);
+          coreSet.add(prereq);
+          coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
+            prereqGroup.filter(p => courseMap.has(p))
+        );
+      }
+  });
+  console.log("Course Prereq Map", coursePrereqMap);
+    const allSortedCourses = Array.from(coreSet)
     // Initialize visited and visiting sets for cycle detection
     const visited = new Set();
     const visiting = new Set();
@@ -554,23 +590,30 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       // Visit all prerequisites first
       const prereqGroups = coursePrereqMap[courseName] || [];
       for (const group of prereqGroups) {
-        // For each OR group, we can choose any one (we'll pick the first one)
-        if (group.length > 0) {
-          visit(group[0]);
-        }
+        console.log("Group", group)
+        console.log("CourseMap", courseMap)
+        group.forEach(courseName => {
+          if (courseMap.has(courseName)) {
+            console.log("Hitting");
+            visit(courseName);
+          }
+        });
       }
 
       visiting.delete(courseName);
+      console.log("Adding", courseName)
       visited.add(courseName);
       result.push(courseMap.get(courseName));
     }
 
     // Visit each core course
-    coreCourses.forEach(courseName => {
+    console.log(allSortedCourses)
+    allSortedCourses.forEach(courseName => {
       if (!visited.has(courseName)) {
-        visit(courseName);
+          console.log("Visiting", courseName);
+          visit(courseName);
       }
-    });
+  });
 
     return (result);
   }
@@ -579,7 +622,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   return (
     <div className="relative">
       <div
-        className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
+        className="relative grid gap-4 w-full bg-white dark:bg-gray-900 py-6 pr-20"
         style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
       >
         <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">

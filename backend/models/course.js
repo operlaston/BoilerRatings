@@ -16,10 +16,6 @@ const courseSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    numReviews: {
-        type: Number,
-        default: 0
-    },
     recommended: {
         type: Number,
         default: 0
@@ -29,7 +25,10 @@ const courseSchema = new mongoose.Schema({
         ref: 'Review'
     }],
     prerequisites: [[String]],
+<<<<<<< HEAD
     requirements: [{ type: String }],
+=======
+>>>>>>> 0de3cdb46815ceaac5ce0a59e2d768fc4b82d8c7
     creditHours: Number,
     conflicts: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -39,10 +38,12 @@ const courseSchema = new mongoose.Schema({
 
 courseSchema.set('toJSON', {
     transform: (document, returnedObject) => {
-      if (!returnedObject._id) return
-      returnedObject.id = returnedObject._id.toString()
-      delete returnedObject._id
-      delete returnedObject.__v
+        returnedObject.enjoyment = Math.round(returnedObject.enjoyment * 100) / 100
+        returnedObject.difficulty = Math.round(returnedObject.difficulty * 100) / 100
+        if (!returnedObject._id) return
+        returnedObject.id = returnedObject._id.toString()
+        delete returnedObject._id
+        delete returnedObject.__v
     }
 })
 

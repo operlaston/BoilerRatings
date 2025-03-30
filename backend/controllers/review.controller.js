@@ -10,7 +10,7 @@ reviewRouter.get("/:id", async (req, res) => {
     const review = await Review.findById(req.params.id)
       .populate("instructor", "instructorName gpa")
       .populate("user", "username email")
-      .populate("reports");
+      .populate("reports")
     if (!review) {
       return res.status(401).json({ error: "Review not found" });
     }

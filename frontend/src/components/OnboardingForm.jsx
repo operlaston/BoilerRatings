@@ -65,8 +65,9 @@ function OnboardingForm({user, setUser}) {
       setError("Please enter a display name");
       return;
     }
-    if ( displayName === "[deleted]" ) {
-      setError("Forbidden username. Please use a different username.")
+    if (!(/^[a-zA-Z0-9_-]+$/.test(displayName))) {
+      setError("Display name must only contain alphanumeric characters, dashes, or underscores")
+      return;
     }
     if ( selectedMajors.length == 0) {
       setError("Please select at least one major");
@@ -87,7 +88,8 @@ function OnboardingForm({user, setUser}) {
     //TODO: rig form submission to backend.
     console.log(displayName, selectedMajors, selectedMinors, graduationSemester)
     try {
-      await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      const newUser = await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      setUser(newUser)
       navigate('/')
     } catch (error) {
       setError("this username is already in use")
@@ -265,7 +267,7 @@ function OnboardingForm({user, setUser}) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center"
+          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center cursor-pointer"
         >
           {isLoading ? "Saving..." : "Complete Profile"}
         </button>

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import Course from "../components/CourseCard";
+import CourseCard from "../components/CourseCard";
 import CourseFilterForm from "../components/CourseFilterForm.jsx";
 import { getMajors } from '../services/major.service.js'
 import { getCourses } from "../services/course.service";
 
 import { useNavigate } from "react-router-dom";
 
-function Home({ course, setCourse, user, setUser, courses, setCourses, majors, setMajors }) {
+function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
@@ -42,9 +42,25 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
 
   let filteredCourses = courses;
   if (courses !== null && selectedRequirement !== "") {
-    filteredCourses = courses.filter((course) =>
-      course.requirements.includes(selectedRequirement)
-    );
+    // filteredCourses = courses.filter((course) =>
+    //   course.requirements.includes(selectedRequirement)
+    // );
+    const selectedRequirementObject = requirements.find(requirement => requirement.name === selectedRequirement)
+    filteredCourses = courses.filter(course => {
+      let found = false;
+      for (const subrequirement of selectedRequirementObject.subrequirements) {
+        // console.log('reqCourse', subrequirement.courses)
+        for (const reqCourse of subrequirement.courses) {
+          // if course is in courses, keep it
+          if (course.number === reqCourse) {
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+      return found;
+    })
   }
 
   return (
@@ -121,8 +137,8 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
                   course.description.toLowerCase().replace(/\s+/g, "").includes(searchToMatch)
                 );
               })
-            ).map((course) => (
-              <Course
+            ).slice(0,90).map((course) => (
+              <CourseCard
                 key={course.id}
                 number={course.number}
                 name={course.name}
@@ -130,8 +146,8 @@ function Home({ course, setCourse, user, setUser, courses, setCourses, majors, s
                 enjoyment={course.enjoyment}
                 difficulty={course.difficulty}
                 recommended={course.recommended}
-                numReviews={course.numReviews}
-                requirements={course.requirements}
+                numReviews={course.reviews.length}
+                // requirements={course.requirements}
                 onClick={() => onClick(course)}
               />
             ))}

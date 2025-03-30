@@ -13,6 +13,7 @@ import User from "./pages/User"
 import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
 import { getRequirements } from "./services/requirement.service";
+import { Navbar } from "./components/navbar";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -50,18 +51,38 @@ function App() {
         setRequirements(listofRequirements);
       })
       .catch((err) => console.log("Could not retrieve list of requirements", err));
+
+    onLogin(getCachedUser());
   }, []);
+
+  const onLogout = () => {
+    localStorage.setItem('cachedUser', "");
+    window.location.reload();
+  }
+
+  const onLogin = (user) => {
+    setUser(user);
+    if (user != getCachedUser) {
+      cacheUserToBrowser(user);
+    }
+  }
+
+  const cacheUserToBrowser = (user) => {
+    localStorage.setItem('cachedUser', JSON.stringify(user));
+  }
+
+  const getCachedUser = () => {
+    const user = localStorage.getItem('cachedUser');
+    return user ? JSON.parse(user) : null;
+  }
 
   return (
     <Router>
-      <div className="flex gap-x-4 text-xl">
-        <Link to="/">Home</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/degree">Degree</Link>
-        <Link to="/saved-degree">Saved Degree Plans</Link>
-        {user !== null ? <Link to={`/user/${user.username}`}>User</Link> : ''}
-        <Link to ="/compare">Compare Courses</Link>
-      </div>
+      <Navbar
+        user={user}
+        onLogout={onLogout}
+        
+      />
 
       <Routes>
         {/* Route for the home page */}
@@ -69,8 +90,6 @@ function App() {
           path="/"
           element={
             <Home
-              user={user}
-              setUser={setUser}
               course={course}
               setCourse={setCourse}
               courses={courses}
@@ -81,7 +100,7 @@ function App() {
           }
         />
         {/* Route for the login page */}
-        <Route path="/login" element={<Auth user={user} setUser={setUser} />} />
+        <Route path="/login" element={<Auth onLogin={onLogin} />} />
         {/* Route for the onboarding page */}
         <Route
           path="/onboarding"
