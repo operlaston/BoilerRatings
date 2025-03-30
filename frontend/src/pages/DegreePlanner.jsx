@@ -99,7 +99,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     try {
       console.log("Getting courses")
       const courses = await getCourses();
-      console.log(courses);
       const availableCourses = courses.map((course) => ({
         courseID: course.id,
         name: course.number,
@@ -110,12 +109,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         prerequisites: course.prerequisites,
         corequisites: [],
         conflicts: []
-      }))
+      }));//.filter(course => course.prerequisites.length > 0);
+      console.log(availableCourses);
       if (!user) {
         const savedData = localStorage.getItem("degreeData");
         if (savedData) {
           const updatedCourses = JSON.parse(savedData);
-          console.log(updatedCourses);
           const savedCourseIDs = updatedCourses.map(course => course.courseID);
           const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
           setCourses(updatePrerequisiteErrors(updatedCourses));
@@ -182,7 +181,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
         return normalizedCourseName.includes(normalizedTerm);
       });
-    })
+    }).slice(0, 20)
   const closePopup = () => {
     setIsPopupVisible(false);
   };
@@ -480,26 +479,42 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   };
 
   const handleAutoFillClick = () => {
-    let orderedCourses = (sortCoursesForAutofill(["MA 261", "CS 180","CS 252", "CS 182", "CS 240", "CS 250" , "CS 251"], courses.concat(availableCourses)));
-    console.log("Ordered Courses",orderedCourses);
-    let lastCourse = orderedCourses[0];
-    let courseOrder = [[lastCourse]]
-    for (let i = 1; i < orderedCourses.length; i++) {
-      let curr = orderedCourses[i];
-      let pushed = false
-      curr.prerequisites.forEach(prereqGroup => {
-        if (prereqGroup.includes(lastCourse.name)) {
-          courseOrder.push([curr]);
-          pushed = true;
-          return;
-        }
-      });
-      if (!pushed) {
-        courseOrder[courseOrder.length - 1].push(curr);
-      }
-      lastCourse = curr;
-    }
+    let topologicalCourses = (sortCoursesForAutofill(["MA 16100", "MA 16200", "MA 16600", "MA 26100", "CS 18000", "CS 25200", "CS 18200", "CS 24000", "CS 25000" , "CS 25100"], courses.concat(availableCourses)));
+    let courseOrder = [[topologicalCourses[0]]];
     
+    for (let i = 1; i < topologicalCourses.length; i++) {
+      let curr = topologicalCourses[i];
+      let highest = -1;
+      curr.prerequisites.forEach(prereqGroup => {
+        console.log("This prereq group has ", prereqGroup)
+        courseOrder.forEach((s, index) => {
+          console.log("This semester has ", s);
+          if (s.some(course => prereqGroup.includes(course.name))) {
+            if (index > highest) {
+              highest = index + 1;
+            }
+          }
+        });
+      });
+      if (highest == -1) {
+        highest = 0;
+      }
+      if (!courseOrder[highest]) {
+        courseOrder[highest] = [];
+      }    
+      courseOrder[highest].push(curr)
+    }
+    console.log("Collapsed courses", courseOrder);
+
+
+
+
+    //TODO: uncommend this VV
+
+
+
+
+
     // setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
     let reorderedCourses = [...courses];
@@ -590,18 +605,14 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       // Visit all prerequisites first
       const prereqGroups = coursePrereqMap[courseName] || [];
       for (const group of prereqGroups) {
-        console.log("Group", group)
-        console.log("CourseMap", courseMap)
         group.forEach(courseName => {
           if (courseMap.has(courseName)) {
-            console.log("Hitting");
             visit(courseName);
           }
         });
       }
 
       visiting.delete(courseName);
-      console.log("Adding", courseName)
       visited.add(courseName);
       result.push(courseMap.get(courseName));
     }
@@ -610,7 +621,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     console.log(allSortedCourses)
     allSortedCourses.forEach(courseName => {
       if (!visited.has(courseName)) {
-          console.log("Visiting", courseName);
           visit(courseName);
       }
   });
@@ -673,7 +683,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           })}
         </div>
 
-        <div className="col-span-4 space-y-6" style={{ height: "95vh" }}>
+        <div className="col-span-4 space-y-6" style={{ height: "90vh" }}>
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -717,8 +727,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                     <h3 className="font-medium">Errors found</h3>
                   </div>
                   {getErrorMessages().map((error, index) => (
-                    <div>
-                      <p key={index} className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
+                    <div key={index}>
+                      <p className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300">
                         {error}
                       </p>
                       <br></br>
@@ -726,7 +736,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                   ))}
                   {
                     missingRequirements.map((r, index) => (
-                      <p key={index}
+                      <p 
+                        key={index}
                         className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
                         onClick={() => handleErrorClick(r)}
                       >
@@ -798,22 +809,22 @@ const Course = ({ course, handleDragStart }) => {
         }}
         onMouseOver={(e) => handleMouseOver(e)}
         onMouseOut={(e) => handleMouseOut(e)}
-        className={(course.conflicts.length > 0 ? `bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) + " relative cursor-grab rounded border p-3 active:cursor-grabbing"}
+        className={(course.conflicts.length > 0 ? `bg-red-50 dark:bg-red-900/20 border-red-600 dark:border-red-200` : `dark:border-gray-600 dark:bg-gray-800`) + " relative cursor-grab rounded border p-2 active:cursor-grabbing"}
       >
         <p className={(course.conflicts.length > 0) ? `text-sm font-semibold text-red-800 dark:text-red-200` : `text-sm text-gray-800 dark:text-white font-semibold`}>{name}</p>
-        <p className={(course.conflicts.length > 0) ? `text-sm text-red-700 dark:text-red-300` : `text-sm text-gray-600 dark:text-gray-400`}>
+        <p className={(course.conflicts.length > 0) ? `text-xs text-red-700 dark:text-red-300` : `text-xs text-gray-600 dark:text-gray-400`}>
           {
             (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
           }
         </p>
-        {hovered && (
+        {/* {hovered && (
           <button
-            className={`absolute top-5 right-4 cursor-pointer w-6 h-6`}
+            className={`absolute top-4 right-4 cursor-pointer w-6 h-6`}
             onClick={(e) => handleInfoClicked(e)}
           >
             <Info className="text-gray-400 hover:text-gray-200" />
           </button>
-        )}
+        )} */}
       </div>
     </>
   );

@@ -43,6 +43,7 @@ export function Navbar({user, onLogout}) {
               {tabs.map((tab) => (                
                 <Link
                   to={tab.href}
+                  key={tab.name}
                   className="inline-flex items-center px-1 pt-1 text-md font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-700 transition-colors"
                 >
                   {tab.name}
