@@ -464,7 +464,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
   const handleAutoFillClick = () => {
     let orderedCourses = (sortCoursesForAutofill(["MA 261", "CS 180","CS 252", "CS 182", "CS 240", "CS 250" , "CS 251"], courses.concat(availableCourses)));
-    console.log(orderedCourses);
+    console.log("Ordered Courses",orderedCourses);
     let lastCourse = orderedCourses[0];
     let courseOrder = [[lastCourse]]
     for (let i = 1; i < orderedCourses.length; i++) {
@@ -517,22 +517,41 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     const coreSet = new Set(coreCourses);
     const courseMap = new Map();
     allCourses.forEach(course => courseMap.set(course.name, course));
+    const missingPrereqs = new Set();
 
     console.log(coreCourses);
     console.log(allCourses);
     // First, build a map of all core courses with their filtered prerequisites
     allCourses.forEach(course => {
       if (coreSet.has(course.name)) {
-        // Filter prerequisites to only include those that are core courses
+        // Process all prerequisites without filtering for coreSet
         const filteredPrereqs = (course.prerequisites || []).map(prereqGroup =>
-          prereqGroup.filter(prereq => coreSet.has(prereq))
-            .filter(prereqGroup => prereqGroup.length > 0)); // Remove empty groups
-          
+          prereqGroup.map(prereq => {
+            // Track missing prerequisites if they are not in the coreSet
+            if (!coreSet.has(prereq)) {
+              missingPrereqs.add(prereq);
+            }
+            return prereq;
+          })
+        );
+    
+        console.log("FilteredPreqs", filteredPrereqs);
         coursePrereqMap[course.name] = filteredPrereqs;
       }
     });
-    console.log(coursePrereqMap);
-
+    console.log("Course Prereq Map", coursePrereqMap);
+    console.log("New prereq",missingPrereqs)
+    missingPrereqs.forEach(prereq => {
+      if (courseMap.has(prereq)) {
+          coreCourses.push(prereq);
+          coreSet.add(prereq);
+          coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
+            prereqGroup.filter(p => courseMap.has(p))
+        );
+      }
+  });
+  console.log("Course Prereq Map", coursePrereqMap);
+    const allSortedCourses = Array.from(coreSet)
     // Initialize visited and visiting sets for cycle detection
     const visited = new Set();
     const visiting = new Set();
@@ -554,23 +573,31 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       // Visit all prerequisites first
       const prereqGroups = coursePrereqMap[courseName] || [];
       for (const group of prereqGroups) {
+        console.log("Group", group)
+        console.log("CourseMap", courseMap)
         // For each OR group, we can choose any one (we'll pick the first one)
-        if (group.length > 0) {
-          visit(group[0]);
-        }
+        group.forEach(courseName => {
+          if (courseMap.has(courseName)) {
+            console.log("Hitting");
+            visit(courseName); // Assuming visit takes a course name as argument
+          }
+        });
       }
 
       visiting.delete(courseName);
+      console.log("Adding", courseName)
       visited.add(courseName);
       result.push(courseMap.get(courseName));
     }
 
     // Visit each core course
-    coreCourses.forEach(courseName => {
+    console.log(allSortedCourses)
+    allSortedCourses.forEach(courseName => {
       if (!visited.has(courseName)) {
-        visit(courseName);
+          console.log("Visiting", courseName);
+          visit(courseName);
       }
-    });
+  });
 
     return (result);
   }
