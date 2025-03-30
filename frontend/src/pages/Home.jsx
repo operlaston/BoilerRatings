@@ -30,7 +30,7 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
     return [...courses].sort((a, b) => {
       const order = sortOrder === "asc" ? 1 : -1;
       if (sortOption === "numReviews") {
-        return order * (a.numReviews - b.numReviews);
+        return order * (a.reviews.length - b.reviews.length);
       } else if (sortOption === "difficulty") {
         return order * (a.difficulty - b.difficulty);
       } else if (sortOption === "enjoyment") {

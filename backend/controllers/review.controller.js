@@ -47,47 +47,43 @@ reviewRouter.post("/", async (req, res) => {
     if (!instructorID) { 
       await Course.findByIdAndUpdate(course, {
        $push: { reviews: savedReview._id },
-       $inc: { numReviews: 1 },
        $set: {
-         difficulty:
-           Math.round(
-             ((courseExists.difficulty * courseExists.numReviews +
-               review.difficulty) /
-                (courseExists.numReviews + 1)) *
-                10
-           ) / 10,
-         enjoyment:
-           Math.round(
-             ((courseExists.enjoyment * courseExists.numReviews +
-               review.enjoyment) /
-               (courseExists.numReviews + 1)) *
-               10
-           ) / 10,
-         recommend: 
-           review.recommend === true //In review schema, its called recommend not recommended
-             ? courseExists.recommended + 1
-             : courseExists.recommended,
+        //  difficulty:
+        //    Math.round(
+        //      ((courseExists.difficulty * courseExists.numReviews +
+        //        review.difficulty) /
+        //         (courseExists.numReviews + 1)) *
+        //         10
+        //    ) / 10,
+        //  enjoyment:
+        //    Math.round(
+        //      ((courseExists.enjoyment * courseExists.numReviews +
+        //        review.enjoyment) /
+        //        (courseExists.numReviews + 1)) *
+        //        10
+        //    ) / 10,
+          difficulty:
+            ((courseExists.difficulty * courseExists.reviews.length +
+              review.difficulty) / (courseExists.reviews.length + 1)),
+          enjoyment:
+            ((courseExists.enjoyment * courseExists.reviews.length +
+              review.enjoyment) / (courseExists.reviews.length + 1)),
+          recommend: 
+            review.recommend === true //In review schema, its called recommend not recommended
+              ? courseExists.recommended + 1
+              : courseExists.recommended,
         },
       });
     } else {
       await Course.findByIdAndUpdate(course, {
         $push: { reviews: savedReview._id },
-        $inc: { numReviews: 1 },
         $set: {
           difficulty:
-            Math.round(
-              ((courseExists.difficulty * courseExists.numReviews +
-                review.difficulty) /
-                 (courseExists.numReviews + 1)) *
-                 10
-            ) / 10,
+            ((courseExists.difficulty * courseExists.reviews.length +
+              review.difficulty) / (courseExists.reviews.length + 1)),
           enjoyment:
-            Math.round(
-              ((courseExists.enjoyment * courseExists.numReviews +
-                review.enjoyment) /
-                (courseExists.numReviews + 1)) *
-                10
-            ) / 10,
+            ((courseExists.enjoyment * courseExists.reviews.length +
+              review.enjoymeny) / (courseExists.reviews.length + 1)),
           recommend: 
             review.recommend === true //In review schema, its called recommend not recommended
               ? courseExists.recommended + 1
