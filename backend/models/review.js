@@ -31,8 +31,6 @@ const reviewSchema = new mongoose.Schema({
 
 reviewSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.enjoyment = Math.round(returnedObject.enjoyment * 100) / 100
-    returnedObject.difficulty = Math.round(returnedObject.difficulty * 100) / 100
     if (!returnedObject._id) return;
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;

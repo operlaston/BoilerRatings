@@ -31,6 +31,10 @@ export function Navbar({user, onLogout}) {
       name: 'Saved Degrees',
       href: '/saved-degree',
     },
+    {
+      name: 'Compare Classes',
+      href: '/compare'
+    },
   ]
   return (
     <nav className="bg-white/80 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
