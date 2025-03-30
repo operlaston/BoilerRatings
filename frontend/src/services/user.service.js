@@ -12,4 +12,11 @@ const deleteUser = async (id) => {
   return response
 }
 
-export { getUserByUsername, deleteUser }
+const updateUser = async (user, username, majors, minors, gradSemester) => {
+  const response = await axios.put(`${baseurl}/update/${user.id}`, {
+    username, majors, minors, gradSemester
+  })
+  return response
+}
+
+export { getUserByUsername, deleteUser, updateUser }

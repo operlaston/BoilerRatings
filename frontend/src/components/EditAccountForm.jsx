@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { CirclePlus, CircleMinus } from "lucide-react";
 import { getMajors } from "../services/major.service";
+import { updateUser } from "../services/user.service"
 
 const EditAccountForm = ({ user, handleSubmit, onFinish }) => {
   const [formData, setFormData] = useState({
@@ -78,6 +79,7 @@ const EditAccountForm = ({ user, handleSubmit, onFinish }) => {
       major: formData.major.map(pair => pair[1]).filter(id => id),
       minor: formData.minor.map(pair => pair[1]).filter(id => id),
     };
+    updateUser(user, submitData.username, submitData.major, submitData. minor, submitData.graduationSemester);
     handleSubmit(submitData);
     onFinish()
   };
