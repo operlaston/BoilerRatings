@@ -6,7 +6,7 @@ import { getCourses } from "../services/course.service";
 
 import { useNavigate } from "react-router-dom";
 
-function Home({ course, setCourse, user, setUser, courses, setCourses, majors, setMajors }) {
+function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");

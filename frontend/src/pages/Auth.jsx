@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from '../services/login.service'
 import { signup } from '../services/signup.service'
 
-function Auth({user, setUser}) {
+function Auth({onLogin}) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +29,6 @@ function Auth({user, setUser}) {
       setError("Please fill in your password.");
       return;
     }
-    //TODO: Verify password is strong enough and display according error message
     if (password.length < 8) {
       setError(`Password not secure enough. Password must include:
         At least 8 characters
@@ -65,7 +64,7 @@ function Auth({user, setUser}) {
     try {
       const newUser = await signup(email, password)
       console.log("Signed up user: ", newUser);
-      setUser(newUser)
+      onLogin(newUser)
       navigate('/onboarding')
     } catch (error) {
       console.error("Signup error", error);
@@ -92,7 +91,7 @@ function Auth({user, setUser}) {
     }
     try {
       const loggedInUser = await login(email, password)
-      setUser(loggedInUser)
+      onLogin(loggedInUser)
       navigate('/')
     }
     catch (e) {
