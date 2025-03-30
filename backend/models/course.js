@@ -29,7 +29,7 @@ const courseSchema = new mongoose.Schema({
         ref: 'Review'
     }],
     prerequisites: [[String]],
-    requirements: [String],
+    requirements: [{ type: String }],
     creditHours: Number,
     conflicts: [{
         type: mongoose.Schema.Types.ObjectId,

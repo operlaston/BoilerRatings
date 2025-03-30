@@ -4,7 +4,9 @@ const requirementSchema = new mongoose.Schema({
   name: {type: String, required: true},
   subrequirements: [{
     credits: {type: Number, required: true},
-    courses: {type: [String], required: true}
+    courses: [{
+      type: String, required: true 
+    }]
   }],
 })
 

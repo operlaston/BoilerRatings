@@ -12,6 +12,7 @@ import SavedDegree from "./pages/SavedDegree";
 import User from "./pages/User"
 import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
+import { getRequirements } from "./services/requirement.service";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -20,6 +21,7 @@ function App() {
   const [course, setCourse] = useState(null);
   const [courses, setCourses] = useState(null);
   const [majors, setMajors] = useState([]);
+  const [requirements, setRequirements] = useState([]);
 
   const refreshCourses = async () => {
     console.log("refresh courses called in app");
@@ -42,6 +44,12 @@ function App() {
         setMajors(listOfMajors);
       })
       .catch((err) => console.log("Could not retrieve list of majors", err));
+    
+    getRequirements()
+      .then((listofRequirements) => {
+        setRequirements(listofRequirements);
+      })
+      .catch((err) => console.log("Could not retrieve list of requirements", err));
   }, []);
 
   return (
@@ -118,6 +126,7 @@ function App() {
           path="/compare"
           element={
             <CourseCompare
+              requirements={requirements}
             />
           }
         />
