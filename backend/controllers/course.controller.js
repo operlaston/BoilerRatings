@@ -2,26 +2,6 @@ const courseRouter = require('express').Router()
 const { populate } = require('../models/review')
 const Course = require('../models/course')
 
-// get courses that match requirement
-courseRouter.get('/requirement', async (req, res) => {
-    const { requirement } = req.body
-    try {
-        if (requirement == null) {
-            return res.status(401).json({ "error": "null requirement string" })
-        }
-
-        const courses = await Course.find({ requirements: requirement })
-        if (courses.length == 0) {
-            return res.status(404).json({ "error": "no courses found" })
-        }
-
-        return res.status(200).json(courses)
-    }
-    catch (err) {
-        return res.status(400).json({ "error": "bad request" })
-    }
-})
-
 /*courseRouter.get('/:id', async (req, res) => { // Commenting this out it might break something 
     try {
         const course = await Course.findById(req.params.id)

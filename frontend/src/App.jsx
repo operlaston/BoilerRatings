@@ -5,12 +5,14 @@ import Home from "./pages/Home";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import ReviewPage from "./pages/ReviewPage";
+import CourseCompare from "./pages/CourseCompare";
 import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from "./pages/Course";
 import SavedDegree from "./pages/SavedDegree";
 import User from "./pages/User"
 import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
+import { getRequirements } from "./services/requirement.service";
 import { Navbar } from "./components/navbar";
 
 function App() {
@@ -20,6 +22,7 @@ function App() {
   const [course, setCourse] = useState(null);
   const [courses, setCourses] = useState(null);
   const [majors, setMajors] = useState([]);
+  const [requirements, setRequirements] = useState([]);
 
   const refreshCourses = async () => {
     console.log("refresh courses called in app");
@@ -42,6 +45,13 @@ function App() {
         setMajors(listOfMajors);
       })
       .catch((err) => console.log("Could not retrieve list of majors", err));
+    
+    getRequirements()
+      .then((listofRequirements) => {
+        setRequirements(listofRequirements);
+      })
+      .catch((err) => console.log("Could not retrieve list of requirements", err));
+
     onLogin(getCachedUser());
   }, []);
 
@@ -71,7 +81,6 @@ function App() {
       <Navbar
         user={user}
         onLogout={onLogout}
-        
       />
 
       <Routes>
@@ -120,6 +129,15 @@ function App() {
             />
           }
         />
+        {/* Route for class comparison page */}
+        <Route
+          path="/compare"
+          element={
+            <CourseCompare
+              requirements={requirements}
+            />
+          }
+        />
         {/* Route for the Saved Degree Plans page */}
         <Route
           path="/saved-degree"
@@ -131,7 +149,6 @@ function App() {
             />
           }
         />{" "}
-
         <Route path="/user/">
           <Route
             index //username is empty

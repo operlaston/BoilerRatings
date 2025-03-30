@@ -4,6 +4,7 @@ const Requirement = require('../models/requirement')
 requirementRouter.get('/', async (req, res) => {
   try {
     const requirements = await Requirement.find({})
+    console.log("requirements: " + requirements);
     res.status(200).json(requirements)
   }
   catch(e) {
@@ -32,6 +33,33 @@ requirementRouter.post('/', async (req, res) => {
   catch (e) {
     console.error(e)
     res.status(500).json({error: 'server error'})
+  }
+})
+
+// get courses that match requirement
+requirementRouter.put('/courses', async (req, res) => {
+  const { requirement } = req.body
+  try {
+      if (requirement == null) {
+          return res.status(401).json({ "error": "null requirement string" })
+      }
+      
+      const requireObj = await Requirement.findOne({name: requirement});
+      if (requireObj == null) {
+        return res.status(404).json({ "error": "requirement not found!" })
+      }
+
+      var courses = []
+      requireObj.subrequirements.forEach((require) => {
+        console.log(require)
+        courses = courses.concat(require.courses)
+      });
+      console.log("Courses: " + courses)
+      return res.status(200).json(courses)
+  }
+  catch (err) {
+      console.log(err);
+      return res.status(400).json({ "error": "bad request" })
   }
 })
 

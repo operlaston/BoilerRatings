@@ -121,7 +121,7 @@ const User = ({ user, setUser }) => {
               // Your update logic here
               console.log("Updated user:", updatedUser);
             }}
-            onCancel={() => setEditingInfo(false)}
+            onFinish={() => setEditingInfo(false)}
           />) : ""
           }
         </div>
