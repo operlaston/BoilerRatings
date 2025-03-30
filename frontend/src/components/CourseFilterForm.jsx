@@ -21,6 +21,12 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
     }
     setSelectedMajor(e.target.value)
     setRequirements(majors.find(major => major.name === e.target.value).requirements)
+    setSelectedRequirement("")
+  }
+
+  const handleRequirementSelect = (e) => {
+    // const requirement = requirements.find(req => req.name === e.target.value)
+    setSelectedRequirement(e.target.value)
   }
 
   return (
@@ -53,15 +59,15 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
             {/* Requirement Selection */}
             <select
               value={selectedRequirement}
-              onChange={(e) => setSelectedRequirement(e.target.value)}
+              onChange={handleRequirementSelect}
               className="w-full p-2 m-2 border rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200"
               required
               disabled={!selectedMajor}
             >
               <option value="">Choose a requirement</option>
-              {requirements.map((requirement, index) => (
-                <option key={index} value={requirement}>
-                  {requirement}
+              {requirements.map((requirement) => (
+                <option key={requirement.name} value={requirement.name}>
+                  {requirement.name}
                 </option>
               ))}
             </select>

@@ -42,9 +42,25 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
 
   let filteredCourses = courses;
   if (courses !== null && selectedRequirement !== "") {
-    filteredCourses = courses.filter((course) =>
-      course.requirements.includes(selectedRequirement)
-    );
+    // filteredCourses = courses.filter((course) =>
+    //   course.requirements.includes(selectedRequirement)
+    // );
+    const selectedRequirementObject = requirements.find(requirement => requirement.name === selectedRequirement)
+    filteredCourses = courses.filter(course => {
+      let found = false;
+      for (const subrequirement of selectedRequirementObject.subrequirements) {
+        // console.log('reqCourse', subrequirement.courses)
+        for (const reqCourse of subrequirement.courses) {
+          // if course is in courses, keep it
+          if (course.number === reqCourse) {
+            found = true;
+            break;
+          }
+        }
+        if (found) break;
+      }
+      return found;
+    })
   }
 
   return (
