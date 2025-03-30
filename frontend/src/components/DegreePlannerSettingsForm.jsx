@@ -11,6 +11,8 @@ const GRADUATION_SEMESTERS = [
   "Spring 2025",
   "Fall 2025",
   "Spring 2026",
+  "Fall 2026",
+  "Spring 2027"
 ];
 
 // const REQUIREMENTS = [

@@ -622,7 +622,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   return (
     <div className="relative">
       <div
-        className="relative grid gap-4 w-full h-full min-h-screen bg-white dark:bg-gray-900 py-6 pr-20"
+        className="relative grid gap-4 w-full bg-white dark:bg-gray-900 py-6 pr-20"
         style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
       >
         <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
