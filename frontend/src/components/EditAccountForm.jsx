@@ -1,76 +1,85 @@
 import { useState, useEffect } from "react";
 import { CirclePlus, CircleMinus } from "lucide-react";
+import { getMajors } from "../services/major.service";
 
-const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
+const EditAccountForm = ({ user, handleSubmit, onFinish }) => {
   const [formData, setFormData] = useState({
     username: "",
-    majors: [""],
-    minors: [""],
+    major: [],
+    minor: [],
     graduationSemester: "",
   });
 
+  const [allMajors, setAllMajors] = useState([]);
+
+  const getAllMajors = async () => {
+    try {
+      const majors = await getMajors();
+      setAllMajors(majors);
+    } catch {
+      console.log("Error getting majors");
+    }
+  };
+
   // Initialize form with user data
   useEffect(() => {
-    if (user) {
-      // Convert ObjectIds to strings for editing
-      setFormData({
-        username: user.username || "",
-        majors: user.major?.map((m) => m.toString()) || [""],
-        minors: user.minor?.map((m) => m.toString()) || [""],
-        graduationSemester: user.graduationSemester || "",
-      });
-    }
+    const initializeForm = async () => {
+      await getAllMajors();
+      if (user && allMajors.length > 0) {
+        const majorPairs = user.major.map(id => {
+          const major = allMajors.find(m => m.id === id);
+          return major ? [major.name, major.id] : ["", ""];
+        });
+        
+        const minorPairs = user.minor.map(id => {
+          const major = allMajors.find(m => m.id === id); // Using majors as placeholder
+          return major ? [major.name, major.id] : ["", ""];
+        });
+
+        setFormData({
+          username: user.username || "",
+          major: majorPairs,
+          minor: minorPairs,
+          graduationSemester: user.graduationSemester || "",
+        });
+      }
+      else {
+        setFormData({
+          username: user.username || "",
+          major: [],
+          minor: [],
+          graduationSemester: user.graduationSemester || "",
+        });
+      }
+    };
+    initializeForm();
   }, [user]);
 
   const handleArrayChange = (arrayName, index, value) => {
     const updatedArray = [...formData[arrayName]];
     updatedArray[index] = value;
-    setFormData((prev) => ({ ...prev, [arrayName]: updatedArray }));
+    setFormData(prev => ({ ...prev, [arrayName]: updatedArray }));
   };
 
   const addField = (arrayName) => {
-    setFormData((prev) => ({ ...prev, [arrayName]: [...prev[arrayName], ""] }));
+    setFormData(prev => ({ ...prev, [arrayName]: [...prev[arrayName], ["", ""]] }));
   };
 
   const removeLastField = (arrayName) => {
     if (formData[arrayName].length > 1) {
-      setFormData((prev) => ({
-        ...prev,
-        [arrayName]: prev[arrayName].slice(0, -1),
-      }));
+      setFormData(prev => ({ ...prev, [arrayName]: prev[arrayName].slice(0, -1) }));
     }
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-
-    // Convert valid strings back to ObjectIds
     const submitData = {
       ...formData,
-      major: formData.majors
-        .filter((m) => m.trim() !== "")
-        .map((m) => {
-          try {
-            return mongoose.Types.ObjectId(m.trim());
-          } catch {
-            return null; // Handle invalid IDs
-          }
-        })
-        .filter(Boolean),
-
-      minor: formData.minors
-        .filter((m) => m.trim() !== "")
-        .map((m) => {
-          try {
-            return mongoose.Types.ObjectId(m.trim());
-          } catch {
-            return null;
-          }
-        })
-        .filter(Boolean),
+      major: formData.major.map(pair => pair[1]).filter(id => id),
+      minor: formData.minor.map(pair => pair[1]).filter(id => id),
     };
-
     handleSubmit(submitData);
+    onFinish()
   };
 
   return (
@@ -84,9 +93,7 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
           <input
             type="text"
             value={formData.username}
-            onChange={(e) =>
-              setFormData((prev) => ({ ...prev, username: e.target.value }))
-            }
+            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
             className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
         </div>
@@ -100,30 +107,41 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => removeLastField("majors")}
+                onClick={() => removeLastField("major")}
                 className="text-red-500 hover:text-red-600"
               >
                 <CircleMinus className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                onClick={() => addField("majors")}
+                onClick={() => addField("major")}
                 className="text-green-500 hover:text-green-600"
               >
                 <CirclePlus className="w-5 h-5" />
               </button>
             </div>
           </div>
-          {formData.majors.map((major, index) => (
-            <input
+          {console.log("All Majors IDs:", allMajors?.map(m => m.id.toString()))}
+          {formData.major.map((pair, index) => (
+            <select
               key={index}
-              type="text"
-              value={major}
-              onChange={(e) =>
-                handleArrayChange("majors", index, e.target.value)
-              }
-              className="w-96 w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
+              value={pair[1]} // Now using id directly (assuming it's already a string)
+              onChange={(e) => {
+                const selected = allMajors.find(m => m.id === e.target.value);
+                if (selected) {
+                  handleArrayChange("major", index, [selected.name, selected.id]);
+                  console.log("Selected major:", selected);
+                }
+              }}
+              className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+            >
+              <option value="">Select Major</option>
+              {allMajors.map(major => (
+                <option key={major.id} value={major.id}>
+                  {major.name}
+                </option>
+              ))}
+            </select>
           ))}
         </div>
 
@@ -136,30 +154,35 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => removeLastField("minors")}
+                onClick={() => removeLastField("minor")}
                 className="text-red-500 hover:text-red-600"
               >
                 <CircleMinus className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                onClick={() => addField("minors")}
+                onClick={() => addField("minor")}
                 className="text-green-500 hover:text-green-600"
               >
                 <CirclePlus className="w-5 h-5" />
               </button>
             </div>
           </div>
-          {formData.minors.map((minor, index) => (
-            <input
+          {formData.minor.map((pair, index) => (
+            <select
               key={index}
-              type="text"
-              value={minor}
-              onChange={(e) =>
-                handleArrayChange("minors", index, e.target.value)
-              }
+              value={pair[1]}
+              onChange={(e) => {
+                const selected = allMajors.find(m => m.id === e.target.value);
+                if (selected) handleArrayChange("minor", index, [selected.name, selected.id]);
+              }}
               className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-            />
+            >
+              <option value="">Select Minor</option>
+              {allMajors.map(major => (
+                <option key={major.id} value={major.id}>{major.name}</option>
+              ))}
+            </select>
           ))}
         </div>
 
@@ -171,12 +194,7 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
           <input
             type="text"
             value={formData.graduationSemester}
-            onChange={(e) =>
-              setFormData((prev) => ({
-                ...prev,
-                graduationSemester: e.target.value,
-              }))
-            }
+            onChange={(e) => setFormData(prev => ({ ...prev, graduationSemester: e.target.value }))}
             className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
         </div>
@@ -185,7 +203,7 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={onCancel}
+            onClick={onFinish}
             className="w-48 p-2 rounded-lg border border-gray-300 dark:border-gray-600 
                      hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
