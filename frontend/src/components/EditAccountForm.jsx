@@ -6,46 +6,70 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
     username: "",
     majors: [""],
     minors: [""],
-    graduationSemester: ""
+    graduationSemester: "",
   });
 
   // Initialize form with user data
   useEffect(() => {
     if (user) {
+      // Convert ObjectIds to strings for editing
       setFormData({
         username: user.username || "",
-        majors: user.major?.length > 0 ? user.major : [""],
-        minors: user.minor?.length > 0 ? user.minor : [""],
-        graduationSemester: user.graduationSemester || ""
+        majors: user.major?.map((m) => m.toString()) || [""],
+        minors: user.minor?.map((m) => m.toString()) || [""],
+        graduationSemester: user.graduationSemester || "",
       });
-      console.log("Before editing: ", user);
     }
   }, [user]);
 
   const handleArrayChange = (arrayName, index, value) => {
     const updatedArray = [...formData[arrayName]];
     updatedArray[index] = value;
-    setFormData(prev => ({ ...prev, [arrayName]: updatedArray }));
+    setFormData((prev) => ({ ...prev, [arrayName]: updatedArray }));
   };
 
   const addField = (arrayName) => {
-    setFormData(prev => ({ ...prev, [arrayName]: [...prev[arrayName], ""] }));
+    setFormData((prev) => ({ ...prev, [arrayName]: [...prev[arrayName], ""] }));
   };
 
   const removeLastField = (arrayName) => {
     if (formData[arrayName].length > 1) {
-      setFormData(prev => ({ ...prev, [arrayName]: prev[arrayName].slice(0, -1) }));
+      setFormData((prev) => ({
+        ...prev,
+        [arrayName]: prev[arrayName].slice(0, -1),
+      }));
     }
   };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    // Filter out empty fields and prepare submit data
+
+    // Convert valid strings back to ObjectIds
     const submitData = {
       ...formData,
-      majors: formData.majors.filter(m => m.trim() !== ""),
-      minors: formData.minors.filter(m => m.trim() !== "")
+      major: formData.majors
+        .filter((m) => m.trim() !== "")
+        .map((m) => {
+          try {
+            return mongoose.Types.ObjectId(m.trim());
+          } catch {
+            return null; // Handle invalid IDs
+          }
+        })
+        .filter(Boolean),
+
+      minor: formData.minors
+        .filter((m) => m.trim() !== "")
+        .map((m) => {
+          try {
+            return mongoose.Types.ObjectId(m.trim());
+          } catch {
+            return null;
+          }
+        })
+        .filter(Boolean),
     };
+
     handleSubmit(submitData);
   };
 
@@ -60,7 +84,9 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
           <input
             type="text"
             value={formData.username}
-            onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({ ...prev, username: e.target.value }))
+            }
             className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
         </div>
@@ -74,14 +100,14 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => removeLastField('majors')}
+                onClick={() => removeLastField("majors")}
                 className="text-red-500 hover:text-red-600"
               >
                 <CircleMinus className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                onClick={() => addField('majors')}
+                onClick={() => addField("majors")}
                 className="text-green-500 hover:text-green-600"
               >
                 <CirclePlus className="w-5 h-5" />
@@ -93,7 +119,9 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
               key={index}
               type="text"
               value={major}
-              onChange={(e) => handleArrayChange('majors', index, e.target.value)}
+              onChange={(e) =>
+                handleArrayChange("majors", index, e.target.value)
+              }
               className="w-96 w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
           ))}
@@ -108,14 +136,14 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
             <div className="flex gap-2">
               <button
                 type="button"
-                onClick={() => removeLastField('minors')}
+                onClick={() => removeLastField("minors")}
                 className="text-red-500 hover:text-red-600"
               >
                 <CircleMinus className="w-5 h-5" />
               </button>
               <button
                 type="button"
-                onClick={() => addField('minors')}
+                onClick={() => addField("minors")}
                 className="text-green-500 hover:text-green-600"
               >
                 <CirclePlus className="w-5 h-5" />
@@ -127,7 +155,9 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
               key={index}
               type="text"
               value={minor}
-              onChange={(e) => handleArrayChange('minors', index, e.target.value)}
+              onChange={(e) =>
+                handleArrayChange("minors", index, e.target.value)
+              }
               className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
             />
           ))}
@@ -141,7 +171,12 @@ const EditAccountForm = ({ user, handleSubmit, onCancel }) => {
           <input
             type="text"
             value={formData.graduationSemester}
-            onChange={(e) => setFormData(prev => ({ ...prev, graduationSemester: e.target.value }))}
+            onChange={(e) =>
+              setFormData((prev) => ({
+                ...prev,
+                graduationSemester: e.target.value,
+              }))
+            }
             className="w-96 px-3 py-2 border rounded-lg dark:border-gray-600 dark:bg-gray-700 dark:text-white"
           />
         </div>
