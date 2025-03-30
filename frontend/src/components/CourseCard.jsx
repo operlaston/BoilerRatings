@@ -12,7 +12,7 @@ const CourseCard = ({name, number, credits, enjoyment, difficulty, recommended, 
       </div>
       <div className = "text-gray-700 dark:text-gray-300">Credits: {credits}</div>
       <div className = "text-gray-700 dark:text-gray-300">Enjoyment: {enjoyment} | Difficulty: {difficulty}</div>
-      <div className = "text-gray-700 dark:text-gray-300">Recommended: {recommended*100}%</div>
+      <div className = "text-gray-700 dark:text-gray-300">Recommended: {numReviews > 0 ? Math.round((recommended / numReviews) * 100) : 0}%</div>
       <div className = "text-gray-700 dark:text-gray-300">Number of Reviews: {numReviews}</div>
       {/* <div className="flex gap-x-2 flex-wrap pt-2">
         {

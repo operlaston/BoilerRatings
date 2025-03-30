@@ -22,8 +22,8 @@ reviewRouter.get("/:id", async (req, res) => {
 });
 
 reviewRouter.post("/", async (req, res) => {
-  const { review, course, instructor } = req.body; 
-  const user = review.user;
+  const { review, course, userId, instructor } = req.body; 
+  // const user = review.user;
   const instructorID = null;
   if (instructor) {
     instructorID = instructor.id;
@@ -68,7 +68,7 @@ reviewRouter.post("/", async (req, res) => {
           enjoyment:
             ((courseExists.enjoyment * courseExists.reviews.length +
               review.enjoyment) / (courseExists.reviews.length + 1)),
-          recommend: 
+          recommended: 
             review.recommend === true //In review schema, its called recommend not recommended
               ? courseExists.recommended + 1
               : courseExists.recommended,
@@ -96,7 +96,7 @@ reviewRouter.post("/", async (req, res) => {
       // was getting instructor not defined earlier
       await Instructor.findByIdAndUpdate(instructorID, {$addToSet: {courses: course}})
     }
-    await User.findByIdAndUpdate(user, { $push: { reviews: savedReview._id } });
+    await User.findByIdAndUpdate(userId, { $push: { reviews: savedReview._id } });
 
     res.status(201).json(savedReview);
   } catch (err) {
