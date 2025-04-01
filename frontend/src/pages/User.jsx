@@ -141,9 +141,10 @@ const User = ({ user, setUser }) => {
 };
 
 const Review = ({ review }) => {
+  console.log(review.course)
   return (
     <div className="bg-white/10 px-4 py-3 rounded-lg flex flex-col gap-y-1">
-      <h2 className="text-xl font-semibold ">course name goes here</h2>
+      <h2 className="text-xl font-semibold ">{review.course ? `${review.course.number}: ${review.course.name}` : 'course name goes here'}</h2>
       <div className="flex gap-x-3">
         <div>{new Date(review.date).toLocaleDateString("en-US")}</div>
         <div>•</div>

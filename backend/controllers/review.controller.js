@@ -11,6 +11,7 @@ reviewRouter.get("/:id", async (req, res) => {
       .populate("instructor", "instructorName gpa")
       .populate("user", "username email")
       .populate("reports")
+      .populate("course")
     if (!review) {
       return res.status(401).json({ error: "Review not found" });
     }
@@ -34,7 +35,7 @@ reviewRouter.post("/", async (req, res) => {
     if (!courseExists) {
       return res.status(404).json({ error: "Course not found" });
     }
-    const newReview = new Review(review);
+    const newReview = new Review({...review, course: courseExists._id});
     const savedReview = await newReview.save();
     if (
       typeof review.difficulty !== "number" ||

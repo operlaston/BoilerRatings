@@ -22,7 +22,11 @@ const reviewSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Report",
     },
-    ],
+  ],
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course"
+  },
   hidden: {
       type: Boolean,
       default: false

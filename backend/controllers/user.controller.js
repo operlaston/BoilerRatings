@@ -181,7 +181,7 @@ usersRouter.delete('/:id', async (req, res) => {
 // retrieve a user by their username
 usersRouter.get('/username/:username', async (req, res) => {
   const username = req.params.username
-  const [error, user] = await to(User.findOne({username: username}).populate('reviews major'))
+  const [error, user] = await to(User.findOne({username: username}).populate('major').populate({path: 'reviews', populate: {path: 'course'}}))
   if (error) {
     console.error(error)
     return res.status(500).json({error: 'server error'})
