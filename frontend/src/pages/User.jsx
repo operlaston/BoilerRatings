@@ -86,7 +86,7 @@ const User = ({ user, setUser }) => {
             <h1 className="text-4xl font-bold">{pageUser.username}</h1>
             <h2 className="text-2xl font-medium">
               Major:{" "}
-              {pageUser.major.length === 0 ? "none" : pageUser.major[0].name}
+              {pageUser.major.length === 0 ? "none" : pageUser.major.map(maj => maj.name)}
             </h2>
             <div className="text-lg">
               Number of Reviews: {pageUser.reviews.length}
