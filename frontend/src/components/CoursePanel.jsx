@@ -62,7 +62,14 @@ function CoursePanel({ course, user }) {
               <BookOpen className="w-4 h-4 mr-2" />
               Course Catalog
             </button>
-            <button className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+            <button
+              onClick={() => {
+                const baseUrl = 'https://www.reddit.com/r/Purdue/search/?q='
+                const query = courseData.number.replace(/\s/g, '')
+                const url = baseUrl + query
+                window.open(url, '_blank')
+              }}
+              className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
               <Icon icon="mdi:reddit" className="w-4 h-4 mr-2" />
               Reddit
             </button>
