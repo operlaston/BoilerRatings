@@ -23,7 +23,7 @@ function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
   if (!pageCourse) {
     return <div>Loading</div>
   }
-  console.log(pageCourse)
+  //console.log(pageCourse)
   return (
     <div className="w-full h-min-screen flex items-center justify-center p-4 dark:bg-gray-900 overflow-y-auto">
       <div className="absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1 ease-in-out duration-150  translate-x-2/3 -translate-y-1/4"></div>

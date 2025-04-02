@@ -12,4 +12,11 @@ const getCourseByName = async (name) => {
   return response.data
 }
 
-export { getCourses, getCourseByName }
+const favoriteCourse = async (courseId, userId) => {
+  const res = await axios.put(`${baseurl}/api/courses/favorite/${courseId}`, {
+    userId
+  })
+  return res.data;
+}
+
+export { getCourses, getCourseByName, favoriteCourse }

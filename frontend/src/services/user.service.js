@@ -19,4 +19,11 @@ const updateUser = async (user, username, majors, minors, gradSemester) => {
   return response
 }
 
-export { getUserByUsername, deleteUser, updateUser }
+const isCourseFavorited = async (userId, courseId) => {
+  const res = await axios.put(`${baseurl}/favorite/${userId}`, {
+    courseId
+  })
+  return res.data;
+}
+
+export { getUserByUsername, deleteUser, updateUser, isCourseFavorited }

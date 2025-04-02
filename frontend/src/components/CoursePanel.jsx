@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
+import { favoriteCourse } from "../services/course.service";
+import { isCourseFavorited } from "../services/user.service";
 
 const COURSE_DATA = {
   number: "CS 180",
@@ -28,11 +30,16 @@ function CoursePanel({ course, user }) {
   const [favorited, setFavorited] = useState(false);
   const [canFavorite, setCanFavorite] = useState(false);
   useEffect(() => {
+    const fetchFavorite = async () => {
+      setFavorited(await isCourseFavorited(user.id, course.id));
+    }
     setCourseData(course);
     if (user) {
       setCanFavorite(true);
+      fetchFavorite();
     }
   }, []);
+
   return (
     <div className="relative w-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg">
       <div className="grid lg:grid-cols-3 gap-8">
@@ -60,10 +67,13 @@ function CoursePanel({ course, user }) {
               Reddit
             </button>
 
-            {/* Favorite button, frontend only rn */}
+            {/* Favorite button */}
             {canFavorite === true && (
               <button
-                onClick={() => setFavorited((prev) => !prev)}
+                onClick={() => {
+                  setFavorited((prev) => !prev);
+                  favoriteCourse(course.id, user.id);
+                }}
                 className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
               >
                 <Star

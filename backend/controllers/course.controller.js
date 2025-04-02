@@ -1,6 +1,7 @@
 const courseRouter = require('express').Router()
 const { populate } = require('../models/review')
 const Course = require('../models/course')
+const User = require('../models/user')
 
 /*courseRouter.get('/:id', async (req, res) => { // Commenting this out it might break something 
     try {
@@ -64,6 +65,40 @@ courseRouter.get('/:courseNumber', async (req,res) => {
     }
     catch( error ) {
         res.status(400).json({error: "Invalid Course Number"})
+    }
+})
+
+// favorite a course
+courseRouter.put('/favorite/:id', async (req,res) => {
+    const { userId } = req.body;
+    const courseId = req.params.id;
+    console.log(userId)
+    try {
+        const course = await Course.findById(courseId);
+        if (!course) {
+            return res.status(404).json({error: "Course not found"})
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({error: "User not found"})
+        }
+
+        if (!user.favorited.includes(courseId)) {
+            // favorite course
+            await User.findByIdAndUpdate(userId, {$push: {favorited: courseId} });
+            console.log("New Favorites: " + user.favorited);
+        }
+        else {
+            // already favorited, unfavorited
+            await User.findByIdAndUpdate(userId, {$pull: {favorited: courseId} });
+            console.log("New Favorites: " + user.favorited);
+        }
+
+        return res.status(200).json({message: "Successfully Favorited"})
+    } catch (err) {
+        console.log(err)
+        return res.status(401).json({error: "Bad Request" })
     }
 })
 

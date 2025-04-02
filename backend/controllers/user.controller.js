@@ -192,6 +192,21 @@ usersRouter.get('/username/:username', async (req, res) => {
   res.status(200).json(user)
 })
 
+usersRouter.put('/favorite/:id', async (req, res) => {
+  const { courseId } = req.body;
+  const userId = req.params.id;
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({error: 'User Not Found'})
+    }
+
+    return res.status(200).json(user.favorited.includes(courseId))
+  } catch (err) {
+    return res.status(400).json({error: "Bad Request"})
+  }
+})
+
 // this is only for testing the backend without having to create an account through the frontend
 usersRouter.post('/test/add', async (req, res) => {
   const {username, email, password, graduationSemester} = req.body;
