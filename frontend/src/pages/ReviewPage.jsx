@@ -390,7 +390,8 @@ const ReviewPage = ({
             </button>
           )}
         </div>
-
+        
+        {/* List of reviews */}
         <div className="flex-column space-y-6">
           {processedReviews.map((review) => (
             <div

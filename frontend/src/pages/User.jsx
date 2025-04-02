@@ -130,7 +130,7 @@ const User = ({ user, setUser }) => {
       <div className="flex flex-col gap-y-4">
         <h2 className="text-2xl font-bold min-w-lg">Reviews</h2>
         {pageUser.reviews.map((review) => {
-          if (review.hidden === undefined || review.hidden === false) {
+          if ((review.hidden === undefined || review.hidden === false) && review.anon === false) {
             return <Review key={review.id} review={review} />;
           }
           return;
@@ -141,7 +141,7 @@ const User = ({ user, setUser }) => {
 };
 
 const Review = ({ review }) => {
-  console.log(review.course)
+  console.log(review)
   return (
     <div className="bg-white/10 px-4 py-3 rounded-lg flex flex-col gap-y-1">
       <h2 className="text-xl font-semibold ">{review.course ? `${review.course.number}: ${review.course.name}` : 'course name goes here'}</h2>
@@ -161,10 +161,10 @@ const Review = ({ review }) => {
         </div>
         <div
           className={` px-2 py-1 rounded-md ${
-            review.recommended ? "bg-green-700/50" : "bg-red-700/50"
+            review.recommend ? "bg-green-700/50" : "bg-red-700/50"
           }`}
         >
-          {review.isRecommended
+          {review.recommend
             ? "Recommends this course"
             : "Does not recommend this course"}
         </div>
