@@ -107,50 +107,38 @@ const ReviewPage = ({
         });
 
         // Create major name map
-        const newMajorNameMap = {};
+        const newMajorMap = {};
         majors.forEach((major) => {
           if (major?.id) newMajorMap[major.id] = major.name;
         })
 
         // Create major string map for user
-        const newMajorMap = {};
+        const newStringMap = {};
         users.forEach((user) => {
             if (user?.id) {
-              if (user.username !== "[deleted]") {
-                var majorString = "• Majoring in";
-                var count = 0;
-                user.major.forEach((major) => {
-                  if (count != 0) majorString += " +";
-                  majorString += " " + newMajorMap[major]
-                  count++;
-                })
-                newStringMap[user.id] = majorString;
+              if (user.major.length > 0) {
+                if (user.username !== "[deleted]") {
+                  var majorString = "• Majoring in";
+                  var count = 0;
+                  user.major.forEach((major) => {
+                    if (count != 0) majorString += " +";
+                    majorString += " " + newMajorMap[major]
+                    count++;
+                  })
+                  newStringMap[user.id] = majorString;
+                }
               }
               else {
-                newStringMap[user.id] = "";
+                newStringMap[user.id] = "• No Major"
               }
+            }
+            else {
+              console.log("Error: User Not Found!")
             }
         })
         setMajorMap(newStringMap);
         
         setUserMap(newUserMap);
-
-        // Calculate available majors for filtering
-        const majorsWithReviews = new Set();
-        users.forEach(user => {
-          if (user?.major) {
-            user.major.forEach(majorId => {
-              majorsWithReviews.add(majorId);
-            });
-          }
-        });
-
-        const availableMajorsList = Array.from(majorsWithReviews).map(majorId => ({
-          id: majorId,
-          name: newMajorNameMap[majorId] || `Major ${majorId}`
-        }));
-
-        setAvailableMajors(availableMajorsList);
       } catch (err) {
         console.error("Error fetching user data:", err);
       }
