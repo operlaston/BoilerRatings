@@ -6,4 +6,9 @@ const getMajors = async () => {
   return res.data;
 }
 
-export { getMajors }
+const getMajorById = async (majorId) => {
+  const res = await axios.get(`${baseurl}/api/majors/${majorId}`);
+  return res.data;
+}
+
+export { getMajors, getMajorById }

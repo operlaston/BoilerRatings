@@ -22,6 +22,7 @@ import {
   deleteReview,
   reportReview,
 } from "../services/review.service.js";
+import { getMajorById, getMajors } from "../services/major.service.js";
 
 const ReviewPage = ({
   user,
@@ -41,6 +42,7 @@ const ReviewPage = ({
   const [reportId, setReportId] = useState(null)
 
   const [userMap, setUserMap] = useState({});
+  const [majorMap, setMajorMap] = useState({});
 
   const currentUser = user ?? {};
   const courseId = course.id;
@@ -83,7 +85,7 @@ const ReviewPage = ({
         const userIds = course.reviews
           .map((review) => review.user)
           .filter(Boolean);
-
+        
         const uniqueUserIds = [...new Set(userIds)];
 
         // Batch fetch users
@@ -92,12 +94,47 @@ const ReviewPage = ({
             (id) => getUserById(id).catch(() => null) // Handle individual errors
           )
         );
+        
+        const temp = await getMajors();
+        console.log(temp);
+        const majors = await Promise.all(
+          temp.map(
+            (major) => getMajorById(major.id).catch(() => null)
+          )
+        );
 
         // Create username map
         const newUserMap = {};
         users.forEach((user) => {
           if (user?.id) newUserMap[user.id] = user.username;
         });
+
+        // Create major map
+        const newMajorMap = {};
+        majors.forEach((major) => {
+          if (major?.id) {
+            newMajorMap[major.id] = major.name
+          }
+        })
+
+        const newStringMap = {};
+        users.forEach((user) => {
+          var majorString = "• Majoring in";
+          var count = 0;
+          user.major.forEach((major) => {
+            if (count != 0) majorString += " +";
+            majorString += " " + newMajorMap[major]
+            count++;
+          })
+          newStringMap[user.id] = majorString;
+          console.log(majorString);
+        })
+        setMajorMap(newStringMap);
+
+
+        console.log("map: " + JSON.stringify(majorMap))
+        
+        
 
         setUserMap(newUserMap);
       } catch (err) {
@@ -114,7 +151,8 @@ const ReviewPage = ({
   const processedReviews = useMemo(() => {
     return filteredReviews.map((review) => ({
       ...review,
-      username: review.anon ? "Anonymous" : userMap[review.user] || "Anonymous",
+      username: review.anon ? "Anonymous" : userMap[review.user],
+      major: review.anon ? "" : majorMap[review.user]
     }));
   }, [filteredReviews, userMap]);
 
@@ -366,7 +404,7 @@ const ReviewPage = ({
                 <div>
                   <h3 className="font-medium text-gray-900 dark:text-white"
                   onClick={() => navigate(`/user/${review.username}`)}>
-                    {review.username}
+                    {review.username} {review.major}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}

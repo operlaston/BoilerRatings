@@ -35,7 +35,13 @@ reviewRouter.post("/", async (req, res) => {
     if (!courseExists) {
       return res.status(404).json({ error: "Course not found" });
     }
-    const newReview = new Review({...review, course: courseExists._id});
+
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({ error: "User not found"});
+    }
+
+    const newReview = new Review({...review, course: courseExists._id, user: userExists});
     const savedReview = await newReview.save();
     if (
       typeof review.difficulty !== "number" ||
