@@ -430,7 +430,7 @@ const ReviewPage = ({
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white"
+                  <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
                   onClick={() => navigate(`/user/${review.username}`)}>
                     {review.username} {review.major}
                   </h3>
