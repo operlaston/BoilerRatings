@@ -65,8 +65,21 @@ function CoursePanel({ course, user }) {
             <button
               onClick={() => {
                 const baseUrl = 'https://www.reddit.com/r/Purdue/search/?q='
-                const query = courseData.number.replace(/\s/g, '')
-                const url = baseUrl + query
+                const processed = courseData.number.replace(/\s/g, ''); 
+                const match = processed.match(/^([A-Za-z]+)(\d+)$/); 
+                let query;
+                
+                if (match) {
+                  const letters = match[1];
+                  const numbers = match[2];
+                  const concatenated = letters + numbers; // e.g., CS180
+                  const spaced = `${letters} ${numbers}`; // e.g., CS 180
+                  query = `${concatenated} OR "${spaced}"`;
+                } else {
+                  query = processed;
+                }
+                const encodedQuery = encodeURIComponent(query).replace(/%20/g, '+');
+                const url = baseUrl + encodedQuery;
                 window.open(url, '_blank')
               }}
               className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
