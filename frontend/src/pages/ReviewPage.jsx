@@ -95,8 +95,8 @@ const ReviewPage = ({
           )
         );
         
+        // Batch fetch majors
         const temp = await getMajors();
-        console.log(temp);
         const majors = await Promise.all(
           temp.map(
             (major) => getMajorById(major.id).catch(() => null)
@@ -117,6 +117,7 @@ const ReviewPage = ({
           }
         })
 
+        // Create major string map for user
         const newStringMap = {};
         users.forEach((user) => {
           var majorString = "• Majoring in";
@@ -127,12 +128,8 @@ const ReviewPage = ({
             count++;
           })
           newStringMap[user.id] = majorString;
-          console.log(majorString);
         })
         setMajorMap(newStringMap);
-
-
-        console.log("map: " + JSON.stringify(majorMap))
         
         
 
