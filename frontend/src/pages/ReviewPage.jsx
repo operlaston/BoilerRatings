@@ -43,6 +43,7 @@ const ReviewPage = ({
 
   const [userMap, setUserMap] = useState({});
   const [majorMap, setMajorMap] = useState({});
+  const [majorNameMap, setMajorNameMap] = useState({}); // New state for major name mapping
 
   const currentUser = user ?? {};
   const courseId = course.id;
@@ -50,6 +51,7 @@ const ReviewPage = ({
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
+  const [availableMajors, setAvailableMajors] = useState([]); // New state for available majors
   const navigate = useNavigate();
 
   // Filter options
@@ -109,31 +111,47 @@ const ReviewPage = ({
           if (user?.id) newUserMap[user.id] = user.username;
         });
 
-        // Create major map
-        const newMajorMap = {};
+        // Create major name map
+        const newMajorNameMap = {};
         majors.forEach((major) => {
           if (major?.id) {
-            newMajorMap[major.id] = major.name
+            newMajorNameMap[major.id] = major.name;
           }
-        })
+        });
+        setMajorNameMap(newMajorNameMap);
 
         // Create major string map for user
-        const newStringMap = {};
+        const newMajorMap = {};
         users.forEach((user) => {
           var majorString = "• Majoring in";
           var count = 0;
           user.major.forEach((major) => {
             if (count != 0) majorString += " +";
-            majorString += " " + newMajorMap[major]
+            majorString += " " + newMajorNameMap[major];
             count++;
-          })
-          newStringMap[user.id] = majorString;
-        })
-        setMajorMap(newStringMap);
+          });
+          newMajorMap[user.id] = majorString;
+        });
+        setMajorMap(newMajorMap);
         
-        
-
         setUserMap(newUserMap);
+
+        // Calculate available majors for filtering
+        const majorsWithReviews = new Set();
+        users.forEach(user => {
+          if (user?.major) {
+            user.major.forEach(majorId => {
+              majorsWithReviews.add(majorId);
+            });
+          }
+        });
+
+        const availableMajorsList = Array.from(majorsWithReviews).map(majorId => ({
+          id: majorId,
+          name: newMajorNameMap[majorId] || `Major ${majorId}`
+        }));
+
+        setAvailableMajors(availableMajorsList);
       } catch (err) {
         console.error("Error fetching user data:", err);
       }
@@ -166,6 +184,10 @@ const ReviewPage = ({
           if (selectedFilter === "3-5") return likes >= 3 && likes <= 5;
           if (selectedFilter === "6-8") return likes >= 6 && likes <= 8;
           if (selectedFilter === "9+") return likes >= 9;
+        } else if (filterType === "major") {
+          // Filter by major
+          const userMajors = getUserById(review.user)?.major || [];
+          return userMajors.includes(selectedFilter);
         }
         return true;
       });
@@ -297,8 +319,7 @@ const ReviewPage = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* This is the success message that 
-      shows when a report has been submitted */}
+      {/* Success message for reports */}
       {showReportSuccess && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
@@ -353,6 +374,9 @@ const ReviewPage = ({
             <option value="likes" className="dark:text-white">
               Number of Likes
             </option>
+            <option value="major" className="dark:text-white">
+              Major
+            </option>
           </select>
 
           {filterType && (
@@ -362,20 +386,25 @@ const ReviewPage = ({
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">
-                Select {filterType === "semester" ? "semester" : "likes range"}
-                ...
+                Select {filterType === "semester" ? "semester" : 
+                       filterType === "likes" ? "likes range" : 
+                       "major"}...
               </option>
-              {(filterType === "semester" ? semesterOptions : likesOptions).map(
-                (option) => (
-                  <option
-                    key={option}
-                    value={option}
-                    className="dark:text-white"
-                  >
-                    {option}
-                  </option>
-                )
-              )}
+              {filterType === "semester" ? semesterOptions.map((option) => (
+                <option key={option} value={option} className="dark:text-white">
+                  {option}
+                </option>
+              )) : 
+               filterType === "likes" ? likesOptions.map((option) => (
+                <option key={option} value={option} className="dark:text-white">
+                  {option}
+                </option>
+              )) : 
+               availableMajors.map((major) => (
+                <option key={major.id} value={major.id} className="dark:text-white">
+                  {major.name}
+                </option>
+              ))}
             </select>
           )}
 
