@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import toast, { Toaster } from 'react-hot-toast';
 import { jsPDF } from "jspdf";
 import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
 import "../styles/App.css"
@@ -94,11 +95,14 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [popupState, setPopupState] = useState("Save");
   const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
   const [major, setMajor] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchCourses = async () => { //Fetch courses from database
     try {
+      setIsLoading(true);
       console.log("Getting courses")
       const courses = await getCourses();
+      setIsLoading(false);
       const availableCourses = courses.map((course) => ({
         courseID: course.id,
         name: course.number,
@@ -109,8 +113,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         prerequisites: course.prerequisites,
         corequisites: [],
         conflicts: []
-      }));//.filter(course => course.prerequisites.length > 0);
-      console.log(availableCourses);
+      })).filter(course => course.prerequisites.length > 0);
       if (!user) {
         const savedData = localStorage.getItem("degreeData");
         if (savedData) {
@@ -146,6 +149,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         setCourses([]);
         setAvailableCourses(availableCourses);
       }
+      
     } catch (error) {
       console.log("Error fetching courses", error);
     }
@@ -214,9 +218,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     };
   }, [isSaved]);
   const handleSaveClick = () => { //handle save button clicked
+    if (isLoading) {
+      return;
+    }
     if (!user) {
       localStorage.setItem("degreeData", JSON.stringify(courses));
-      window.alert("Degree plan saved to local storage");
+      toast.success('Saved degree plan to local storage!')
       setIsSaved(true);
     }
     else {
@@ -254,6 +261,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
   }
   const handleDragEnd = (e) => {
+    if (isLoading) {
+      return;
+    }
     setIsSaved(false);
     let name = e.dataTransfer.getData("name");
     if (courses.some((c) => c.name === name)) {
@@ -365,6 +375,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
   // Generate the PDF
   const handleCreatePDF = () => {
+    if (isLoading) {
+      return;
+    }
     try {
       if (!semesters?.length) {
         throw new Error("No semester data available");
@@ -479,6 +492,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   };
 
   const handleAutoFillClick = () => {
+    if (isLoading) {
+      return;
+    }
     let topologicalCourses = (sortCoursesForAutofill(["MA 16100", "MA 16200", "MA 16600", "MA 26100", "CS 18000", "CS 25200", "CS 18200", "CS 24000", "CS 25000" , "CS 25100"], courses.concat(availableCourses)));
     let courseOrder = [[topologicalCourses[0]]];
     
@@ -510,12 +526,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
 
 
-    //TODO: uncommend this VV
-
-
-
-
-
+    //TODO: uncomment this VV
     // setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
     let reorderedCourses = [...courses];
@@ -750,7 +761,16 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           </div>
         </div>
       </div>
-
+      <Toaster
+      toastOptions={{
+        className: '',
+        style: {
+          padding: '16px',
+          color: '#fefefe',
+          backgroundColor: '#1f2937'
+        },
+      }}    
+      />
       {isPopupVisible && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
