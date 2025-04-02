@@ -196,6 +196,7 @@ const ReviewPage = ({
   const handleEdit = (reviewId) => {
     const reviewToEdit = reviews.find((review) => review.id === reviewId);
     setEditingReview(reviewToEdit);
+    console.log(editingReview);
   };
 
   const handleCancelEdit = () => {
@@ -390,7 +391,8 @@ const ReviewPage = ({
             </button>
           )}
         </div>
-
+        
+        {/* List of reviews */}
         <div className="flex-column space-y-6">
           {processedReviews.map((review) => (
             <div
@@ -545,7 +547,7 @@ const ReviewPage = ({
                 />
               </div>
 
-              {editingReview === review && (
+              {editingReview != null && editingReview.id === review.id && (
                 <BaseReviewForm
                   initialData={editingReview}
                   onSubmit={handleReviewSubmit}
