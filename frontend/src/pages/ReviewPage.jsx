@@ -39,7 +39,7 @@ const ReviewPage = ({
   const [reportReason, setReportReason] = useState("");
   const [reportDetails, setReportDetails] = useState("");
   const [isReporting, setIsReporting] = useState(false);
-  const [reportId, setReportId] = useState(null)
+  const [reportId, setReportId] = useState(null);
 
   const [userMap, setUserMap] = useState({});
   const [majorMap, setMajorMap] = useState({});
@@ -68,6 +68,12 @@ const ReviewPage = ({
     "Spring 2025",
   ];
 
+  //Temporary, replace with [instructorNames, course.instructors] later
+  const instructorOptions = [
+    ["Jeffrey Turkstra", "technically0an0id0000000"],
+    ["Gustavo Rodriguez-Rivera", "technically0an0id00also0"],
+  ];
+
   // Likes range options
   const likesOptions = ["0-2", "3-5", "6-8", "9+"];
 
@@ -87,7 +93,7 @@ const ReviewPage = ({
         const userIds = course.reviews
           .map((review) => review.user)
           .filter(Boolean);
-        
+
         const uniqueUserIds = [...new Set(userIds)];
 
         // Batch fetch users
@@ -96,7 +102,7 @@ const ReviewPage = ({
             (id) => getUserById(id).catch(() => null) // Handle individual errors
           )
         );
-        
+
         // Batch fetch majors
         const majors = await getMajors();
 
@@ -110,34 +116,32 @@ const ReviewPage = ({
         const newMajorMap = {};
         majors.forEach((major) => {
           if (major?.id) newMajorMap[major.id] = major.name;
-        })
+        });
 
         // Create major string map for user
         const newStringMap = {};
         users.forEach((user) => {
-            if (user?.id) {
-              if (user.major.length > 0) {
-                if (user.username !== "[deleted]") {
-                  var majorString = "• Majoring in";
-                  var count = 0;
-                  user.major.forEach((major) => {
-                    if (count != 0) majorString += " +";
-                    majorString += " " + newMajorMap[major]
-                    count++;
-                  })
-                  newStringMap[user.id] = majorString;
-                }
+          if (user?.id) {
+            if (user.major.length > 0) {
+              if (user.username !== "[deleted]") {
+                var majorString = "• Majoring in";
+                var count = 0;
+                user.major.forEach((major) => {
+                  if (count != 0) majorString += " +";
+                  majorString += " " + newMajorMap[major];
+                  count++;
+                });
+                newStringMap[user.id] = majorString;
               }
-              else {
-                newStringMap[user.id] = "• No Major"
-              }
+            } else {
+              newStringMap[user.id] = "• No Major";
             }
-            else {
-              console.log("Error: User Not Found!")
-            }
-        })
+          } else {
+            console.log("Error: User Not Found!");
+          }
+        });
         setMajorMap(newStringMap);
-        
+
         setUserMap(newUserMap);
       } catch (err) {
         console.error("Error fetching user data:", err);
@@ -154,7 +158,7 @@ const ReviewPage = ({
     return filteredReviews.map((review) => ({
       ...review,
       username: review.anon ? "Anonymous" : userMap[review.user],
-      major: review.anon ? "" : majorMap[review.user]
+      major: review.anon ? "" : majorMap[review.user],
     }));
   }, [filteredReviews, userMap]);
 
@@ -175,6 +179,8 @@ const ReviewPage = ({
           // Filter by major
           const userMajors = getUserById(review.user)?.major || [];
           return userMajors.includes(selectedFilter);
+        } else if (filterType === "instructor") {
+          return review.instructor === selectedFilter;
         }
         return true;
       });
@@ -205,7 +211,6 @@ const ReviewPage = ({
   const handleEdit = (reviewId) => {
     const reviewToEdit = reviews.find((review) => review.id === reviewId);
     setEditingReview(reviewToEdit);
-    console.log(editingReview);
   };
 
   const handleCancelEdit = () => {
@@ -231,9 +236,9 @@ const ReviewPage = ({
         })
         .catch((err) => console.log("Could not update review", err));
     } else {
-      let newReview =addReview(reviewData, courseId, user.id)
+      let newReview = addReview(reviewData, courseId, user.id)
         .then((newReview) => {
-          newReview.user = user.id
+          newReview.user = user.id;
           setReviews([newReview, ...reviews]);
           setFilteredReviews([newReview, ...filteredReviews]);
           refreshCourses();
@@ -280,7 +285,7 @@ const ReviewPage = ({
 
   const handleReportClick = (reviewId) => {
     setReportingReview(reviewId);
-    setReportId(reviewId)
+    setReportId(reviewId);
     setReportReason("");
     setReportDetails("");
   };
@@ -290,9 +295,9 @@ const ReviewPage = ({
   const handleReportSubmit = () => {
     if (!reportReason) return;
     setIsReporting(true);
-    console.log("Reason",reportReason)
-    console.log("Details",reportDetails)
-    reportReview(reportId, reportDetails, reportReason)
+    console.log("Reason", reportReason);
+    console.log("Details", reportDetails);
+    reportReview(reportId, reportDetails, reportReason);
     setTimeout(() => {
       setReportingReview(null);
       setIsReporting(false);
@@ -362,6 +367,9 @@ const ReviewPage = ({
             <option value="likes" className="dark:text-white">
               Number of Likes
             </option>
+            <option value="instructor" className="dark:text-white">
+              Instructor Taken With
+            </option>
             <option value="major" className="dark:text-white">
               Major
             </option>
@@ -374,25 +382,43 @@ const ReviewPage = ({
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">
-                Select {filterType === "semester" ? "semester" : 
-                       filterType === "likes" ? "likes range" : 
-                       "major"}...
+                Select{" "}
+                {filterType === "semester"
+                  ? "semester"
+                  : filterType === "likes"
+                  ? "likes range"
+                  : "major"}
+                ...
               </option>
-              {filterType === "semester" ? semesterOptions.map((option) => (
-                <option key={option} value={option} className="dark:text-white">
-                  {option}
-                </option>
-              )) : 
-               filterType === "likes" ? likesOptions.map((option) => (
-                <option key={option} value={option} className="dark:text-white">
-                  {option}
-                </option>
-              )) : 
-               availableMajors.map((major) => (
-                <option key={major.id} value={major.id} className="dark:text-white">
-                  {major.name}
-                </option>
-              ))}
+              {filterType === "semester"
+                ? semesterOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="dark:text-white"
+                    >
+                      {option}
+                    </option>
+                  ))
+                : filterType === "likes"
+                ? likesOptions.map((option) => (
+                    <option
+                      key={option}
+                      value={option}
+                      className="dark:text-white"
+                    >
+                      {option}
+                    </option>
+                  ))
+                : availableMajors.map((major) => (
+                    <option
+                      key={major.id}
+                      value={major.id}
+                      className="dark:text-white"
+                    >
+                      {major.name}
+                    </option>
+                  ))}
             </select>
           )}
 
@@ -408,7 +434,7 @@ const ReviewPage = ({
             </button>
           )}
         </div>
-        
+
         {/* List of reviews */}
         <div className="flex-column space-y-6">
           {processedReviews.map((review) => (
@@ -418,8 +444,10 @@ const ReviewPage = ({
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
-                  onClick={() => navigate(`/user/${review.username}`)}>
+                  <h3
+                    className="font-medium text-gray-900 dark:text-white cursor-pointer"
+                    onClick={() => navigate(`/user/${review.username}`)}
+                  >
                     {review.username} {review.major}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -570,6 +598,7 @@ const ReviewPage = ({
                   onSubmit={handleReviewSubmit}
                   onCancel={handleCancelEdit}
                   submitButtonText="Update Review"
+                  instructorOptions={instructorOptions}
                 />
               )}
             </div>
@@ -642,6 +671,7 @@ const ReviewPage = ({
             <AddReviewForm
               onSubmit={handleReviewSubmit}
               canAddReview={canAddReview}
+              instructorOptions={instructorOptions}
             />
           )}
         </div>

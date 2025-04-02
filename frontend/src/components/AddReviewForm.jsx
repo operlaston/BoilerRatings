@@ -1,7 +1,7 @@
 import { useState } from "react";
 import BaseReviewForm from "./BaseReviewForm";
 
-export const AddReviewForm = ({ canAddReview, onSubmit }) => {
+export const AddReviewForm = ({ canAddReview, onSubmit, instructorOptions}) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!canAddReview) return null;
@@ -15,6 +15,7 @@ export const AddReviewForm = ({ canAddReview, onSubmit }) => {
       }}
       isSubmitting={isSubmitting}
       submitButtonText="Submit Review"
+      instructorOptions={instructorOptions}
     />
   );
 };

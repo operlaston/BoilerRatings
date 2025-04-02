@@ -10,11 +10,13 @@ const BaseReviewForm = ({
     anon: false,
     difficulty: 0,
     enjoyment: 0,
+    instructor: "",
   },
   onSubmit,
   isSubmitting = false,
   onCancel,
   submitButtonText = "Submit Review",
+  instructorOptions,
 }) => {
   // Initialize state
   const [formData, setFormData] = useState(() => ({
@@ -24,6 +26,7 @@ const BaseReviewForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
     await onSubmit({
       ...formData,
       // Preserve existing metadata when editing
@@ -42,6 +45,7 @@ const BaseReviewForm = ({
         anon: false,
         difficulty: 0,
         enjoyment: 0,
+        instructor: null,
       });
     }
   };
@@ -72,6 +76,28 @@ const BaseReviewForm = ({
                 </option>
               );
             })}
+          </select>
+        </div>
+
+        {/* Instructor Dropdown */}
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Instructor
+          </label>
+          <select
+            value={formData.instructor ?? ""}
+            onChange={(e) =>
+              setFormData({ ...formData, instructor: e.target.value })
+            }
+            className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200"
+          >
+            <option value="">Select Instructor</option>
+            {console.log(instructorOptions)}
+            {instructorOptions.map((pair) => (
+              <option key={pair[1]} value={pair[1]}>
+                {pair[0]}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -176,7 +202,8 @@ const BaseReviewForm = ({
               !formData.semesterTaken ||
               formData.difficulty === 0 ||
               formData.enjoyment === 0 ||
-              formData.reviewContent.trim().length < 20
+              formData.reviewContent.trim().length < 20 ||
+              !formData.instructor
             }
             className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                     p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors 
