@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CoursePanel from "../components/CourseCompareCard";
+import CourseCard from "../components/CourseCard"
 import { useNavigate } from "react-router-dom";
 import { getCoursesFromRequirement } from "../services/requirement.service";
 import { getCourseByName } from "../services/course.service";
@@ -129,7 +130,7 @@ function CourseCompare({requirements}) {
                       enjoyment={course1.enjoyment}
                       difficulty={course1.difficulty}
                       recommended={course1.recommended}
-                      numReviews={course1.numReviews}
+                      numReviews={course1.reviews.length}
                       requirements={course1.prerequisites}
                     />
                     : ""
@@ -145,7 +146,7 @@ function CourseCompare({requirements}) {
                       enjoyment={course2.enjoyment}
                       difficulty={course2.difficulty}
                       recommended={course2.recommended}
-                      numReviews={course2.numReviews}
+                      numReviews={course2.reviews.length}
                       requirements={course2.prerequisites}
                     />
                     : ""
