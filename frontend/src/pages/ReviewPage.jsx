@@ -98,12 +98,7 @@ const ReviewPage = ({
         );
         
         // Batch fetch majors
-        const temp = await getMajors();
-        const majors = await Promise.all(
-          temp.map(
-            (major) => getMajorById(major.id).catch(() => null)
-          )
-        );
+        const majors = await getMajors();
 
         // Create username map
         const newUserMap = {};
@@ -114,25 +109,29 @@ const ReviewPage = ({
         // Create major name map
         const newMajorNameMap = {};
         majors.forEach((major) => {
-          if (major?.id) {
-            newMajorNameMap[major.id] = major.name;
-          }
-        });
-        setMajorNameMap(newMajorNameMap);
+          if (major?.id) newMajorMap[major.id] = major.name;
+        })
 
         // Create major string map for user
         const newMajorMap = {};
         users.forEach((user) => {
-          var majorString = "• Majoring in";
-          var count = 0;
-          user.major.forEach((major) => {
-            if (count != 0) majorString += " +";
-            majorString += " " + newMajorNameMap[major];
-            count++;
-          });
-          newMajorMap[user.id] = majorString;
-        });
-        setMajorMap(newMajorMap);
+            if (user?.id) {
+              if (user.username !== "[deleted]") {
+                var majorString = "• Majoring in";
+                var count = 0;
+                user.major.forEach((major) => {
+                  if (count != 0) majorString += " +";
+                  majorString += " " + newMajorMap[major]
+                  count++;
+                })
+                newStringMap[user.id] = majorString;
+              }
+              else {
+                newStringMap[user.id] = "";
+              }
+            }
+        })
+        setMajorMap(newStringMap);
         
         setUserMap(newUserMap);
 
