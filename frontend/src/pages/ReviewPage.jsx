@@ -43,6 +43,7 @@ const ReviewPage = ({
 
   const [userMap, setUserMap] = useState({});
   const [majorMap, setMajorMap] = useState({});
+  const [majorNameMap, setMajorNameMap] = useState({}); // New state for major name mapping
 
   const currentUser = user ?? {};
   const courseId = course.id;
@@ -50,6 +51,7 @@ const ReviewPage = ({
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
+  const [availableMajors, setAvailableMajors] = useState([]); // New state for available majors
   const navigate = useNavigate();
 
   // Filter options
@@ -96,12 +98,7 @@ const ReviewPage = ({
         );
         
         // Batch fetch majors
-        const temp = await getMajors();
-        const majors = await Promise.all(
-          temp.map(
-            (major) => getMajorById(major.id).catch(() => null)
-          )
-        );
+        const majors = await getMajors();
 
         // Create username map
         const newUserMap = {};
@@ -109,30 +106,38 @@ const ReviewPage = ({
           if (user?.id) newUserMap[user.id] = user.username;
         });
 
-        // Create major map
+        // Create major name map
         const newMajorMap = {};
         majors.forEach((major) => {
-          if (major?.id) {
-            newMajorMap[major.id] = major.name
-          }
+          if (major?.id) newMajorMap[major.id] = major.name;
         })
 
         // Create major string map for user
         const newStringMap = {};
         users.forEach((user) => {
-          var majorString = "• Majoring in";
-          var count = 0;
-          user.major.forEach((major) => {
-            if (count != 0) majorString += " +";
-            majorString += " " + newMajorMap[major]
-            count++;
-          })
-          newStringMap[user.id] = majorString;
+            if (user?.id) {
+              if (user.major.length > 0) {
+                if (user.username !== "[deleted]") {
+                  var majorString = "• Majoring in";
+                  var count = 0;
+                  user.major.forEach((major) => {
+                    if (count != 0) majorString += " +";
+                    majorString += " " + newMajorMap[major]
+                    count++;
+                  })
+                  newStringMap[user.id] = majorString;
+                }
+              }
+              else {
+                newStringMap[user.id] = "• No Major"
+              }
+            }
+            else {
+              console.log("Error: User Not Found!")
+            }
         })
         setMajorMap(newStringMap);
         
-        
-
         setUserMap(newUserMap);
       } catch (err) {
         console.error("Error fetching user data:", err);
@@ -166,6 +171,10 @@ const ReviewPage = ({
           if (selectedFilter === "3-5") return likes >= 3 && likes <= 5;
           if (selectedFilter === "6-8") return likes >= 6 && likes <= 8;
           if (selectedFilter === "9+") return likes >= 9;
+        } else if (filterType === "major") {
+          // Filter by major
+          const userMajors = getUserById(review.user)?.major || [];
+          return userMajors.includes(selectedFilter);
         }
         return true;
       });
@@ -222,8 +231,9 @@ const ReviewPage = ({
         })
         .catch((err) => console.log("Could not update review", err));
     } else {
-      addReview(reviewData, courseId, user.id)
+      let newReview =addReview(reviewData, courseId, user.id)
         .then((newReview) => {
+          newReview.user = user.id
           setReviews([newReview, ...reviews]);
           setFilteredReviews([newReview, ...filteredReviews]);
           refreshCourses();
@@ -297,8 +307,7 @@ const ReviewPage = ({
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* This is the success message that 
-      shows when a report has been submitted */}
+      {/* Success message for reports */}
       {showReportSuccess && (
         <div className="fixed top-4 right-4 z-50">
           <div className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-100 px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
@@ -353,6 +362,9 @@ const ReviewPage = ({
             <option value="likes" className="dark:text-white">
               Number of Likes
             </option>
+            <option value="major" className="dark:text-white">
+              Major
+            </option>
           </select>
 
           {filterType && (
@@ -362,20 +374,25 @@ const ReviewPage = ({
               className="p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             >
               <option value="">
-                Select {filterType === "semester" ? "semester" : "likes range"}
-                ...
+                Select {filterType === "semester" ? "semester" : 
+                       filterType === "likes" ? "likes range" : 
+                       "major"}...
               </option>
-              {(filterType === "semester" ? semesterOptions : likesOptions).map(
-                (option) => (
-                  <option
-                    key={option}
-                    value={option}
-                    className="dark:text-white"
-                  >
-                    {option}
-                  </option>
-                )
-              )}
+              {filterType === "semester" ? semesterOptions.map((option) => (
+                <option key={option} value={option} className="dark:text-white">
+                  {option}
+                </option>
+              )) : 
+               filterType === "likes" ? likesOptions.map((option) => (
+                <option key={option} value={option} className="dark:text-white">
+                  {option}
+                </option>
+              )) : 
+               availableMajors.map((major) => (
+                <option key={major.id} value={major.id} className="dark:text-white">
+                  {major.name}
+                </option>
+              ))}
             </select>
           )}
 
@@ -401,7 +418,7 @@ const ReviewPage = ({
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3 className="font-medium text-gray-900 dark:text-white"
+                  <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
                   onClick={() => navigate(`/user/${review.username}`)}>
                     {review.username} {review.major}
                   </h3>

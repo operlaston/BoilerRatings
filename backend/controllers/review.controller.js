@@ -450,7 +450,7 @@ reviewRouter.put('/report/:id', async(req, res) => {
         });
 
         const savedReport = await report.save()
-        await Review.findByIdAndUpdate(reviewID, { $push: { reports: savedReport } })
+        await Review.findByIdAndUpdate(reviewID, { $push: { reports: savedReport._id } })
 
         review = await Review.findById(reviewID)
         // review should be hidden
