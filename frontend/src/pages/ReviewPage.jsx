@@ -247,40 +247,62 @@ const ReviewPage = ({
     }
   };
 
-  const handleLike = (reviewId) => {
-    likeReview(reviewId)
-      .then((updatedReview) => {
-        setReviews(
-          reviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        setFilteredReviews(
-          filteredReviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        refreshCourses();
-      })
-      .catch((err) => console.log("Could not like review", err));
+  const handleLike = async (reviewId) => {
+    try {
+      // 1. Get current like count
+      const currentReview = reviews.find(r => r.id === reviewId);
+      const currentLikes = currentReview?.likes || 0;
+      
+      // 2. IMMEDIATELY update UI
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes + 1 } : r
+      ));
+      
+      // 3. Make API call
+      const response = await likeReview(reviewId, user.id);
+      
+      // 4. ONLY update if server returned different value
+      if (response?.newReview?.likes !== currentLikes + 1) {
+        setReviews(prev => prev.map(r => 
+          r.id === reviewId ? { ...r, likes: response.newReview.likes } : r
+        ));
+      }
+  
+    } catch (err) {
+      // 5. Reset to original if error
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes } : r
+      ));
+      console.error("Like error:", err);
+    }
   };
-
-  const handleDislike = (reviewId) => {
-    dislikeReview(reviewId)
-      .then((updatedReview) => {
-        setReviews(
-          reviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        setFilteredReviews(
-          filteredReviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        refreshCourses();
-      })
-      .catch((err) => console.log("Could not dislike review", err));
+  
+  const handleDislike = async (reviewId) => {
+    // 1. Capture current state
+    const currentReview = reviews.find(r => r.id === reviewId);
+    const currentLikes = currentReview?.likes || 0;
+    
+    setReviews(prev => prev.map(r => 
+      r.id === reviewId ? { ...r, likes: currentLikes - 1 } : r
+    ));
+  
+    try {
+      // 2. API call
+      const { newReview } = await dislikeReview(reviewId, user.id);
+      
+      // 3. Verify server response
+      if (newReview?.likes !== undefined) {
+        setReviews(prev => prev.map(r => 
+          r.id === reviewId ? { ...r, likes: newReview.likes } : r
+        ));
+      }
+    } catch (err) {
+      // 4. Rollback on error (increment back)
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes } : r
+      ));
+      console.error("Dislike error:", err);
+    }
   };
 
   const handleReportClick = (reviewId) => {
@@ -557,39 +579,20 @@ const ReviewPage = ({
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp
-                  className="w-4 h-4 cursor-pointer"
-                  onClick={() => handleLike(review.id)}
-                  fill={
-                    user
-                      ? user.likedReviews.find((currReview) => {
-                          return (
-                            currReview.review === review.id &&
-                            currReview.favorability === 1
-                          );
-                        })
-                        ? "#9CA3AF"
-                        : "#00000000"
-                      : "#00000000"
-                  }
-                />
-                <span>{review.likes}</span>
-                <ThumbsDown
-                  className="w-4 h-4 cursor-pointer"
-                  onClick={() => handleDislike(review.id)}
-                  fill={
-                    user
-                      ? user.likedReviews.find((currReview) => {
-                          return (
-                            currReview.review === review.id &&
-                            currReview.favorability === -1
-                          );
-                        })
-                        ? "#9CA3AF"
-                        : "#00000000"
-                      : "#00000000"
-                  }
-                />
+              <ThumbsUp
+                onClick={() => handleLike(review.id)}
+                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === 1) 
+                  ? "#9CA3AF" 
+                  : "transparent"}
+              />
+              <span>{review.likes || 0}</span>
+              <ThumbsDown
+                className="w-4 h-4 cursor-pointer"
+                onClick={() => handleDislike(review.id)}
+                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === -1) 
+                  ? "#9CA3AF" 
+                  : "transparent"}
+              />
               </div>
 
               {editingReview != null && editingReview.id === review.id && (
