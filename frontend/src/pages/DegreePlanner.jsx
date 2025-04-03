@@ -598,11 +598,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     allCourses.forEach(course => {
       if (coreSet.has(course.name)) {
         const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
-          const firstPrereq = prereqGroup[0];
-          if (firstPrereq && ! coreSet.has(firstPrereq)) {
+          const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
+          if (!hasCoreCourse) {
+            const firstPrereq = prereqGroup[0];
             missingPrereqs.add(firstPrereq)
+            return firstPrereq;
           }
-          return firstPrereq
         });
         
         console.log("FilteredPreqs", filteredPrereqs);
