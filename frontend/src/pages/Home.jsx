@@ -6,7 +6,7 @@ import { getCourses } from "../services/course.service";
 
 import { useNavigate } from "react-router-dom";
 
-function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
+function Home({ course, setCourse, courses, setCourses, majors, setMajors, user }) {
   const [showFilters, setShowFilters] = useState(false);
   const [search, setSearch] = useState("");
   const [sortOption, setSortOption] = useState("");
@@ -14,6 +14,7 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
   const [selectedMajor, setSelectedMajor] = useState("");
   const [selectedRequirement, setSelectedRequirement] = useState("");
   const [requirements, setRequirements] = useState([]);
+  const [showFavorited, setShowFavorited] = useState(false);
 
   const navigate = useNavigate();
 
@@ -62,6 +63,9 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
       return found;
     })
   }
+  if (showFavorited) {
+    filteredCourses = filteredCourses.filter(course => user.favorited.find(courseId => course.id == courseId))
+  }
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
@@ -93,6 +97,9 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors }) {
             setMajors={setMajors}
             requirements={requirements}
             setRequirements={setRequirements}
+            user={user}
+            setShowFavorited={setShowFavorited}
+            showFavorited={showFavorited}
           />
         )}
       </div>
