@@ -219,6 +219,7 @@ const ReviewPage = ({
   };
 
   const handleReviewSubmit = (reviewData) => {
+    console.log(reviewData)
     if (editingReview) {
       editReview(editingReview.id, reviewData)
         .then((updatedReview) => {
@@ -237,6 +238,7 @@ const ReviewPage = ({
         })
         .catch((err) => console.log("Could not update review", err));
     } else {
+      console.log(reviewData)
       let newReview = addReview(reviewData, courseId, user.id)
         .then((newReview) => {
           newReview.user = user.id;
@@ -464,6 +466,7 @@ const ReviewPage = ({
           </div>
           )}
           {processedReviews.map((review) => (
+            console.log(review),
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
@@ -472,7 +475,7 @@ const ReviewPage = ({
                 <div>
                 <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
                   onClick={() => navigate(`/user/${review.username}`)}>
-                  {review.username} {review.majorDisplay}
+                  {review.username} {review.majorDisplay} {review.instructor?.name && ` • ${review.instructor.name}`}
                 </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}

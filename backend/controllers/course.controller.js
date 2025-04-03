@@ -55,7 +55,11 @@ courseRouter.get('/:courseNumber', async (req,res) => {
     //Number is now in form like such that cs180 -> CS 180
     try {
         const course = await Course.findOne({number: num}).populate({
-            path: 'reviews'
+            path: 'reviews',
+            populate: {
+                path: 'instructor',
+                select: 'name'
+            }
         })
         .populate('instructors', 'name')
         if (!course) {

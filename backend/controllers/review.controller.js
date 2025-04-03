@@ -93,13 +93,12 @@ reviewRouter.post("/", async (req, res) => {
               ? courseExists.recommended + 1
               : courseExists.recommended,
          },
-         $addToSet: {instructors: instructorID},
        });
     }
-    if (instructor) {
+    /*if (instructor) {
       // was getting instructor not defined earlier
       await Instructor.findByIdAndUpdate(instructorID, {$addToSet: {courses: course}})
-    }
+    }*/
     await User.findByIdAndUpdate(userId, { $push: { reviews: savedReview._id } });
 
     res.status(201).json(savedReview);
