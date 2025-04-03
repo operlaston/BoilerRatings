@@ -23,6 +23,7 @@ import {
   reportReview,
 } from "../services/review.service.js";
 import { getMajorById, getMajors } from "../services/major.service.js";
+import { getUserByUsername } from "../services/user.service.js";
 
 const ReviewPage = ({
   user,
@@ -252,6 +253,8 @@ const ReviewPage = ({
 
   const handleLike = async (reviewId) => {
     try {
+      if (!user) return;
+
       // 1. Get current like count
       const currentReview = reviews.find(r => r.id === reviewId);
       const currentLikes = currentReview?.likes || 0;
@@ -270,6 +273,9 @@ const ReviewPage = ({
           r.id === reviewId ? { ...r, likes: response.newReview.likes } : r
         ));
       }
+
+      // const newUser = await getUserByUsername(user.username)
+      // setUser(newUser)
   
     } catch (err) {
       // 5. Reset to original if error
@@ -281,6 +287,8 @@ const ReviewPage = ({
   };
   
   const handleDislike = async (reviewId) => {
+    if (!user) return;
+
     // 1. Capture current state
     const currentReview = reviews.find(r => r.id === reviewId);
     const currentLikes = currentReview?.likes || 0;
@@ -299,6 +307,9 @@ const ReviewPage = ({
           r.id === reviewId ? { ...r, likes: newReview.likes } : r
         ));
       }
+
+      // const newUser = await getUserByUsername(user.username)
+      // setUser(newUser)
     } catch (err) {
       // 4. Rollback on error (increment back)
       setReviews(prev => prev.map(r => 
@@ -585,9 +596,10 @@ const ReviewPage = ({
 
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
               <ThumbsUp
+                className="w-4 h-4 cursor-pointer"
                 onClick={() => handleLike(review.id)}
                 fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === 1) 
-                  ? "#9CA3AF" 
+                  ? "#9CA3AF"
                   : "transparent"}
               />
               <span>{review.likes || 0}</span>
