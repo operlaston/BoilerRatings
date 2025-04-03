@@ -75,7 +75,7 @@ const ReviewPage = ({
   ];
 
   // Likes range options
-  const likesOptions = ["0-2", "3-5", "6-8", "9+"];
+  const likesOptions = ["negative","0-2", "3-5", "6-8", "9+"];
 
   useEffect(() => {
     if (user) {
@@ -158,7 +158,6 @@ const ReviewPage = ({
     return filteredReviews
       .filter(review => {
         return review.reports?.length < 3 || 
-               review.user === currentUser?.id || 
                currentUser?.isAdmin;
       })
       .map((review) => ({
@@ -166,23 +165,33 @@ const ReviewPage = ({
         username: review.anon ? "Anonymous" : userMap[review.user],
         major: review.anon ? "" : majorMap[review.user],
       }));
-  }, [filteredReviews, userMap, currentUser?.id, currentUser?.isAdmin]);
+  }, [filteredReviews, userMap, currentUser?.isAdmin]);
 
   useEffect(() => {
     if (!filterType || !selectedFilter) {
       setFilteredReviews(reviews);
     } else {
       const filtered = reviews.filter((review) => {
+        const likes = review.likes || 0;
+        
         if (filterType === "semester") {
           return review.semesterTaken === selectedFilter;
         } else if (filterType === "likes") {
-          const likes = review.likes || 0;
-          if (selectedFilter === "0-2") return likes >= 0 && likes <= 2;
-          if (selectedFilter === "3-5") return likes >= 3 && likes <= 5;
-          if (selectedFilter === "6-8") return likes >= 6 && likes <= 8;
-          if (selectedFilter === "9+") return likes >= 9;
+          switch (selectedFilter) {
+            case "negative":
+              return likes < 0;
+            case "0-2":
+              return likes >= 0 && likes <= 2;
+            case "3-5":
+              return likes >= 3 && likes <= 5;
+            case "6-8":
+              return likes >= 6 && likes <= 8;
+            case "9+":
+              return likes >= 9;
+            default:
+              return true;
+          }
         } else if (filterType === "major") {
-          // Filter by major
           const userMajors = getUserById(review.user)?.major || [];
           return userMajors.includes(selectedFilter);
         } else if (filterType === "instructor") {
@@ -190,8 +199,9 @@ const ReviewPage = ({
         }
         return true;
       });
+      
       const sortedFiltered = filtered.sort(
-        (a, b) => (b.likes || 0) - (a.likes || 0)
+        (a, b) => (b.likes || 0) - (a.likes || 0) // Maintain same sorting (high to low)
       );
       setFilteredReviews(sortedFiltered);
     }
