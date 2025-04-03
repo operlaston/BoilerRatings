@@ -155,12 +155,18 @@ const ReviewPage = ({
 
   // Memoized filtered reviews with usernames
   const processedReviews = useMemo(() => {
-    return filteredReviews.map((review) => ({
-      ...review,
-      username: review.anon ? "Anonymous" : userMap[review.user],
-      major: review.anon ? "" : majorMap[review.user],
-    }));
-  }, [filteredReviews, userMap]);
+    return filteredReviews
+      .filter(review => {
+        return review.reports?.length < 3 || 
+               review.user === currentUser?.id || 
+               currentUser?.isAdmin;
+      })
+      .map((review) => ({
+        ...review,
+        username: review.anon ? "Anonymous" : userMap[review.user],
+        major: review.anon ? "" : majorMap[review.user],
+      }));
+  }, [filteredReviews, userMap, currentUser?.id, currentUser?.isAdmin]);
 
   useEffect(() => {
     if (!filterType || !selectedFilter) {
@@ -459,6 +465,11 @@ const ReviewPage = ({
 
         {/* List of reviews */}
         <div className="flex-column space-y-6">
+          {processedReviews.length === 0 && filteredReviews.length > 0 && (
+            <div className="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg text-center">
+              <p>All reviews for these filters are currently hidden due to reports</p>
+          </div>
+          )}
           {processedReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
