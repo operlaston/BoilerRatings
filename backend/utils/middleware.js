@@ -1,7 +1,9 @@
 const requestLogger = (req, res, next) => {
-  console.log(req.method, req.path)
-  console.log(req.body)
-  console.log('----')
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(req.method, req.path)
+    console.log(req.body)
+    console.log('----')
+  }
   next()
 }
 

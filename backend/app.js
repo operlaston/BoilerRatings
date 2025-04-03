@@ -1,5 +1,5 @@
 // imports
-require('dotenv').config()
+const config = require('./utils/config')
 const cors = require('cors')
 const express = require('express')
 const mongoose = require('mongoose')
@@ -16,7 +16,7 @@ const { requestLogger, unknownEndpoint } = require('./utils/middleware')
 const app = express()
 
 // connect to database
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(config.MONGODB_URI)
   .then(() => {
     console.log('connected to MongoDB database')
   })
