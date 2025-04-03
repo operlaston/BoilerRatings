@@ -54,39 +54,14 @@ const INITIAL_SEMESTERS = [
   },
 ]
 
-const INITIAL_ERRORS = [
-]
 
-const DEGREE_REQUIREMENTS = [
-  {
-    type: "core",
-    name: "Core CS",
-    courses: [["MA 261"], ["MA 265"], ["CS 180"], ["CS 182"], ["CS 240"], ["CS 250"], ["CS 252"], ["CS 251"]],
-    numberOfCoursesRequired: -1,
-    numberOfCreditsRequired: -1,
-  },
-  {
-    type: "core",
-    name: "SWE core",
-    courses: [["CS 307"], ["CS 352", "CS 354"], ["CS 381"], ["CS 408"], ["CS 407"]],
-    numberOfCoursesRequired: -1,
-    numberOfCreditsRequired: -1,
-  },
-  {
-    type: "core",
-    name: "SWE elective",
-    courses: [["CS 311", "CS 411"], ["CS 348"], ["CS 351"], ["CS 352"], ["CS 353"], ["CS 354"], ["CS 373"], ["CS 422"], ["CS 426"], ["CS 448"], ["CS 456"], ["CS 473"], ["CS 489"], ["CS 490-DSO"], ["CS 490-SWS"], ["CS 510"], ["CS 590-SRS"]],
-    numberOfCoursesRequired: 1,
-    numberOfCreditsRequired: -1,
-  },
-]
 
 export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [semesters, setSemesters] = useState(INITIAL_SEMESTERS)
   const [availableCourses, setAvailableCourses] = useState([])
   const [courses, setCourses] = useState([]); // Initial courses state
   const [searchQuery, setSearchQuery] = useState(""); // Search query state
-  const [errors, setErrors] = useState(INITIAL_ERRORS); // Errors state
+  const [errors, setErrors] = useState([]); // Errors state
   const [active, setActive] = useState(false);
   const [missingRequirements, setMissingRequirements] = useState([]);
   const [isSaved, setIsSaved] = useState(true);
@@ -172,7 +147,18 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         })()
       ]);
       console.log("User's major object: ", userMajorObjects);
-      setMajors(userMajorObjects);
+      if (!user) {
+        console.log(localStorage.getItem("majors"));
+        if (!localStorage.getItem("majors")) {
+          setMajors([]);
+        }
+        else {
+          setMajors(JSON.parse(localStorage.getItem("majors")));
+        }
+      }
+      else {
+        setMajors(userMajorObjects);
+      }
       setIsLoading(false);
     } catch (error) {
       console.log("Error fetching initial data", error);
@@ -199,6 +185,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setIsPopupVisible(false);
   };
   const handleSettingsClick = () => {
+    if (isLoading) {
+      return;
+    }
+    console.log(majors);
     setPopupState("Settings");
     setIsPopupVisible(true);
   }
@@ -362,20 +352,22 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   }
   useEffect(() => { //Hook for updating requirements
     let arr = [];
-    DEGREE_REQUIREMENTS.forEach(requirement => {
-      let missingRequirement = {
-        name: requirement.name,
-        courses: []
-      };
-      requirement.courses.forEach(group => {
-        if (!group.some(course => courses.some(c => c.name === course))) {
-          missingRequirement.courses.push(group);
+    majors.forEach(major => {
+      major.requirements.forEach(requirement => {
+        let missingRequirement = {
+          name: requirement.name,
+          courses: []
+        }
+        requirement.subrequirements.forEach(subreq => {
+          if (!courses.some(course => subreq.courses.includes(course.name))) {
+            missingRequirement.courses.push([subreq.courses]);
+          }
+        })
+        if (missingRequirement.courses.length > 0) {
+          arr.push(missingRequirement);
         }
       });
-      if (missingRequirement.courses.length > 0) {
-        arr.push(missingRequirement);
-      }
-    });
+    })
     setMissingRequirements(arr);
   }, [courses]);
   const handleErrorClick = (requirement) => {
@@ -585,7 +577,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     });
     return userAllCoreRequirements;
   }
-
   function sortCoursesForAutofill(coreCourses, allCourses) {
     const coursePrereqMap = {};
     const coreSet = new Set(coreCourses);
@@ -780,7 +771,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                         className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
                         onClick={() => handleErrorClick(r)}
                       >
-                        {"You must take " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
+                        {"Missing requirement: " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}
                       </p>
                     ))
                   }
@@ -813,7 +804,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
             }
             {(popupState == "Settings") &&
-              <DegreePlannersettingsForm />
+              <DegreePlannersettingsForm 
+                user={user}
+                majors={majors}
+                setMajors={setMajors}
+                setIsPopupVisible={setIsPopupVisible}                
+              />
             }
           </div>
         </div>

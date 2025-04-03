@@ -22,9 +22,9 @@ const GRADUATION_SEMESTERS = [
 //   "Physics II" 
 // ]
 
-function DegreePlannersettingsForm({  }) {
+function DegreePlannersettingsForm({ user, majors, setMajors, setIsPopupVisible }) {
   const [allMajors, setAllMajors] = useState([]);
-  const [selectedMajors, setSelectedMajors] = useState([]);
+  const [selectedMajors, setSelectedMajors] = useState(majors);
   const [graduationSemester, setGraduationSemester] = useState("");
   const [isMajorsOpen, setIsMajorsOpen] = useState(false);
   const [error, setError] = useState("");
@@ -64,8 +64,16 @@ function DegreePlannersettingsForm({  }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSubmit = async (e) => {
-
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log(selectedMajors);
+    if (selectedMajors.length == 0) {
+      setError("You must select at least one major");
+      return;
+    }
+    localStorage.setItem("majors", JSON.stringify(selectedMajors));
+    setMajors(selectedMajors);
+    setIsPopupVisible(false);
   };
 
   const handleMajorToggle = (major) => {
@@ -82,67 +90,69 @@ function DegreePlannersettingsForm({  }) {
   return (
     <div className="relative w-lg p-8 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl">
       <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-6 text-center">
-        Complete your profile
+        Edit degree plan settings
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div ref={majorsRef}>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Select your major
-          </label>
-          {(selectedMajors.length != 0) &&
-            <div className="flex flex-wrap gap-2 mt-2">
-              {selectedMajors.map((major) => (
-                <span
-                  key={major.name}
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-default"
-                >
-                  {major.name}
-                  <button
-                    type="button"
-                    onClick={() => handleMajorToggle(major)}
-                    className="ml-1 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          }
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsMajorsOpen(!isMajorsOpen)}
-              className="w-full p-2 mt-1 text-left border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex justify-between items-center"
-            >
-              <span className="text-gray-500 dark:text-gray-400">
-                {selectedMajors.length
-                  ? `${selectedMajors.length} selected`
-                  : "Select your major(s)"}
-              </span>
-              <ChevronDown className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-            </button>
-            {isMajorsOpen && (
-              <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-auto">
-                {allMajors.filter(
-                  (major) => !selectedMajors.includes(major),
-                ).map((major) => (
-                  <button
+        {(user == null) && (
+          <div ref={majorsRef}>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Select your major
+            </label>
+            {(selectedMajors.length != 0) &&
+              <div className="flex flex-wrap gap-2 mt-2">
+                {selectedMajors.map((major) => (
+                  <span
                     key={major.name}
-                    type="button"
-                    onClick={() => {
-                      handleMajorToggle(major);
-                      setIsMajorsOpen(false);
-                    }
-                    }
-                    className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                    className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 cursor-default"
                   >
                     {major.name}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => handleMajorToggle(major)}
+                      className="ml-1 hover:text-gray-600 dark:hover:text-gray-400 cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </span>
                 ))}
               </div>
-            )}
+            }
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMajorsOpen(!isMajorsOpen)}
+                className="w-full p-2 mt-1 text-left border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-gray-500 dark:focus:ring-gray-400 focus:border-transparent transition-all outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white flex justify-between items-center"
+              >
+                <span className="text-gray-500 dark:text-gray-400">
+                  {selectedMajors.length
+                    ? `${selectedMajors.length} selected`
+                    : "Select your major(s)"}
+                </span>
+                <ChevronDown className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+              </button>
+              {isMajorsOpen && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-48 overflow-auto">
+                  {allMajors.filter(
+                    (major) => !selectedMajors.includes(major),
+                  ).map((major) => (
+                    <button
+                      key={major.name}
+                      type="button"
+                      onClick={() => {
+                        handleMajorToggle(major);
+                        setIsMajorsOpen(false);
+                      }
+                      }
+                      className="w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-white"
+                    >
+                      {major.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
         {/* <div ref={requirementsRef}>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Select your completed requirement(s)
