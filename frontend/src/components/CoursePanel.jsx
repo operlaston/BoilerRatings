@@ -54,10 +54,6 @@ function CoursePanel({ course, user }) {
             </h2>
           </div>
           <div className="flex flex-wrap gap-3">
-            <button className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-              <ExternalLink className="w-4 h-4 mr-2" />
-              RateMyProfessor
-            </button>
             <button 
               onClick={() => {
                 const query = courseData.number.replace(/\s/g, '').toLowerCase().slice(0, -2);
