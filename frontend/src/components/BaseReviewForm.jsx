@@ -93,9 +93,9 @@ const BaseReviewForm = ({
           >
             <option value="">Select Instructor</option>
             {console.log(instructorOptions)}
-            {instructorOptions.map((pair) => (
-              <option key={pair[1]} value={pair[1]}>
-                {pair[0]}
+            {instructorOptions.map((instructor) => (
+              <option key={instructor.id} value={instructor.name}>
+                {instructor.name}
               </option>
             ))}
           </select>

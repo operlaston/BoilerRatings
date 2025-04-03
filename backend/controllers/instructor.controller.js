@@ -29,5 +29,24 @@ instructorRouter.put('/:id/courses', async (req, res) => {
         res.status(400).json({error: 'Invalid Data'})
     }
 })
+//Puts the instrucor id in every courses course array
+//Probably dont use this in general use but for sprint 2 we need instructors in our courses so putting test instructor 1 and test instructor 2 in
+instructorRouter.put('/:id', async (req, res) => {
+    try {
+    const instructorId = req.params.id;
+    console.log(instructorId)
+    const instructor = await Instructor.findById(instructorId)
+    console.log(instructor)
+    if (!instructor) {
+        return res.status(404).json({message: "Instructor not found"})
+    }
+    await Course.updateMany({},
+        {$push: {instructors: instructorId}}
+    )
+    res.status(200).json({message: "Instructo added successfullty"})
+} catch (error) {
+    res.status(400).json({error: error.message})
+}
+})
 
 module.exports = instructorRouter

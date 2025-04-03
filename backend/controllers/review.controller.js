@@ -23,12 +23,9 @@ reviewRouter.get("/:id", async (req, res) => {
 });
 
 reviewRouter.post("/", async (req, res) => {
-  const { review, course, userId, instructor } = req.body; 
+  const { review, course, userId, instructorID } = req.body; 
   // const user = review.user;
-  const instructorID = null;
-  if (instructor) {
-    instructorID = instructor.id;
-  }
+
   console.log("review post controller trigger");
   try {
     const courseExists = await Course.findById(course);

@@ -67,12 +67,11 @@ const ReviewPage = ({
     "Winter 2025",
     "Spring 2025",
   ];
+  //console.log(course)
 
   //Temporary, replace with [instructorNames, course.instructors] later
-  const instructorOptions = [
-    ["Jeffrey Turkstra", "technically0an0id0000000"],
-    ["Gustavo Rodriguez-Rivera", "technically0an0id00also0"],
-  ];
+  const instructorOptions = course.instructors
+  console.log(instructorOptions)
 
   // Likes range options
   const likesOptions = ["0-2", "3-5", "6-8", "9+"];
