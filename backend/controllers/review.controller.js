@@ -253,6 +253,13 @@ reviewRouter.delete("/:id", async (req, res) => {
       res.status(401).json({ error: "review not found" });
       return;
     }
+    //need to remove r from the course and from the user
+    await User.findByIdAndUpdate(r.user, {
+      $pull: {reviews: r.id}
+    })
+    await Course.findByIdAndUpdate(r.course, {
+      $pull: {reviews: r.id}
+    })
     await Review.findOneAndDelete(r);
     res.status(200).json({ message: "review successfully deleted" });
     return;
