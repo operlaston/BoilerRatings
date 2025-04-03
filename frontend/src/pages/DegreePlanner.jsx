@@ -369,7 +369,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       });
     })
     setMissingRequirements(arr);
-  }, [courses]);
+  }, [courses, majors]);
   const handleErrorClick = (requirement) => {
     setSearchQuery(requirement.courses.map(group => group.join(" AND ")).join(" AND "));
   }
