@@ -69,8 +69,6 @@ const ReviewPage = ({
   ];
   //console.log(course)
 
-  //IMPORTANT: instructorOptions is an array of pairs, [0] is the name of the instructor and [1] is the id of the intructor
-  //TODO course.instructors is an array of instructor ids and cannot be used directly
   const instructorOptions = course.instructors
   console.log(instructorOptions)
 
@@ -460,8 +458,8 @@ const ReviewPage = ({
               {/* Instructor Options */}
               {filterType === "instructor" &&
                 instructorOptions.map((pair) => (
-                  <option key={pair[1]} value={pair[1]} className="dark:text-white">
-                    {pair[0]}
+                  <option key={pair.id} value={pair.id} className="dark:text-white">
+                    {pair.name}
                   </option>
                 ))
               }
