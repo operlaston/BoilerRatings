@@ -21,9 +21,10 @@ majorsRouter.get('/:id', async (req, res) => {
 })
 
 majorsRouter.post('/', async (req, res) => {
-  const {majorName} = req.body;
+  const {name, requirements} = req.body;
   const major = new Major({
-    name: majorName
+    name,
+    requirements
   })
   try {
     const savedMajor = await major.save()

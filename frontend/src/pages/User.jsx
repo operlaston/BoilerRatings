@@ -45,7 +45,7 @@ const User = ({ user, setUser }) => {
           <b>404 - User Not Found.</b>
         </h1>
         <h1>
-          You tried to search for a user that does not exist. Where you looking
+          You tried to search for a user that does not exist. Were you looking
           for something else?
         </h1>
         <div className="underline cursor-pointer" onClick={() => navigate("/")}>
