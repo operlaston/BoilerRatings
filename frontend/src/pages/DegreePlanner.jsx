@@ -79,7 +79,6 @@ const DEGREE_REQUIREMENTS = [
     numberOfCoursesRequired: 1,
     numberOfCreditsRequired: -1,
   },
-
 ]
 
 export default function DegreePlanner({ user, setUser, degreePlan }) {
@@ -94,87 +93,97 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [popupState, setPopupState] = useState("Save");
   const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
-  const [major, setMajor] = useState("");
+  const [majors, setMajors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchCourses = async () => { //Fetch courses from database
+  const fetchInitialData = async () => {
     try {
       setIsLoading(true);
-      console.log("Getting courses")
-      const courses = await getCourses();
-      setIsLoading(false);
-      const availableCourses = courses.map((course) => ({
-        courseID: course.id,
-        name: course.number,
-        semester: "",
-        semesterIndex: -1,
-        description: course.name,
-        creditHours: course.creditHours,
-        prerequisites: course.prerequisites,
-        corequisites: [],
-        conflicts: []
-      })).filter(course => course.prerequisites.length > 0);
-      if (!user) {
-        const savedData = localStorage.getItem("degreeData");
-        if (savedData) {
-          const updatedCourses = JSON.parse(savedData);
-          const savedCourseIDs = updatedCourses.map(course => course.courseID);
-          const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
-          setCourses(updatePrerequisiteErrors(updatedCourses));
-          setAvailableCourses(updatedAvailableCourses);
-          return;
-        }
-      }
-      if (degreePlan) {
-        const getCourses = degreePlan.savedCourses;
-        const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
-        const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
-
-        const updatedCourses = getCourses.map((course) => {
-          return {
-            courseID: course.course.id,
-            name: course.course.number,
-            semester: course.semester,
-            semesterIndex: course.semesterIndex,
-            description: course.course.name,
-            creditHours: course.course.creditHours,
-            prerequisites: course.course.prerequisites,
+      console.log("Initial user: ", user);
+      console.log("Getting courses");
+      
+      // Fetch both courses and major in parallel
+      const [courses, userMajorObjects] = await Promise.all([
+        (async () => {
+          const courses = await getCourses();
+          const availableCourses = courses.map((course) => ({
+            courseID: course.id,
+            name: course.number,
+            semester: "",
+            semesterIndex: -1,
+            description: course.name,
+            creditHours: course.creditHours,
+            prerequisites: course.prerequisites,
             corequisites: [],
             conflicts: []
-          };
-        });
-        setCourses(updatePrerequisiteErrors(updatedCourses))
-        setAvailableCourses(updatedAvailableCourses)
-      } else {
-        setCourses([]);
-        setAvailableCourses(availableCourses);
-      }
-      
+          }));
+          if (!user) {
+            const savedData = localStorage.getItem("degreeData");
+            if (savedData) {
+              const updatedCourses = JSON.parse(savedData);
+              const savedCourseIDs = updatedCourses.map(course => course.courseID);
+              const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.courseID));
+              setCourses(updatePrerequisiteErrors(updatedCourses));
+              setAvailableCourses(updatedAvailableCourses);
+              return updatedCourses;
+            }
+          }
+  
+          if (degreePlan) {
+            const getCourses = degreePlan.savedCourses;
+            const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
+            const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
+  
+            const updatedCourses = getCourses.map((course) => {
+              return {
+                courseID: course.course.id,
+                name: course.course.number,
+                semester: course.semester,
+                semesterIndex: course.semesterIndex,
+                description: course.course.name,
+                creditHours: course.course.creditHours,
+                prerequisites: course.course.prerequisites,
+                corequisites: [],
+                conflicts: []
+              };
+            });
+            setCourses(updatePrerequisiteErrors(updatedCourses));
+            setAvailableCourses(updatedAvailableCourses);
+            return updatedCourses;
+          } else {
+            setCourses([]);
+            setAvailableCourses(availableCourses);
+            return [];
+          }
+        })(),
+        (async () => {
+          if (user) {
+            console.log("Getting user's major");
+            let majorIds = user.major;
+            const promises = [];
+            for (const id of majorIds) {
+              promises.push(getMajorById(id));
+            }
+            const majors = await Promise.all(promises);
+            setMajors(majors);
+            return majors;
+          }
+          return null;
+        })()
+      ]);
+      console.log("User's major object: ", userMajorObjects);
+      setMajors(userMajorObjects);
+      setIsLoading(false);
     } catch (error) {
-      console.log("Error fetching courses", error);
+      console.log("Error fetching initial data", error);
+      setIsLoading(false);
     }
-  }
-  const fetchMajor = async () => {
-    try {
-      console.log("Getting user's major")
-      let majorIds = user.major;
-      const promises = [];
-      for (const id of majorIds) {
-        promises.push(getMajorById(id));
-      }
-      const userMajorObjects = await Promise.all(promises);
-
-      console.log(userMajorObjects);
-    } catch (error) {
-      console.log("Error fetching major", error);
-    }
-  }
-  useEffect(() => {// Fetch courses on load
-    fetchCourses();
-    if (user) {
-      fetchMajor(user);
-    }
+  };
+  
+  useEffect(() => {
+    fetchInitialData();
   }, []);
+  
   const filteredCourses = availableCourses //Filter courses to show in search bar
     .filter((course) => {
       const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
@@ -495,7 +504,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     if (isLoading) {
       return;
     }
-    let topologicalCourses = (sortCoursesForAutofill(["MA 16100", "MA 16200", "MA 16600", "MA 26100", "CS 18000", "CS 25200", "CS 18200", "CS 24000", "CS 25000" , "CS 25100"], courses.concat(availableCourses)));
+    let coreCourses = aggregateCoreRequirementsIntoArray();
+    console.log("Core courses list: ", coreCourses);
+    let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
+    console.log("Core courses after topological sort: ", topologicalCourses);
     let courseOrder = [[topologicalCourses[0]]];
     
     for (let i = 1; i < topologicalCourses.length; i++) {
@@ -556,6 +568,24 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setCourses(updatedCourses);
     setAvailableCourses(availableCoursesCopy);
   }
+  const aggregateCoreRequirementsIntoArray = () => {
+    let userAllCoreRequirements = [];
+
+    majors.forEach(major => {
+      const coreRequirements = major.requirements.filter((req) => req.name.includes("Core"));
+      // GET ONLY CORE REQUIREMENTS
+      console.log(coreRequirements);
+      coreRequirements.forEach(core => {
+        const filteredSubrequirements = core.subrequirements.filter((subreq) => subreq.courses.length == 1);
+        //FOR NOW, only get subrequirements that have one course. 
+        filteredSubrequirements.forEach(subreq => {
+          userAllCoreRequirements.push(subreq.courses[0]);
+        })
+      })
+    });
+    return userAllCoreRequirements;
+  }
+
   function sortCoursesForAutofill(coreCourses, allCourses) {
     const coursePrereqMap = {};
     const coreSet = new Set(coreCourses);
@@ -580,7 +610,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
       }
     });
-    console.log("Course Prereq Map", coursePrereqMap);
+
+    console.log("Course Prereq Map Before filling", coursePrereqMap);
     console.log("New prereq",missingPrereqs)
     missingPrereqs.forEach(prereq => {
       if (courseMap.has(prereq)) {
@@ -590,8 +621,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               prereqGroup.length > 0 ? [prereqGroup[0]] : null 
           ).filter(Boolean);
       }
-  });
-  console.log("Course Prereq Map", coursePrereqMap);
+    });
+  console.log("Course Prereq Map after filling", coursePrereqMap);
     const allSortedCourses = Array.from(coreSet)
     // Initialize visited and visiting sets for cycle detection
     const visited = new Set();
@@ -614,7 +645,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       // Visit all prerequisites first
       const prereqGroups = coursePrereqMap[courseName] || [];
       for (const group of prereqGroups) {
-        console.log(group);
         group.forEach(courseName => {
           if (courseMap.has(courseName)) {
             visit(courseName);
@@ -628,7 +658,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
 
     // Visit each core course
-    console.log(allSortedCourses)
     allSortedCourses.forEach(courseName => {
       if (!visited.has(courseName)) {
           visit(courseName);

@@ -23,6 +23,7 @@ function App() {
   const [courses, setCourses] = useState(null);
   const [majors, setMajors] = useState([]);
   const [requirements, setRequirements] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const refreshCourses = async () => {
     console.log("refresh courses called in app");
@@ -34,36 +35,27 @@ function App() {
   };
 
   useEffect(() => {
-    getCourses()
-      .then((listOfCourses) => {
-        setCourses(listOfCourses);
-      })
-      .catch((err) => console.log("Could not retrieve list of courses", err));
-
-    getMajors()
-      .then((listOfMajors) => {
-        setMajors(listOfMajors);
-      })
-      .catch((err) => console.log("Could not retrieve list of majors", err));
-    
-    getRequirements()
-      .then((listofRequirements) => {
-        setRequirements(listofRequirements);
-      })
-      .catch((err) => console.log("Could not retrieve list of requirements", err));
-
-    onLogin(getCachedUser());
+    Promise.all([
+      getCourses().then(setCourses).catch(err => console.log("Could not retrieve list of courses", err)),
+      getMajors().then(setMajors).catch(err => console.log("Could not retrieve list of majors", err)),
+      getRequirements().then(setRequirements).catch(err => console.log("Could not retrieve list of requirements", err)),
+      onLogin(getCachedUser())
+    ]).finally(() => {
+      setIsLoading(false);
+    });
   }, []);
+  
 
   const onLogout = () => {
     localStorage.setItem('cachedUser', "");
     window.location.reload();
   }
 
-  const onLogin = (user) => {
-    setUser(user);
-    if (user != getCachedUser) {
-      cacheUserToBrowser(user);
+  const onLogin = (u) => {
+    setUser(u);
+    console.log("User got", u);
+    if (u != getCachedUser()) {
+      cacheUserToBrowser(u);
     }
   }
 
@@ -74,6 +66,10 @@ function App() {
   const getCachedUser = () => {
     const user = localStorage.getItem('cachedUser');
     return user ? JSON.parse(user) : null;
+  }
+
+  if (isLoading) {
+    return (<h1>Loading..</h1>);
   }
 
   return (
