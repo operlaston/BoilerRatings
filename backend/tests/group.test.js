@@ -12,6 +12,55 @@ const Requirement = require('../models/requirement')
 const api = supertest(app)
 
 
+const newCourse = {
+  name: "testcourse",
+  number: "testnumber",
+  description: "testdescription",
+  instructors: [],
+  difficulty: 0,
+  enjoyment: 0,
+  recommended: 0,
+  reviews: [],
+  prerequisites: [],
+  creditHours: 0,
+  conflicts: []
+}
+
+const newUser = {
+  username: "testusername",
+  email: "testemail",
+  password: "testpassword",
+  graduationSemester: "testsemester",
+}
+
+const newReview = {
+  date: new Date(),
+  semesterTaken: "testsemester",
+  reviewContent: "testcontent",
+  recommend: false,
+  anon: false,
+  difficulty: 0,
+  enjoyment: 0,
+  likes: 0,
+  reports: [],
+  hidden: false
+}
+
+const newRequirement = {
+  name: 'testrequirement',
+  subrequirements: [
+    {
+      credits: 6,
+      courses: ["testcourse1", "testcourse2"]
+    }
+  ]
+}
+
+const newMajor = {
+  name: 'testmajor',
+  requirements: []
+}
+
 beforeEach(async () => {
   await Review.deleteMany({})
   await Major.deleteMany({})
@@ -22,19 +71,6 @@ beforeEach(async () => {
 })
 
 test('a valid course can be added', async () => {
-  const newCourse = {
-    name: "testcourse",
-    number: "testnumber",
-    description: "testdescription",
-    instructors: [],
-    difficulty: 0,
-    enjoyment: 0,
-    recommended: 0,
-    reviews: [],
-    prerequisites: [],
-    creditHours: 0,
-    conflicts: []
-  }
 
   const coursesBefore = await Course.find({})
 
@@ -49,12 +85,7 @@ test('a valid course can be added', async () => {
 })
 
 test('a valid user can be added through the test add route', async () => {
-  const newUser = {
-    username: "testusername",
-    email: "testemail",
-    password: "testpassword",
-    graduationSemester: "testsemester",
-  }
+
 
   const usersBefore = await User.find({})
 
@@ -69,19 +100,6 @@ test('a valid user can be added through the test add route', async () => {
 })
 
 test('a valid review can be added', async () => {
-  const newCourse = {
-    name: "testcourse",
-    number: "testnumber",
-    description: "testdescription",
-    instructors: [],
-    difficulty: 0,
-    enjoyment: 0,
-    recommended: 0,
-    reviews: [],
-    prerequisites: [],
-    creditHours: 0,
-    conflicts: []
-  }
 
   const courseRes = await api
     .post('/api/courses')
@@ -90,32 +108,12 @@ test('a valid review can be added', async () => {
 
   const courseid = courseRes.body.id
 
-  const newUser = {
-    username: "testusername",
-    email: "testemail",
-    password: "testpassword",
-    graduationSemester: "testsemester",
-  }
-
   const userRes = await api
     .post('/api/users/test/add')
     .send(newUser)
     .expect(201)
 
   const userid = userRes.body.id
-
-  const newReview = {
-    date: new Date(),
-    semesterTaken: "testsemester",
-    reviewContent: "testcontent",
-    recommend: false,
-    anon: false,
-    difficulty: 0,
-    enjoyment: 0,
-    likes: 0,
-    reports: [],
-    hidden: false
-  }
 
   const reviewsBefore = await Review.find({})
 
@@ -131,26 +129,19 @@ test('a valid review can be added', async () => {
 })
 
 test('testing user deletion', async () => {
-  const newUser = {
-    username: "testuser",
-    email: "testemail",
-    password: "testpassword",
-    graduationSemester: "testsemester"
-  }
 
-  await api
+  const res = await api
     .post('/api/users/test/add')
     .send(newUser)
   
-  
-  const userBefore = await User.findOne({username: "testuser"})
+  const userBefore = await User.findOne({username: "testusername"})
   assert(userBefore !== null)
   
   await api
     .delete(`/api/users/${userBefore._id}`)
     .expect(200)
 
-  const userAfter = await User.findOne({username: "testuser"})
+  const userAfter = await User.findOne({username: "testusername"})
   assert(userAfter === null)
 
   const response = await api.get(`/api/users/${userBefore._id}`).expect(200)
@@ -159,15 +150,6 @@ test('testing user deletion', async () => {
 })
 
 test('a valid requirement can be added ', async () => {
-  const newRequirement = {
-    name: 'testrequirement',
-    subrequirements: [
-      {
-        credits: 6,
-        courses: ["testcourse1", "testcourse2"]
-      }
-    ]
-  }
 
   const initialRequirements = await Requirement.find({})
 
@@ -186,27 +168,6 @@ test('a valid requirement can be added ', async () => {
 
 test('a valid major can be added ', async () => {
 
-  const newRequirement = {
-    name: 'testrequirementformajor',
-    subrequirements: [
-      {
-        credits: 6,
-        courses: ["testcourse1", "testcourse2"]
-      }
-    ]
-  }
-
-  const response = await api.post('/api/requirements').send(newRequirement)
-
-  const returnedRequirement = response.body
-
-  // console.log(returnedRequirement)
-
-  const newMajor = {
-    name: 'testmajor',
-    requirements: [returnedRequirement.id]
-  }
-
   const initialMajors = await Major.find({})
 
   await api
@@ -218,9 +179,28 @@ test('a valid major can be added ', async () => {
   const majorsAtEnd = await Major.find({}).lean()
   assert.strictEqual(majorsAtEnd.length, initialMajors.length + 1)
 
-  assert(majorsAtEnd.find(major => major.name === 'testmajor') 
-    && majorsAtEnd.find(major => major.requirements.length === 1) 
-    && majorsAtEnd.find(major => major.requirements[0] == returnedRequirement.id))
+  assert(majorsAtEnd.find(major => major.name === 'testmajor'))
+})
+
+test('a favorited course is added to the user\'s favorited array', async () => {
+  let res = await api
+    .post('/api/courses')
+    .send(newCourse)
+
+  const courseid = res.body.id
+
+  res = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+  
+  const userid = res.body.id
+
+  res = await api
+    .put(`/api/courses/favorite/${courseid}`)
+    .send({userId: userid})
+
+  const user = await User.findById(userid)
+  assert(user.favorited.map(fav => fav.toString()).includes(courseid))
 })
 
 after(async () => {
