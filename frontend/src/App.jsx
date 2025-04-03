@@ -91,6 +91,7 @@ function App() {
               setCourses={setCourses}
               majors={majors}
               setMajors={setMajors}
+              user={user}
             />
           }
         />

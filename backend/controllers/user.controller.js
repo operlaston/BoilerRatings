@@ -129,7 +129,8 @@ usersRouter.get('/:id', async (req, res) => {
   //Do not populate email and password
   id = req.params.id;
   try {
-    const user = await User.findById(id).select('-email -passwordHash').populate('reviews')
+    const user = await User.findById(id).select('-email -passwordHash')
+      .populate('reviews')
     if (!user) {
       return res.status(404).json({message: 'User not found'});
     }

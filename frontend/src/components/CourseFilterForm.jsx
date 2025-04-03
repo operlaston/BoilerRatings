@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 
 const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
-    selectedRequirement, setSelectedRequirement, majors, setMajors, requirements, setRequirements }) => {
+    selectedRequirement, setSelectedRequirement, majors, setMajors, user, requirements, setRequirements,
+    setShowFavorited, showFavorited }) => {
   // Mock data
 
   // const handleSubmit = (e) => {
@@ -32,11 +33,11 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
   return (
     <div className="flex items-center justify-center p-4 z-50 w-full">
       <div className="w-full max-w-3/4 p-6 rounded-lg bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl">
-        <div className="text-l font-semibold mb-4 text-gray-900 dark:text-white">
-          Filter By Major Requirement
-        </div>
 
         <div className="flex flex-col space-y-4">
+          <div className="text-l font-semibold mb-4 text-gray-900 dark:text-white">
+            Filter By Requirement
+          </div>
           <div className="flex flex-row">
             {/* Major Selection */}
 
@@ -72,7 +73,14 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
               ))}
             </select>
           </div>
-
+          {
+            user ?
+            <div className="text-l font-semibold mb-4 text-gray-900 dark:text-white flex gap-4 items-center">
+              Only Show Favorited Courses
+              <input type="checkbox" checked={showFavorited} onChange={() => setShowFavorited(!showFavorited)} />
+            </div> :
+            ''
+          }
           {/* Action Buttons */}
           <div className="flex items-center justify-center gap-2">
             <button
@@ -85,7 +93,7 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
             </button>
 
             <button
-              onClick={() => {setSelectedMajor(""); setSelectedRequirement("")}}
+              onClick={() => {setSelectedMajor(""); setSelectedRequirement(""); setShowFavorited(false)}}
               className="w-1/6 bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                        p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors"
             >

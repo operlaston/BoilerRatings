@@ -1,15 +1,15 @@
-require('dotenv').config()
-const usersRouter = require('../controllers/user.controller')
-const User = require('../models/user');
-const mongoose = require('mongoose')
-const request = require('supertest');
-const app = require('../app');
+// const { describe, after } = require('node:test')
+// const usersRouter = require('../controllers/user.controller')
+// const User = require('../models/user');
+// const mongoose = require('mongoose')
+// const request = require('supertest');
+// const app = require('../app');
 
-// mock express
-const { mockRequest, mockResponse } = require('jest-mock-req-res')
+// // mock express
+// // const { mockRequest, mockResponse } = require('jest-mock-req-res')
 
-var res = mockRequest()
-var req = mockResponse()
+// // var res = mockRequest()
+// // var req = mockResponse()
 
 
 describe('User API Tests', () => {
@@ -30,7 +30,7 @@ describe('User API Tests', () => {
         expect(res.status).toBe(404);
         expect(res.body).toHaveProperty('message', 'User not found');
     })
-    afterAll(async () => {
+    after(async () => {
         await mongoose.connection.close();
     });
 });

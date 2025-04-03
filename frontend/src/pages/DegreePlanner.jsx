@@ -70,6 +70,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [degreePlanName, setDegreePlanName] = useState("My Degree Plan");
   const [majors, setMajors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showFavorited, setShowFavorited] = useState(false);
 
   const fetchInitialData = async () => {
     try {
@@ -171,6 +172,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   }, []);
   
   const filteredCourses = availableCourses //Filter courses to show in search bar
+    .filter(course => {
+      if (showFavorited) {
+        return user.favorited.find(courseId => courseId == course.courseID)
+      }
+      return true
+    })
     .filter((course) => {
       const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
 
@@ -181,6 +188,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         return normalizedCourseName.includes(normalizedTerm);
       });
     }).slice(0, 20)
+
   const closePopup = () => {
     setIsPopupVisible(false);
   };
@@ -715,6 +723,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
         <div className="col-span-4 space-y-6" style={{ height: "90vh" }}>
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
+            <div className="text-gray-400 flex gap-2">
+              Only Search Favorited Courses? 
+              <input type="checkbox" checked={showFavorited} onChange={() => setShowFavorited(!showFavorited)} />
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input

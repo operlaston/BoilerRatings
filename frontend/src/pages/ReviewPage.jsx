@@ -43,7 +43,7 @@ const ReviewPage = ({
 
   const [userMap, setUserMap] = useState({});
   const [majorMap, setMajorMap] = useState({});
-  const [majorNameMap, setMajorNameMap] = useState({}); // New state for major name mapping
+  const [majorNameMap, setMajorNameMap] = useState({});
 
   const currentUser = user ?? {};
   const courseId = course.id;
@@ -51,7 +51,6 @@ const ReviewPage = ({
   const [filterType, setFilterType] = useState(null);
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
-  const [availableMajors, setAvailableMajors] = useState([]); // New state for available majors
   const navigate = useNavigate();
 
   // Filter options
@@ -73,14 +72,12 @@ const ReviewPage = ({
   const instructorOptions = course.instructors
   console.log(instructorOptions)
 
-  // Likes range options
-  const likesOptions = ["0-2", "3-5", "6-8", "9+"];
+  const likesOptions = ["negative", "0-2", "3-5", "6-8", "9+"];
 
   useEffect(() => {
     if (user) {
       setCanAddReview(true);
     }
-    // Initialize with the course's reviews passed from parent
     setReviews(course.reviews || []);
     setFilteredReviews(course.reviews || []);
   }, [user, course]);
@@ -88,107 +85,112 @@ const ReviewPage = ({
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Get unique user IDs from reviews
         const userIds = course.reviews
           .map((review) => review.user)
           .filter(Boolean);
-
         const uniqueUserIds = [...new Set(userIds)];
-
-        // Batch fetch users
+  
         const users = await Promise.all(
-          uniqueUserIds.map(
-            (id) => getUserById(id).catch(() => null) // Handle individual errors
-          )
+          uniqueUserIds.map((id) => getUserById(id).catch(() => null))
         );
-
-        // Batch fetch majors
-        const majors = await getMajors();
-
-        // Create username map
-        const newUserMap = {};
-        users.forEach((user) => {
-          if (user?.id) newUserMap[user.id] = user.username;
-        });
-
-        // Create major name map
-        const newMajorMap = {};
-        majors.forEach((major) => {
-          if (major?.id) newMajorMap[major.id] = major.name;
-        });
-
-        // Create major string map for user
-        const newStringMap = {};
+  
+        // Get all unique major IDs from reviewers of this course
+        const courseMajorIds = new Set();
+        const newUserMajorMap = {};
+        
         users.forEach((user) => {
           if (user?.id) {
-            if (user.major.length > 0) {
-              if (user.username !== "[deleted]") {
-                var majorString = "• Majoring in";
-                var count = 0;
-                user.major.forEach((major) => {
-                  if (count != 0) majorString += " +";
-                  majorString += " " + newMajorMap[major];
-                  count++;
-                });
-                newStringMap[user.id] = majorString;
-              }
-            } else {
-              newStringMap[user.id] = "• No Major";
-            }
-          } else {
-            console.log("Error: User Not Found!");
+            newUserMajorMap[user.id] = user.major || [];
+            user.major?.forEach(majorId => courseMajorIds.add(majorId));
           }
         });
-        setMajorMap(newStringMap);
-
+  
+        // Now fetch ONLY the majors that appear in these reviews
+        const allMajors = await getMajors();
+        const relevantMajors = allMajors.filter(major => 
+          courseMajorIds.has(major.id)
+        );
+  
+        // Create major name mapping only for relevant majors
+        const newMajorNameMap = {};
+        relevantMajors.forEach(major => {
+          newMajorNameMap[major.id] = major.name;
+        });
+  
+        setMajorNameMap(newMajorNameMap);
+        setMajorMap(newUserMajorMap);
+  
+        // Create display map for usernames
+        const newUserMap = {};
+        users.forEach((user) => {
+          if (user?.id) {
+            newUserMap[user.id] = user.username;
+          }
+        });
         setUserMap(newUserMap);
+  
       } catch (err) {
         console.error("Error fetching user data:", err);
       }
     };
-
+  
     if (course?.reviews?.length) {
       fetchUserData();
     }
-  }, [course.reviews]); // Only re-run when reviews change
+  }, [course.reviews]);
 
-  // Memoized filtered reviews with usernames
   const processedReviews = useMemo(() => {
-    return filteredReviews.map((review) => ({
-      ...review,
-      username: review.anon ? "Anonymous" : userMap[review.user],
-      major: review.anon ? "" : majorMap[review.user],
-    }));
-  }, [filteredReviews, userMap]);
+    return filteredReviews
+      .filter(review => review.reports?.length < 3 || currentUser?.isAdmin)
+      .map((review) => {
+        const majors = review.anon ? [] : (majorMap[review.user] || []);
+        const majorNames = majors.map(id => majorNameMap[id]).filter(Boolean);
+        
+        return {
+          ...review,
+          username: review.anon ? "Anonymous" : userMap[review.user] || "[deleted]",
+          majorDisplay: majorNames.length > 0 
+            ? `• Majoring in ${majorNames.join(" + ")}` 
+            : ""
+        };
+      });
+  }, [filteredReviews, userMap, majorMap, majorNameMap, currentUser?.isAdmin]);
 
   useEffect(() => {
     if (!filterType || !selectedFilter) {
       setFilteredReviews(reviews);
     } else {
       const filtered = reviews.filter((review) => {
+        const likes = review.likes || 0;
+        
         if (filterType === "semester") {
           return review.semesterTaken === selectedFilter;
         } else if (filterType === "likes") {
-          const likes = review.likes || 0;
-          if (selectedFilter === "0-2") return likes >= 0 && likes <= 2;
-          if (selectedFilter === "3-5") return likes >= 3 && likes <= 5;
-          if (selectedFilter === "6-8") return likes >= 6 && likes <= 8;
-          if (selectedFilter === "9+") return likes >= 9;
+          switch (selectedFilter) {
+            case "negative": return likes < 0;
+            case "0-2": return likes >= 0 && likes <= 2;
+            case "3-5": return likes >= 3 && likes <= 5;
+            case "6-8": return likes >= 6 && likes <= 8;
+            case "9+": return likes >= 9;
+            default: return true;
+          }
         } else if (filterType === "major") {
-          // Filter by major
-          const userMajors = getUserById(review.user)?.major || [];
-          return userMajors.includes(selectedFilter);
+          try {
+            const userMajors = majorMap[review.user] || [];
+            return userMajors.includes(selectedFilter);
+          } catch (err) {
+            console.error("Major filter error:", err);
+            return false;
+          }
         } else if (filterType === "instructor") {
           return review.instructor === selectedFilter;
         }
         return true;
       });
-      const sortedFiltered = filtered.sort(
-        (a, b) => (b.likes || 0) - (a.likes || 0)
-      );
-      setFilteredReviews(sortedFiltered);
+
+      setFilteredReviews(filtered.sort((a, b) => (b.likes || 0) - (a.likes || 0)));
     }
-  }, [filterType, selectedFilter, reviews]);
+  }, [filterType, selectedFilter, reviews, majorMap]);
 
   const handleDeleteClick = (reviewId) => {
     setSelectedReviewId(reviewId);
@@ -246,40 +248,62 @@ const ReviewPage = ({
     }
   };
 
-  const handleLike = (reviewId) => {
-    likeReview(reviewId)
-      .then((updatedReview) => {
-        setReviews(
-          reviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        setFilteredReviews(
-          filteredReviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        refreshCourses();
-      })
-      .catch((err) => console.log("Could not like review", err));
+  const handleLike = async (reviewId) => {
+    try {
+      // 1. Get current like count
+      const currentReview = reviews.find(r => r.id === reviewId);
+      const currentLikes = currentReview?.likes || 0;
+      
+      // 2. IMMEDIATELY update UI
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes + 1 } : r
+      ));
+      
+      // 3. Make API call
+      const response = await likeReview(reviewId, user.id);
+      
+      // 4. ONLY update if server returned different value
+      if (response?.newReview?.likes !== currentLikes + 1) {
+        setReviews(prev => prev.map(r => 
+          r.id === reviewId ? { ...r, likes: response.newReview.likes } : r
+        ));
+      }
+  
+    } catch (err) {
+      // 5. Reset to original if error
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes } : r
+      ));
+      console.error("Like error:", err);
+    }
   };
-
-  const handleDislike = (reviewId) => {
-    dislikeReview(reviewId)
-      .then((updatedReview) => {
-        setReviews(
-          reviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        setFilteredReviews(
-          filteredReviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        refreshCourses();
-      })
-      .catch((err) => console.log("Could not dislike review", err));
+  
+  const handleDislike = async (reviewId) => {
+    // 1. Capture current state
+    const currentReview = reviews.find(r => r.id === reviewId);
+    const currentLikes = currentReview?.likes || 0;
+    
+    setReviews(prev => prev.map(r => 
+      r.id === reviewId ? { ...r, likes: currentLikes - 1 } : r
+    ));
+  
+    try {
+      // 2. API call
+      const { newReview } = await dislikeReview(reviewId, user.id);
+      
+      // 3. Verify server response
+      if (newReview?.likes !== undefined) {
+        setReviews(prev => prev.map(r => 
+          r.id === reviewId ? { ...r, likes: newReview.likes } : r
+        ));
+      }
+    } catch (err) {
+      // 4. Rollback on error (increment back)
+      setReviews(prev => prev.map(r => 
+        r.id === reviewId ? { ...r, likes: currentLikes } : r
+      ));
+      console.error("Dislike error:", err);
+    }
   };
 
   const handleReportClick = (reviewId) => {
@@ -389,35 +413,33 @@ const ReviewPage = ({
                   : "major"}
                 ...
               </option>
-              {filterType === "semester"
-                ? semesterOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="dark:text-white"
-                    >
-                      {option}
-                    </option>
-                  ))
-                : filterType === "likes"
-                ? likesOptions.map((option) => (
-                    <option
-                      key={option}
-                      value={option}
-                      className="dark:text-white"
-                    >
-                      {option}
-                    </option>
-                  ))
-                : availableMajors.map((major) => (
-                    <option
-                      key={major.id}
-                      value={major.id}
-                      className="dark:text-white"
-                    >
-                      {major.name}
-                    </option>
-                  ))}
+              
+              {/* Semester Options */}
+              {filterType === "semester" &&
+                semesterOptions.map((option) => (
+                  <option key={option} value={option} className="dark:text-white">
+                    {option}
+                  </option>
+                ))
+              }
+              
+              {/* Likes Options */}
+              {filterType === "likes" &&
+                likesOptions.map((option) => (
+                  <option key={option} value={option} className="dark:text-white">
+                    {option}
+                  </option>
+                ))
+              }
+              
+              {/* Major Options */}
+              {filterType === "major" &&
+                Object.entries(majorNameMap).map(([majorId, majorName]) => (
+                  <option key={majorId} value={majorId} className="dark:text-white">
+                    {majorName}
+                  </option>
+                ))
+              }
             </select>
           )}
 
@@ -436,6 +458,11 @@ const ReviewPage = ({
 
         {/* List of reviews */}
         <div className="flex-column space-y-6">
+          {processedReviews.length === 0 && filteredReviews.length > 0 && (
+            <div className="p-4 bg-yellow-100 dark:bg-yellow-900 rounded-lg text-center">
+              <p>All reviews for these filters are currently hidden due to reports</p>
+          </div>
+          )}
           {processedReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
@@ -443,12 +470,10 @@ const ReviewPage = ({
             >
               <div className="flex justify-between items-start mb-2">
                 <div>
-                  <h3
-                    className="font-medium text-gray-900 dark:text-white cursor-pointer"
-                    onClick={() => navigate(`/user/${review.username}`)}
-                  >
-                    {review.username} {review.major}
-                  </h3>
+                <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
+                  onClick={() => navigate(`/user/${review.username}`)}>
+                  {review.username} {review.majorDisplay}
+                </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
                     {review.semesterTaken}
@@ -556,39 +581,20 @@ const ReviewPage = ({
               </div>
 
               <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                <ThumbsUp
-                  className="w-4 h-4 cursor-pointer"
-                  onClick={() => handleLike(review.id)}
-                  fill={
-                    user
-                      ? user.likedReviews.find((currReview) => {
-                          return (
-                            currReview.review === review.id &&
-                            currReview.favorability === 1
-                          );
-                        })
-                        ? "#9CA3AF"
-                        : "#00000000"
-                      : "#00000000"
-                  }
-                />
-                <span>{review.likes}</span>
-                <ThumbsDown
-                  className="w-4 h-4 cursor-pointer"
-                  onClick={() => handleDislike(review.id)}
-                  fill={
-                    user
-                      ? user.likedReviews.find((currReview) => {
-                          return (
-                            currReview.review === review.id &&
-                            currReview.favorability === -1
-                          );
-                        })
-                        ? "#9CA3AF"
-                        : "#00000000"
-                      : "#00000000"
-                  }
-                />
+              <ThumbsUp
+                onClick={() => handleLike(review.id)}
+                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === 1) 
+                  ? "#9CA3AF" 
+                  : "transparent"}
+              />
+              <span>{review.likes || 0}</span>
+              <ThumbsDown
+                className="w-4 h-4 cursor-pointer"
+                onClick={() => handleDislike(review.id)}
+                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === -1) 
+                  ? "#9CA3AF" 
+                  : "transparent"}
+              />
               </div>
 
               {editingReview != null && editingReview.id === review.id && (
