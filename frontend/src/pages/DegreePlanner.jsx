@@ -601,8 +601,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     if (isLoading) {
       return;
     }
-    let coreCourses = aggregateCoreRequirementsIntoArray();
-    let coreCourses2 = aggregateCoreRequirementsIntoArray();
+    let coreCourses = aggregateCoreRequirementsIntoArray(majors);
+    let coreCourses2 = aggregateCoreRequirementsIntoArray(majors);
     console.log("Core courses list: ", coreCourses2);
     let topologicalCourses2 = sortCoursesForAutofillLowestDifficulty(coreCourses2, courses.concat(availableCourses))
     let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
@@ -669,7 +669,73 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setAvailableCourses(availableCoursesCopy);
   }
 
-  const handleAutoSuggestClick = () => {
+  const handleAutoSuggestClick = () => { if (isLoading) {
+    return;
+  }
+  let coreCourses = aggregateCoreRequirementsIntoArray(majors);
+  console.log("Core courses list: ", coreCourses);
+  let topologicalCourses = sortCoursesForAutofillLowestDifficulty(coreCourses, courses.concat(availableCourses))
+ // console.log("Core courses after topological sort: ", topologicalCourses);
+  console.log("Core courses after topo sort2", topologicalCourses)
+  let courseOrder = [[topologicalCourses[0]]];
+  
+  for (let i = 1; i < topologicalCourses.length; i++) {
+    let curr = topologicalCourses[i];
+    let highest = -1;
+    //console.log("curr", curr)
+    curr.prerequisites.forEach(prereqGroup => {
+     // console.log("This prereq group has ", prereqGroup)
+      courseOrder.forEach((s, index) => {
+        //console.log("This semester has ", s);
+        if (s.some(course => prereqGroup.includes(course.name))) {
+          if (index > highest) {
+            highest = index + 1;
+          }
+        }
+      });
+    });
+    if (highest == -1) {
+      highest = 0;
+    }
+    if (!courseOrder[highest]) {
+      courseOrder[highest] = [];
+    }    
+    courseOrder[highest].push(curr)
+  }
+  console.log("Collapsed courses", courseOrder);
+
+
+
+
+  //TODO: uncomment this VV
+  // setIsSaved(false);
+  let availableCoursesCopy = [...availableCourses];
+  let reorderedCourses = [...courses];
+  
+  courseOrder.forEach((semester, index) => {
+    semester.forEach((course) => {
+      if (!courses.some((c) => c.name === course.name)) {
+        //This means the course is in the search bar
+        
+        let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
+        let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
+        courseToTransfer.semester = semesters[index].semester;
+        courseToTransfer.semesterIndex = index;
+        reorderedCourses.push(courseToTransfer);
+      }
+      else {
+        let reorderedCourses = [...courses];
+        let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
+        let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
+        courseToTransfer.semester = semesters[index].semester;
+        courseToTransfer.semesterIndex = index;
+      }
+    })
+  });
+  const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
+  //console.log(updatedCourses);
+  setCourses(updatedCourses);
+  setAvailableCourses(availableCoursesCopy);
 
   }
 
