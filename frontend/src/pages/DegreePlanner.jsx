@@ -55,6 +55,17 @@ const INITIAL_SEMESTERS = [
   },
 ]
 
+const DATA_COURSE_ORDER = [
+  ["CS 18000", "MA 16100"],
+  ["CS 18200", "MA 16200"],
+  ["CS 38003", "MA 26100"],
+  ["CS 24200", "STAT 35500", "MA 26500"],
+  ["CS 25100", "CS 25300", "STAT 41600"],
+  ["CS 37300", "STAT 41700"],
+  ["CS 44000"],
+  ["CS 44100"]
+]
+
 export const aggregateCoreRequirementsIntoArray = (majors) => {
   console.log("Majors", majors);
   let userAllCoreRequirements = [];
@@ -103,7 +114,6 @@ export const sortCoursesForAutofill = (coreCourses, allCourses) => {
 
 
 
-  console.log("Course prerequisite map", coursePrereqMap);
 
   missingPrereqs.forEach(prereq => {
     if (courseMap.has(prereq)) {
@@ -114,7 +124,6 @@ export const sortCoursesForAutofill = (coreCourses, allCourses) => {
       ).filter(Boolean);
     }
   });
-  console.log("Course Prereq Map after filling", coursePrereqMap);
   const allSortedCourses = Array.from(coreSet)
   // Initialize visited and visiting sets for cycle detection
   const visited = new Set();
@@ -179,9 +188,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const fetchInitialData = async () => {
     try {
       setIsLoading(true);
-      console.log("Initial user: ", user);
-      console.log("Getting courses");
-
       // Fetch both courses and major in parallel
       const [courses, userMajorObjects] = await Promise.all([
         (async () => {
@@ -212,7 +218,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
           if (degreePlan) {
             const getCourses = degreePlan.savedCourses;
-            const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
+            console.log(degreePlan);
+            const savedCourseIDs = degreePlan.savedCourses.map(course => course._id);
             const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
 
             const updatedCourses = getCourses.map((course) => {
@@ -240,7 +247,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         })(),
         (async () => {
           if (user) {
-            console.log("Getting user's major");
             let majorIds = user.major;
             const promises = [];
             for (const id of majorIds) {
@@ -254,7 +260,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         })()
       ]);
       if (!user) {
-        console.log(localStorage.getItem("majors"));
         if (!localStorage.getItem("majors")) {
           setMajors([]);
         }
@@ -301,7 +306,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     if (isLoading) {
       return;
     }
-    console.log(majors);
     setPopupState("Settings");
     setIsPopupVisible(true);
   }
@@ -352,7 +356,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       //This should not happen
       return;
     }
-    console.log("Degree Plan saved as:", degreePlanName);
     createDegreePlan(user, degreePlanName, courses)
     setIsSaved(true);
     setIsPopupVisible(false);
@@ -610,6 +613,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     if (isLoading) {
       return;
     }
+    console.log(majors);
+    
     let coreCourses = aggregateCoreRequirementsIntoArray(majors);
     let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
     console.log("Core courses after topological sort: ", topologicalCourses);
@@ -638,11 +643,24 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       }
       courseOrder[highest].push(curr)
     }
-    console.log("Collapsed courses", courseOrder);
-
-
-
-
+    
+    if (majors[0].name == "Data Science") {
+      const courseMap = new Map();
+      const allCourses = courses.concat(availableCourses);
+      allCourses.forEach(course => courseMap.set(course.name, course));
+      let newOrder = [];
+      courseOrder = DATA_COURSE_ORDER;
+      courseOrder.forEach(semester => {
+        let arr = [];
+        semester.forEach(course => {
+          arr.push(courseMap.get(course));
+        })
+        newOrder.push(arr);
+      });
+      courseOrder = newOrder;
+      
+    }
+    console.log(courseOrder);
     //TODO: uncomment this VV
     // setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
@@ -670,7 +688,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       })
     });
     const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
-    //console.log(updatedCourses);
     setCourses(updatedCourses);
     setAvailableCourses(availableCoursesCopy);
   }

@@ -197,12 +197,12 @@ const ds_major = [
   }
 ]
 
-const difficultyAutoFillExpected = [
+const core_course_objects = [
   {
       "courseID": "67e8f93571a39e0a51dbf172",
       "name": "CS 18000",
-      "semester": "Fall 2023",
-      "semesterIndex": 0,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Problem Solving And Object-Oriented Programming",
       "difficulty": 4.5,
       "creditHours": 4,
@@ -213,8 +213,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f93571a39e0a51dbf174",
       "name": "CS 18200",
-      "semester": "Spring 2024",
-      "semesterIndex": 1,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Foundations Of Computer Science",
       "difficulty": 0,
       "creditHours": 3,
@@ -229,8 +229,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f93671a39e0a51dbf182",
       "name": "CS 24000",
-      "semester": "Spring 2024",
-      "semesterIndex": 1,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Programming In C",
       "difficulty": 0,
       "creditHours": 3,
@@ -245,8 +245,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f93671a39e0a51dbf186",
       "name": "CS 25000",
-      "semester": "Fall 2024",
-      "semesterIndex": 2,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Computer Architecture",
       "difficulty": 0,
       "creditHours": 4,
@@ -264,8 +264,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f93671a39e0a51dbf188",
       "name": "CS 25100",
-      "semester": "Fall 2024",
-      "semesterIndex": 2,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Data Structures And Algorithms",
       "difficulty": 0,
       "creditHours": 3,
@@ -285,8 +285,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f93671a39e0a51dbf18a",
       "name": "CS 25200",
-      "semester": "Spring 2025",
-      "semesterIndex": 3,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Systems Programming",
       "difficulty": 0,
       "creditHours": 4,
@@ -302,38 +302,10 @@ const difficultyAutoFillExpected = [
       "conflicts": []
   },
   {
-      "courseID": "67e8fd277478552d52d673cc",
-      "name": "MA 16500",
-      "semester": "Fall 2023",
-      "semesterIndex": 0,
-      "description": "Analytic Geometry And Calculus I",
-      "difficulty": 0,
-      "creditHours": 4,
-      "prerequisites": [],
-      "corequisites": [],
-      "conflicts": []
-  },
-  {
-      "courseID": "67e8f97071a39e0a51dbfd00",
-      "name": "MA 16600",
-      "semester": "Spring 2024",
-      "semesterIndex": 1,
-      "description": "Analytic Geometry And Calculus II",
-      "difficulty": 0,
-      "creditHours": 4,
-      "prerequisites": [
-          [
-              "MA 16500"
-          ]
-      ],
-      "corequisites": [],
-      "conflicts": []
-  },
-  {
       "courseID": "67e8f97071a39e0a51dbfd04",
       "name": "MA 26100",
-      "semester": "Fall 2024",
-      "semesterIndex": 2,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Multivariate Calculus",
       "difficulty": 0,
       "creditHours": 4,
@@ -349,8 +321,8 @@ const difficultyAutoFillExpected = [
   {
       "courseID": "67e8f97071a39e0a51dbfd0a",
       "name": "MA 26500",
-      "semester": "Fall 2024",
-      "semesterIndex": 2,
+      "semester": "",
+      "semesterIndex": -1,
       "description": "Linear Algebra",
       "difficulty": 0,
       "creditHours": 3,
@@ -411,3 +383,6 @@ describe('Testing course aggregation from major', () => {
   }) 
 })
 
+describe("Testing topological sort for core courses", () => {
+  sortCoursesForAutofill
+})
