@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "NODE_ENV=test node --test",
-    "start": "NODE_ENV=production nodemon index.js"
+    "start": "cross-env NODE_ENV=production nodemon index.js"
   },
   "author": "",
   "license": "ISC",
@@ -26,5 +26,8 @@
     "sinon-express-mock": "^2.2.1",
     "supertest": "^7.0.0",
     "unit.js": "^2.1.1"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }

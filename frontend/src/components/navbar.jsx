@@ -65,7 +65,7 @@ export function Navbar({user, onLogout}) {
                 >
                   <div className="h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                       <img
-                        src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + user.username}
+                        src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + user.id}
                         alt="Profile"
                         className="h-full w-full object-cover"
                       />
