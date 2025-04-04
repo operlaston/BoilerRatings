@@ -129,7 +129,7 @@ function CourseCompare({requirements}) {
                       credits={course1.creditHours}
                       enjoyment={course1.enjoyment}
                       difficulty={course1.difficulty}
-                      recommended={course1.recommended}
+                      reviews={course1.reviews}
                       numReviews={course1.reviews.length}
                       requirements={course1.prerequisites}
                     />
@@ -145,7 +145,7 @@ function CourseCompare({requirements}) {
                       credits={course2.creditHours}
                       enjoyment={course2.enjoyment}
                       difficulty={course2.difficulty}
-                      recommended={course2.recommended}
+                      reviews={course2.reviews}
                       numReviews={course2.reviews.length}
                       requirements={course2.prerequisites}
                     />
