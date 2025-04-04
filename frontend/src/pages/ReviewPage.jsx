@@ -194,7 +194,10 @@ const ReviewPage = ({
             return false;
           }
         } else if (filterType === "instructor") {
-          return review.instructor === selectedFilter;
+          if (review.instructor === undefined) {
+            return false;
+          }
+          return review.instructor.id === selectedFilter;
         }
         return true;
       });
