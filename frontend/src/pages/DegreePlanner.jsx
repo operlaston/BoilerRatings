@@ -84,7 +84,6 @@ export const sortCoursesForAutofill = (coreCourses, allCourses) => {
   // First, build a map of all core courses with their filtered prerequisites
   allCourses.forEach(course => {
     if (coreSet.has(course.name)) {
-      console.log(prereqGroup);
       const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
         const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
         if (!hasCoreCourse) {
