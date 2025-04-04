@@ -828,7 +828,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 
 
     //TODO: uncomment this VV
-    // setIsSaved(false);
+    setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
     let reorderedCourses = [...courses];
 
