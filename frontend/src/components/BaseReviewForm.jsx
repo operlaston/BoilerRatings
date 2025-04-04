@@ -82,7 +82,7 @@ const BaseReviewForm = ({
         {/* Instructor Dropdown */}
         <div className="flex flex-col space-y-2">
           <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            Instructor
+            Instructor *
           </label>
           <select
             value={formData.instructor ?? ""}
