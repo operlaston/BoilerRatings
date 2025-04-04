@@ -71,7 +71,6 @@ const ReviewPage = ({
   ];
   //console.log(course)
 
-  //Temporary, replace with [instructorNames, course.instructors] later
   const instructorOptions = course.instructors
   // console.log(instructorOptions)
 
@@ -444,6 +443,8 @@ const ReviewPage = ({
                   ? "semester"
                   : filterType === "likes"
                   ? "likes range"
+                  : filterType === "instructor" 
+                  ? "instructor"
                   : "major"}
                 ...
               </option>
@@ -471,6 +472,15 @@ const ReviewPage = ({
                 Object.entries(majorNameMap).map(([majorId, majorName]) => (
                   <option key={majorId} value={majorId} className="dark:text-white">
                     {majorName}
+                  </option>
+                ))
+              }
+              
+              {/* Instructor Options */}
+              {filterType === "instructor" &&
+                instructorOptions.map((pair) => (
+                  <option key={pair.id} value={pair.id} className="dark:text-white">
+                    {pair.name}
                   </option>
                 ))
               }
