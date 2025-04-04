@@ -75,9 +75,9 @@ const User = ({ user, setUser }) => {
       )}
       <div className="flex flex-col">
         <div className="flex pt-16 gap-x-6 items-center">
-          <div className="max-w-40">
+          <div className="max-w-40 h-30 w-30">
             <img
-              src="https://assets.leetcode.com/users/default_avatar.jpg"
+              src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + user.id}
               alt="pfp-image"
               className="rounded-xl"
             />

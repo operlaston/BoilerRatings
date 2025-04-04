@@ -147,7 +147,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           return null;
         })()
       ]);
-      console.log("User's major object: ", userMajorObjects);
       if (!user) {
         console.log(localStorage.getItem("majors"));
         if (!localStorage.getItem("majors")) {
@@ -574,7 +573,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     majors.forEach(major => {
       const coreRequirements = major.requirements.filter((req) => req.name.includes("Core"));
       // GET ONLY CORE REQUIREMENTS
-      console.log(coreRequirements);
+      console.log("Core requirements: ", coreRequirements);
       coreRequirements.forEach(core => {
         const filteredSubrequirements = core.subrequirements.filter((subreq) => subreq.courses.length == 1);
         //FOR NOW, only get subrequirements that have one course. 
@@ -592,8 +591,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     allCourses.forEach(course => courseMap.set(course.name, course));
     const missingPrereqs = new Set();
 
-    console.log(coreCourses);
-    console.log(allCourses);
     // First, build a map of all core courses with their filtered prerequisites
     allCourses.forEach(course => {
       if (coreSet.has(course.name)) {
@@ -606,13 +603,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           }
         });
         
-        console.log("FilteredPreqs", filteredPrereqs);
         coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
       }
     });
 
-    console.log("Course Prereq Map Before filling", coursePrereqMap);
-    console.log("New prereq",missingPrereqs)
     missingPrereqs.forEach(prereq => {
       if (courseMap.has(prereq)) {
           coreCourses.push(prereq);
