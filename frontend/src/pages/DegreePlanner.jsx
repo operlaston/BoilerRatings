@@ -7,6 +7,7 @@ import { getCourses } from "../services/course.service";
 import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
 import SaveDegreeForm from "../components/SaveDegreeForm";
 import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
+import { LoadingPage } from "../components/Loading";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -87,26 +88,27 @@ export const sortCoursesForAutofill = (coreCourses, allCourses) => {
         const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
         if (!hasCoreCourse) {
           const firstPrereq = prereqGroup[0];
-          console.log("First prereq", firstPrereq)
-          missingPrereqs.add(firstPrereq)
+          missingPrereqs.add(firstPrereq);
           return firstPrereq;
         }
       });
-      
+
       coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
     }
   });
 
+  console.log("Course prerequisite map", coursePrereqMap);
+
   missingPrereqs.forEach(prereq => {
     if (courseMap.has(prereq)) {
-        coreCourses.push(prereq);
-        coreSet.add(prereq);
-        coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
-            prereqGroup.length > 0 ? [prereqGroup[0]] : null 
-        ).filter(Boolean);
+      coreCourses.push(prereq);
+      coreSet.add(prereq);
+      coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
+        prereqGroup.length > 0 ? [prereqGroup[0]] : null
+      ).filter(Boolean);
     }
   });
-console.log("Course Prereq Map after filling", coursePrereqMap);
+  console.log("Course Prereq Map after filling", coursePrereqMap);
   const allSortedCourses = Array.from(coreSet)
   // Initialize visited and visiting sets for cycle detection
   const visited = new Set();
@@ -144,9 +146,9 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
   // Visit each core course
   allSortedCourses.forEach(courseName => {
     if (!visited.has(courseName)) {
-        visit(courseName);
+      visit(courseName);
     }
-});
+  });
 
   return (result);
 }
@@ -173,7 +175,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       setIsLoading(true);
       console.log("Initial user: ", user);
       console.log("Getting courses");
-      
+
       // Fetch both courses and major in parallel
       const [courses, userMajorObjects] = await Promise.all([
         (async () => {
@@ -201,12 +203,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               return updatedCourses;
             }
           }
-  
+
           if (degreePlan) {
             const getCourses = degreePlan.savedCourses;
             const savedCourseIDs = degreePlan.savedCourses.map(course => course.course.id);
             const updatedAvailableCourses = availableCourses.filter(course => !savedCourseIDs.includes(course.course));
-  
+
             const updatedCourses = getCourses.map((course) => {
               return {
                 courseID: course.course.id,
@@ -259,15 +261,15 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       }
       setIsLoading(false);
     } catch (error) {
-      console.log("Error fetching initial data", error);
+      console.error("Error fetching initial data", error);
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchInitialData();
   }, []);
-  
+
   const filteredCourses = availableCourses //Filter courses to show in search bar
     .filter(course => {
       if (showFavorited) {
@@ -604,15 +606,15 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
     let coreCourses = aggregateCoreRequirementsIntoArray(majors);
     let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
-   // console.log("Core courses after topological sort: ", topologicalCourses);
+    // console.log("Core courses after topological sort: ", topologicalCourses);
     let courseOrder = [[topologicalCourses[0]]];
-    
+
     for (let i = 1; i < topologicalCourses.length; i++) {
       let curr = topologicalCourses[i];
       let highest = -1;
       //console.log("curr", curr)
       curr.prerequisites.forEach(prereqGroup => {
-       // console.log("This prereq group has ", prereqGroup)
+        // console.log("This prereq group has ", prereqGroup)
         courseOrder.forEach((s, index) => {
           //console.log("This semester has ", s);
           if (s.some(course => prereqGroup.includes(course.name))) {
@@ -627,7 +629,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       }
       if (!courseOrder[highest]) {
         courseOrder[highest] = [];
-      }    
+      }
       courseOrder[highest].push(curr)
     }
     console.log("Collapsed courses", courseOrder);
@@ -639,12 +641,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     // setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
     let reorderedCourses = [...courses];
-    
+
     courseOrder.forEach((semester, index) => {
       semester.forEach((course) => {
         if (!courses.some((c) => c.name === course.name)) {
           //This means the course is in the search bar
-          
+
           let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
           let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
           courseToTransfer.semester = semesters[index].semester;
@@ -666,171 +668,177 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setAvailableCourses(availableCoursesCopy);
   }
 
-  const handleAutoSuggestClick = () => { 
+  const handleAutoSuggestClick = () => {
     if (isLoading) {
-    return;
-  }
-  let coreCourses = aggregateCoreRequirementsIntoArray(majors);
-  console.log("Core courses list: ", coreCourses);
-  let topologicalCourses = sortCoursesForAutofillLowestDifficulty(coreCourses, courses.concat(availableCourses))
- // console.log("Core courses after topological sort: ", topologicalCourses);
-  console.log("Core courses after topo sort2", topologicalCourses)
-  let courseOrder = [[topologicalCourses[0]]];
-  
-  for (let i = 1; i < topologicalCourses.length; i++) {
-    let curr = topologicalCourses[i];
-    let highest = -1;
-    //console.log("curr", curr)
-    curr.prerequisites.forEach(prereqGroup => {
-     // console.log("This prereq group has ", prereqGroup)
-      courseOrder.forEach((s, index) => {
-        //console.log("This semester has ", s);
-        if (s.some(course => prereqGroup.includes(course.name))) {
-          if (index > highest) {
-            highest = index + 1;
-          }
-        }
-      });
-    });
-    if (highest == -1) {
-      highest = 0;
+      return;
     }
-    if (!courseOrder[highest]) {
-      courseOrder[highest] = [];
-    }    
-    courseOrder[highest].push(curr)
-  }
-  console.log("Collapsed courses", courseOrder);
+    let coreCourses = aggregateCoreRequirementsIntoArray(majors);
+    console.log("Core courses list: ", coreCourses);
+    let topologicalCourses = sortCoursesForAutofillLowestDifficulty(coreCourses, courses.concat(availableCourses))
+    // console.log("Core courses after topological sort: ", topologicalCourses);
+    console.log("Core courses after topo sort2", topologicalCourses)
+    let courseOrder = [[topologicalCourses[0]]];
 
-
-
-
-  //TODO: uncomment this VV
-  // setIsSaved(false);
-  let availableCoursesCopy = [...availableCourses];
-  let reorderedCourses = [...courses];
-  
-  courseOrder.forEach((semester, index) => {
-    semester.forEach((course) => {
-      if (!courses.some((c) => c.name === course.name)) {
-        //This means the course is in the search bar
-        
-        let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
-        let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
-        courseToTransfer.semester = semesters[index].semester;
-        courseToTransfer.semesterIndex = index;
-        reorderedCourses.push(courseToTransfer);
-      }
-      else {
-        let reorderedCourses = [...courses];
-        let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
-        let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
-        courseToTransfer.semester = semesters[index].semester;
-        courseToTransfer.semesterIndex = index;
-      }
-    })
-  });
-  const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
-  //console.log(updatedCourses);
-  setCourses(updatedCourses);
-  setAvailableCourses(availableCoursesCopy);
-
-  }
-
-   function sortCoursesForAutofillLowestDifficulty(coreCourses, allCourses) {
-    const coursePrereqMap = {};
-  const coreSet = new Set(coreCourses);
-  const courseMap = new Map();
-  allCourses.forEach(course => courseMap.set(course.name, course));
-  console.log(courseMap)
-  const missingPrereqs = new Set();
-
-  // First, build a map of all core courses with their filtered prerequisites
-  allCourses.forEach(course => {
-    if (coreSet.has(course.name)) {
-      console.log(course.name)
-      const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
-        const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
-        if (!hasCoreCourse) {
-          let lowestDiff = prereqGroup[0];
-          let lowestDiffNum = courseMap.get(prereqGroup[0]).difficulty
-          let currentDiff;
-          let currentDiffNum;
-          let i;
-          console.log(lowestDiff);
-          console.log(lowestDiffNum)
-          for (i = 0; i < prereqGroup.length; i++) {
-            currentDiff = prereqGroup[i];
-            console.log(currentDiff)
-            currentDiffNum = courseMap.get(prereqGroup[i]).difficulty
-            console.log(currentDiffNum)
-            if (currentDiffNum < lowestDiffNum) {
-              lowestDiff = currentDiff;
-              lowestDiffNum = currentDiffNum;
+    for (let i = 1; i < topologicalCourses.length; i++) {
+      let curr = topologicalCourses[i];
+      let highest = -1;
+      //console.log("curr", curr)
+      curr.prerequisites.forEach(prereqGroup => {
+        // console.log("This prereq group has ", prereqGroup)
+        courseOrder.forEach((s, index) => {
+          //console.log("This semester has ", s);
+          if (s.some(course => prereqGroup.includes(course.name))) {
+            if (index > highest) {
+              highest = index + 1;
             }
           }
-          console.log("Lowest Found was", lowestDiff)
-          missingPrereqs.add(lowestDiff)
-          return lowestDiff;
-        }
+        });
       });
-      
-      coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
+      if (highest == -1) {
+        highest = 0;
+      }
+      if (!courseOrder[highest]) {
+        courseOrder[highest] = [];
+      }
+      courseOrder[highest].push(curr)
     }
-  });
+    console.log("Collapsed courses", courseOrder);
 
-  missingPrereqs.forEach(prereq => {
-    if (courseMap.has(prereq)) {
+
+
+
+    //TODO: uncomment this VV
+    // setIsSaved(false);
+    let availableCoursesCopy = [...availableCourses];
+    let reorderedCourses = [...courses];
+
+    courseOrder.forEach((semester, index) => {
+      semester.forEach((course) => {
+        if (!courses.some((c) => c.name === course.name)) {
+          //This means the course is in the search bar
+
+          let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
+          let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
+          courseToTransfer.semester = semesters[index].semester;
+          courseToTransfer.semesterIndex = index;
+          reorderedCourses.push(courseToTransfer);
+        }
+        else {
+          let reorderedCourses = [...courses];
+          let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
+          let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
+          courseToTransfer.semester = semesters[index].semester;
+          courseToTransfer.semesterIndex = index;
+        }
+      })
+    });
+    const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
+    //console.log(updatedCourses);
+    setCourses(updatedCourses);
+    setAvailableCourses(availableCoursesCopy);
+
+  }
+
+  function sortCoursesForAutofillLowestDifficulty(coreCourses, allCourses) {
+    const coursePrereqMap = {};
+    const coreSet = new Set(coreCourses);
+    const courseMap = new Map();
+    allCourses.forEach(course => courseMap.set(course.name, course));
+    console.log(courseMap)
+    const missingPrereqs = new Set();
+
+    // First, build a map of all core courses with their filtered prerequisites
+    allCourses.forEach(course => {
+      if (coreSet.has(course.name)) {
+        console.log(course.name)
+        const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
+          const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
+          if (!hasCoreCourse) {
+            let lowestDiff = prereqGroup[0];
+            let lowestDiffNum = courseMap.get(prereqGroup[0]).difficulty
+            let currentDiff;
+            let currentDiffNum;
+            let i;
+            console.log(lowestDiff);
+            console.log(lowestDiffNum)
+            for (i = 0; i < prereqGroup.length; i++) {
+              currentDiff = prereqGroup[i];
+              console.log(currentDiff)
+              currentDiffNum = courseMap.get(prereqGroup[i]).difficulty
+              console.log(currentDiffNum)
+              if (currentDiffNum < lowestDiffNum) {
+                lowestDiff = currentDiff;
+                lowestDiffNum = currentDiffNum;
+              }
+            }
+            console.log("Lowest Found was", lowestDiff)
+            missingPrereqs.add(lowestDiff)
+            return lowestDiff;
+          }
+        });
+
+        coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
+      }
+    });
+
+    missingPrereqs.forEach(prereq => {
+      if (courseMap.has(prereq)) {
         coreCourses.push(prereq);
         coreSet.add(prereq);
         coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
-            prereqGroup.length > 0 ? [prereqGroup[0]] : null 
+          prereqGroup.length > 0 ? [prereqGroup[0]] : null
         ).filter(Boolean);
+      }
+    });
+    console.log("Course Prereq Map after filling", coursePrereqMap);
+    const allSortedCourses = Array.from(coreSet)
+    // Initialize visited and visiting sets for cycle detection
+    const visited = new Set();
+    const visiting = new Set();
+    const result = [];
+
+    // Helper function for topological sort
+    function visit(courseName) {
+      if (visiting.has(courseName)) {
+        console.warn(`Circular dependency detected involving course ${courseName}`);
+        return;
+      }
+
+      if (visited.has(courseName)) {
+        return; // Already processed
+      }
+
+      visiting.add(courseName);
+
+      // Visit all prerequisites first
+      const prereqGroups = coursePrereqMap[courseName] || [];
+      for (const group of prereqGroups) {
+        group.forEach(courseName => {
+          if (courseMap.has(courseName)) {
+            visit(courseName);
+          }
+        });
+      }
+
+      visiting.delete(courseName);
+      visited.add(courseName);
+      result.push(courseMap.get(courseName));
     }
-  });
-console.log("Course Prereq Map after filling", coursePrereqMap);
-  const allSortedCourses = Array.from(coreSet)
-  // Initialize visited and visiting sets for cycle detection
-  const visited = new Set();
-  const visiting = new Set();
-  const result = [];
 
-  // Helper function for topological sort
-  function visit(courseName) {
-    if (visiting.has(courseName)) {
-      console.warn(`Circular dependency detected involving course ${courseName}`);
-      return;
-    }
+    // Visit each core course
+    allSortedCourses.forEach(courseName => {
+      if (!visited.has(courseName)) {
+        visit(courseName);
+      }
+    });
 
-    if (visited.has(courseName)) {
-      return; // Already processed
-    }
-
-    visiting.add(courseName);
-
-    // Visit all prerequisites first
-    const prereqGroups = coursePrereqMap[courseName] || [];
-    for (const group of prereqGroups) {
-      group.forEach(courseName => {
-        if (courseMap.has(courseName)) {
-          visit(courseName);
-        }
-      });
-    }
-
-    visiting.delete(courseName);
-    visited.add(courseName);
-    result.push(courseMap.get(courseName));
+    return (result);
   }
 
-  // Visit each core course
-  allSortedCourses.forEach(courseName => {
-    if (!visited.has(courseName)) {
-        visit(courseName);
-    }
-});
-
-  return (result);
+  if (isLoading) {
+    return (
+      <LoadingPage message="Loading Degree Planner..." />
+    )
   }
 
 
@@ -895,7 +903,7 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
         <div className="col-span-4 space-y-6" style={{ height: "90vh" }}>
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700 h-full">
             <div className="text-gray-400 flex gap-2">
-              Only Search Favorited Courses? 
+              Only Search Favorited Courses?
               <input type="checkbox" checked={showFavorited} onChange={() => setShowFavorited(!showFavorited)} />
             </div>
             <div className="relative">
@@ -909,7 +917,7 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
               />
             </div>
             <div
-              className="relative mt-2 space-y-2 h-2/3"
+              className="relative mt-2 space-y-2 h-1/2"
               onDragOver={handleDragOver}
               onDrop={handleDragEnd}
               onDragLeave={handleDragLeave}
@@ -932,7 +940,7 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
                 <div
                   className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
                   style={{
-                    height: "23vh",
+                    height: "33vh",
                   }}
                 >
                   <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
@@ -949,7 +957,7 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
                   ))}
                   {
                     missingRequirements.map((r, index) => (
-                      <p 
+                      <p
                         key={index}
                         className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
                         onClick={() => handleErrorClick(r)}
@@ -965,14 +973,14 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
         </div>
       </div>
       <Toaster
-      toastOptions={{
-        className: '',
-        style: {
-          padding: '16px',
-          color: '#fefefe',
-          backgroundColor: '#1f2937'
-        },
-      }}    
+        toastOptions={{
+          className: '',
+          style: {
+            padding: '16px',
+            color: '#fefefe',
+            backgroundColor: '#1f2937'
+          },
+        }}
       />
       {isPopupVisible && (
         <div
@@ -987,11 +995,11 @@ console.log("Course Prereq Map after filling", coursePrereqMap);
               <SaveDegreeForm handleSaveDegreePlan={handleSaveDegreePlan} />
             }
             {(popupState == "Settings") &&
-              <DegreePlannersettingsForm 
+              <DegreePlannersettingsForm
                 user={user}
                 majors={majors}
                 setMajors={setMajors}
-                setIsPopupVisible={setIsPopupVisible}                
+                setIsPopupVisible={setIsPopupVisible}
               />
             }
           </div>

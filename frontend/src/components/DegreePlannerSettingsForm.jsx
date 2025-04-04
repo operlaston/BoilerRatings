@@ -233,7 +233,7 @@ function DegreePlannersettingsForm({ user, majors, setMajors, setIsPopupVisible 
           disabled={isLoading}
           className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center"
         >
-          {isLoading ? "Saving..." : "Complete Profile"}
+          {isLoading ? "Saving..." : "Save settings"}
         </button>
       </form>
     </div>

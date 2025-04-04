@@ -10,6 +10,7 @@ import DegreePlanner from "./pages/DegreePlanner";
 import CourseInfo from "./pages/Course";
 import SavedDegree from "./pages/SavedDegree";
 import User from "./pages/User"
+import { LoadingPage } from "./components/Loading";
 import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
 import { getRequirements } from "./services/requirement.service";
@@ -76,7 +77,9 @@ function App() {
   }
 
   if (isLoading) {
-    return (<h1 className="text-lg">Loading..</h1>);
+    return (
+      <LoadingPage message="Loading app..."/>
+    )
   }
 
   return (
