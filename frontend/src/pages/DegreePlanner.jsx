@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import { jsPDF } from "jspdf";
-import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, Settings2 } from "lucide-react";
+import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2 } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
@@ -54,6 +54,101 @@ const INITIAL_SEMESTERS = [
   },
 ]
 
+export const aggregateCoreRequirementsIntoArray = (majors) => {
+  console.log("Majors", majors);
+  let userAllCoreRequirements = [];
+
+  majors.forEach(major => {
+    const coreRequirements = major.requirements.filter((req) => req.name.includes("Core"));
+    // GET ONLY CORE REQUIREMENTS
+    console.log("Core requirements: ", coreRequirements);
+    coreRequirements.forEach(core => {
+      const filteredSubrequirements = core.subrequirements.filter((subreq) => subreq.courses.length == 1);
+      //FOR NOW, only get subrequirements that have one course. 
+      filteredSubrequirements.forEach(subreq => {
+        userAllCoreRequirements.push(subreq.courses[0]);
+      })
+    })
+  });
+  return userAllCoreRequirements;
+}
+
+export const sortCoursesForAutofill = (coreCourses, allCourses) => {
+  const coursePrereqMap = {};
+  const coreSet = new Set(coreCourses);
+  const courseMap = new Map();
+  allCourses.forEach(course => courseMap.set(course.name, course));
+  const missingPrereqs = new Set();
+
+  // First, build a map of all core courses with their filtered prerequisites
+  allCourses.forEach(course => {
+    if (coreSet.has(course.name)) {
+      const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
+        const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
+        if (!hasCoreCourse) {
+          const firstPrereq = prereqGroup[0];
+          missingPrereqs.add(firstPrereq)
+          return firstPrereq;
+        }
+      });
+      
+      coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
+    }
+  });
+
+  missingPrereqs.forEach(prereq => {
+    if (courseMap.has(prereq)) {
+        coreCourses.push(prereq);
+        coreSet.add(prereq);
+        coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
+            prereqGroup.length > 0 ? [prereqGroup[0]] : null 
+        ).filter(Boolean);
+    }
+  });
+console.log("Course Prereq Map after filling", coursePrereqMap);
+  const allSortedCourses = Array.from(coreSet)
+  // Initialize visited and visiting sets for cycle detection
+  const visited = new Set();
+  const visiting = new Set();
+  const result = [];
+
+  // Helper function for topological sort
+  function visit(courseName) {
+    if (visiting.has(courseName)) {
+      console.warn(`Circular dependency detected involving course ${courseName}`);
+      return;
+    }
+
+    if (visited.has(courseName)) {
+      return; // Already processed
+    }
+
+    visiting.add(courseName);
+
+    // Visit all prerequisites first
+    const prereqGroups = coursePrereqMap[courseName] || [];
+    for (const group of prereqGroups) {
+      group.forEach(courseName => {
+        if (courseMap.has(courseName)) {
+          visit(courseName);
+        }
+      });
+    }
+
+    visiting.delete(courseName);
+    visited.add(courseName);
+    result.push(courseMap.get(courseName));
+  }
+
+  // Visit each core course
+  allSortedCourses.forEach(courseName => {
+    if (!visited.has(courseName)) {
+        visit(courseName);
+    }
+});
+
+  return (result);
+}
 
 
 export default function DegreePlanner({ user, setUser, degreePlan }) {
@@ -253,6 +348,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setIsSaved(true);
     setIsPopupVisible(false);
   };
+
 
   //Functions related to dragging and dropping courses
 
@@ -572,98 +668,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setCourses(updatedCourses);
     setAvailableCourses(availableCoursesCopy);
   }
-  const aggregateCoreRequirementsIntoArray = () => {
-    let userAllCoreRequirements = [];
 
-    majors.forEach(major => {
-      const coreRequirements = major.requirements.filter((req) => req.name.includes("Core"));
-      // GET ONLY CORE REQUIREMENTS
-      console.log("Core requirements: ", coreRequirements);
-      coreRequirements.forEach(core => {
-        const filteredSubrequirements = core.subrequirements.filter((subreq) => subreq.courses.length == 1);
-        //FOR NOW, only get subrequirements that have one course. 
-        filteredSubrequirements.forEach(subreq => {
-          userAllCoreRequirements.push(subreq.courses[0]);
-        })
-      })
-    });
-    return userAllCoreRequirements;
-  }
-  function sortCoursesForAutofill(coreCourses, allCourses) {
-    const coursePrereqMap = {};
-    const coreSet = new Set(coreCourses);
-    const courseMap = new Map();
-    allCourses.forEach(course => courseMap.set(course.name, course));
-    const missingPrereqs = new Set();
+  const handleAutoSuggestClick = () => {
 
-    // First, build a map of all core courses with their filtered prerequisites
-    allCourses.forEach(course => {
-      if (coreSet.has(course.name)) {
-        const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
-          const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
-          if (!hasCoreCourse) {
-            const firstPrereq = prereqGroup[0];
-            missingPrereqs.add(firstPrereq)
-            return firstPrereq;
-          }
-        });
-        
-        coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
-      }
-    });
-
-    missingPrereqs.forEach(prereq => {
-      if (courseMap.has(prereq)) {
-          coreCourses.push(prereq);
-          coreSet.add(prereq);
-          coursePrereqMap[prereq] = (courseMap.get(prereq).prerequisites || []).map(prereqGroup =>
-              prereqGroup.length > 0 ? [prereqGroup[0]] : null 
-          ).filter(Boolean);
-      }
-    });
-  console.log("Course Prereq Map after filling", coursePrereqMap);
-    const allSortedCourses = Array.from(coreSet)
-    // Initialize visited and visiting sets for cycle detection
-    const visited = new Set();
-    const visiting = new Set();
-    const result = [];
-
-    // Helper function for topological sort
-    function visit(courseName) {
-      if (visiting.has(courseName)) {
-        console.warn(`Circular dependency detected involving course ${courseName}`);
-        return;
-      }
-
-      if (visited.has(courseName)) {
-        return; // Already processed
-      }
-
-      visiting.add(courseName);
-
-      // Visit all prerequisites first
-      const prereqGroups = coursePrereqMap[courseName] || [];
-      for (const group of prereqGroups) {
-        group.forEach(courseName => {
-          if (courseMap.has(courseName)) {
-            visit(courseName);
-          }
-        });
-      }
-
-      visiting.delete(courseName);
-      visited.add(courseName);
-      result.push(courseMap.get(courseName));
-    }
-
-    // Visit each core course
-    allSortedCourses.forEach(courseName => {
-      if (!visited.has(courseName)) {
-          visit(courseName);
-      }
-  });
-
-    return (result);
   }
 
    function sortCoursesForAutofillLowestDifficulty(coreCourses, allCourses) {
@@ -805,6 +812,10 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
 
+          <button className="p-2 cursor-pointer" onClick={handleAutoSuggestClick}>
+            <CalendarHeart className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8" />
           </button>
