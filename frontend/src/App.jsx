@@ -14,6 +14,7 @@ import { getMajors } from "./services/major.service";
 import { getCourses } from "./services/course.service";
 import { getRequirements } from "./services/requirement.service";
 import { Navbar } from "./components/navbar";
+import { getUserById } from "./services/user.service";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -39,7 +40,7 @@ function App() {
       getCourses().then(setCourses).catch(err => console.log("Could not retrieve list of courses", err)),
       getMajors().then(setMajors).catch(err => console.log("Could not retrieve list of majors", err)),
       getRequirements().then(setRequirements).catch(err => console.log("Could not retrieve list of requirements", err)),
-      onLogin(getCachedUser())
+      getCachedUser().then(retrievedUser => onLogin(retrievedUser)).catch(e => console.error("error occurred while retrieving user", e))
     ]).finally(() => {
       setIsLoading(false);
     });
@@ -47,11 +48,13 @@ function App() {
   
 
   const onLogout = () => {
-    localStorage.setItem('cachedUser', "");
+    // localStorage.setItem('cachedUser', "");
+    localStorage.removeItem('cachedUser')
     window.location.reload();
   }
 
   const onLogin = (u) => {
+    if (!u) return
     setUser(u);
     console.log("User got", u);
     if (u != getCachedUser()) {
@@ -60,12 +63,16 @@ function App() {
   }
 
   const cacheUserToBrowser = (user) => {
-    localStorage.setItem('cachedUser', JSON.stringify(user));
+    localStorage.setItem('cachedUser', user?.id);
   }
 
-  const getCachedUser = () => {
-    const user = localStorage.getItem('cachedUser');
-    return user ? JSON.parse(user) : null;
+  const getCachedUser = async () => {
+    const userid = localStorage.getItem('cachedUser');
+    if (userid && userid != "undefined") {
+      const user = await getUserById(userid)
+      return user
+    }
+    return null
   }
 
   if (isLoading) {

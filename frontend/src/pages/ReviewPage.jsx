@@ -14,7 +14,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import {
-  getUserById,
   addReview,
   likeReview,
   dislikeReview,
@@ -24,7 +23,7 @@ import {
   getReviewsForACourse,
 } from "../services/review.service.js";
 import { getMajorById, getMajors } from "../services/major.service.js";
-import { getUserByUsername } from "../services/user.service.js";
+import { getUserById, getUserByUsername } from "../services/user.service.js";
 import { getCourseByName, getCourses } from "../services/course.service.js";
 
 const ReviewPage = ({
