@@ -517,7 +517,7 @@ const ReviewPage = ({
               <div className="flex justify-between items-start mb-2">
                 <div>
                 <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
-                  onClick={() => navigate(`/user/${review.username}`)}>
+                  onClick={() => (review.username != "[deleted]" && review.username != "Anonymous")? navigate(`/user/${review.username}`) : ""}>
                   {review.username} {review.majorDisplay} {review.instructor?.name && ` • ${review.instructor.name}`}
                 </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
