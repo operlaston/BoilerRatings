@@ -88,6 +88,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             semester: "",
             semesterIndex: -1,
             description: course.name,
+            difficulty: course.difficulty,
             creditHours: course.creditHours,
             prerequisites: course.prerequisites,
             corequisites: [],
@@ -117,6 +118,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 semester: course.semester,
                 semesterIndex: course.semesterIndex,
                 description: course.course.name,
+                difficulty: course.course.difficulty,
                 creditHours: course.course.creditHours,
                 prerequisites: course.course.prerequisites,
                 corequisites: [],
@@ -505,19 +507,22 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       return;
     }
     let coreCourses = aggregateCoreRequirementsIntoArray();
-    console.log("Core courses list: ", coreCourses);
+    let coreCourses2 = aggregateCoreRequirementsIntoArray();
+    console.log("Core courses list: ", coreCourses2);
+    let topologicalCourses2 = sortCoursesForAutofillLowestDifficulty(coreCourses2, courses.concat(availableCourses))
     let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
-    console.log("Core courses after topological sort: ", topologicalCourses);
+   // console.log("Core courses after topological sort: ", topologicalCourses);
+    console.log("Core courses after topo sort2", topologicalCourses2)
     let courseOrder = [[topologicalCourses[0]]];
     
     for (let i = 1; i < topologicalCourses.length; i++) {
       let curr = topologicalCourses[i];
       let highest = -1;
-      console.log("curr", curr)
+      //console.log("curr", curr)
       curr.prerequisites.forEach(prereqGroup => {
-        console.log("This prereq group has ", prereqGroup)
+       // console.log("This prereq group has ", prereqGroup)
         courseOrder.forEach((s, index) => {
-          console.log("This semester has ", s);
+          //console.log("This semester has ", s);
           if (s.some(course => prereqGroup.includes(course.name))) {
             if (index > highest) {
               highest = index + 1;
@@ -564,7 +569,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       })
     });
     const updatedCourses = updatePrerequisiteErrors(reorderedCourses)
-    console.log(updatedCourses);
+    //console.log(updatedCourses);
     setCourses(updatedCourses);
     setAvailableCourses(availableCoursesCopy);
   }
@@ -664,6 +669,118 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       }
   });
 
+    return (result);
+  }
+
+   function sortCoursesForAutofillLowestDifficulty(coreCourses, allCourses) {
+    const coursePrereqMap = {};
+    const coreSet = new Set(coreCourses);
+    const courseMap = new Map();
+    allCourses.forEach(course => courseMap.set(course.name, course));
+    const missingPrereqs = new Set();
+
+    console.log(coreCourses);
+    console.log(allCourses);
+    // First, build a map of all core courses with their filtered prerequisites
+    allCourses.forEach(course => {
+      if (coreSet.has(course.name)) {
+        const filteredPrereqs = (course.prerequisites || []).map(prereqGroup => {
+          const hasCoreCourse = prereqGroup.some(prereq => coreSet.has(prereq));
+          console.log("Course", course.name)
+          console.log("Has Core Course", hasCoreCourse)
+          if (!hasCoreCourse) {
+            //Logic for picking prereq should all go here probably everything else works as intended
+            console.log("Prereq Group", prereqGroup)
+            let easiestPrereq = prereqGroup.reduce((lowest, prereq) => {
+              console.log(`Checking prereq: ${prereq}`);
+              const prereqCourse = allCourses.find(c => c.name === prereq);
+              if (!prereqCourse) {
+                console.log(`Course not found for ${prereq}, skipping...`);
+                return lowest;
+              }
+              if (!lowest) {
+                console.log(`This is the first course, setting as lowest: ${prereqCourse.name}`);
+                return prereqCourse;
+              }
+              console.log(`Found course: ${prereqCourse.name}, difficulty: ${prereqCourse.difficulty}`); 
+              if (prereqCourse.difficulty < lowest.difficulty) {
+                console.log(`Found easier course: ${prereqCourse.name} with difficulty ${prereqCourse.difficulty}`);
+                return prereqCourse;
+              } else {
+                console.log(`Course ${prereqCourse.name} is not easier than current lowest: ${lowest.name}`);
+              }
+            
+              // Return the current lowest if no new easier course was found
+              return lowest;
+            }, null);
+            console.log(easiestPrereq)
+            missingPrereqs.add(easiestPrereq)
+            return easiestPrereq;
+          }
+        });
+        
+        console.log("FilteredPreqs", filteredPrereqs);
+        coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
+      }
+    });
+
+    console.log("Course Prereq Map Before filling", coursePrereqMap);
+    console.log("New prereq",missingPrereqs)
+    missingPrereqs.forEach(prereq => {
+      console.log("Missing prereq", prereq)
+      if (courseMap.has(prereq.name)) {
+          console.log("Entered")
+          coreCourses.push(prereq.name);
+          coreSet.add(prereq.name);
+          coursePrereqMap[prereq.name] = (courseMap.get(prereq.name).prerequisites || []).map(prereqGroup =>
+              prereqGroup.length > 0 ? [prereqGroup[0].name] : null 
+          ).filter(Boolean);
+      }
+    });
+  console.log("Course Prereq Map after filling", coursePrereqMap);
+    const allSortedCourses = Array.from(coreSet)
+    // Initialize visited and visiting sets for cycle detection
+    const visited = new Set();
+    const visiting = new Set();
+    const result = [];
+
+    // Helper function for topological sort
+    function visit(courseName) {
+      if (visiting.has(courseName)) {
+        console.warn(`Circular dependency detected involving course ${courseName}`);
+        return;
+      }
+
+      if (visited.has(courseName)) {
+        return; // Already processed
+      }
+
+      visiting.add(courseName);
+
+      // Visit all prerequisites first
+      const prereqGroups = coursePrereqMap[courseName] || [];
+      for (const group of prereqGroups) {
+        console.log("Group",group)
+        group.forEach(courseName => {
+          console.log(courseName)
+          if (courseMap.has(courseName)) {
+            visit(courseName);
+          }
+        });
+      }
+
+      visiting.delete(courseName);
+      visited.add(courseName);
+      result.push(courseMap.get(courseName));
+    }
+
+    // Visit each core course
+    allSortedCourses.forEach(courseName => {
+      if (!visited.has(courseName)) {
+          visit(courseName);
+      }
+  });
+    console.log(result)
     return (result);
   }
 
