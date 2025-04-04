@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import { jsPDF } from "jspdf";
-import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2 } from "lucide-react";
+import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2, ReceiptPoundSterling } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
@@ -754,7 +754,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         newOrder.push(arr);
       });
       courseOrder = newOrder;
-      
     }
     console.log(courseOrder);
     //TODO: uncomment this VV
@@ -776,10 +775,11 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         }
         else {
           let reorderedCourses = [...courses];
-          let courseIndex = reorderedCourses.findIndex((c) => c.name == name)
-          let courseToTransfer = reorderedCourses.splice(courseIndex, 1)[0];
-          courseToTransfer.semester = semesters[index].semester;
-          courseToTransfer.semesterIndex = index;
+          let courseIndex = reorderedCourses.findIndex((c) => c.name == course.name)
+          console.log(reorderedCourses, courseIndex);
+          console.log(reorderedCourses[courseIndex]);
+          reorderedCourses[courseIndex].semester = semesters[index].semester;
+          reorderedCourses[courseIndex].semesterIndex = index;
         }
       })
     });
