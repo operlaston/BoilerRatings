@@ -197,6 +197,145 @@ const ds_major = [
   }
 ]
 
+const core_course_objects = [
+  {
+      "courseID": "67e8f93571a39e0a51dbf172",
+      "name": "CS 18000",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Problem Solving And Object-Oriented Programming",
+      "difficulty": 4.5,
+      "creditHours": 4,
+      "prerequisites": [],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f93571a39e0a51dbf174",
+      "name": "CS 18200",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Foundations Of Computer Science",
+      "difficulty": 0,
+      "creditHours": 3,
+      "prerequisites": [
+          [
+              "CS 18000"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f93671a39e0a51dbf182",
+      "name": "CS 24000",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Programming In C",
+      "difficulty": 0,
+      "creditHours": 3,
+      "prerequisites": [
+          [
+              "CS 18000"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f93671a39e0a51dbf186",
+      "name": "CS 25000",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Computer Architecture",
+      "difficulty": 0,
+      "creditHours": 4,
+      "prerequisites": [
+          [
+              "CS 18200"
+          ],
+          [
+              "CS 24000"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f93671a39e0a51dbf188",
+      "name": "CS 25100",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Data Structures And Algorithms",
+      "difficulty": 0,
+      "creditHours": 3,
+      "prerequisites": [
+          [
+              "CS 18200"
+          ],
+          [
+              "CS 24000",
+              "CS 24200",
+              "STAT 24200"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f93671a39e0a51dbf18a",
+      "name": "CS 25200",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Systems Programming",
+      "difficulty": 0,
+      "creditHours": 4,
+      "prerequisites": [
+          [
+              "CS 25100"
+          ],
+          [
+              "CS 25000"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f97071a39e0a51dbfd04",
+      "name": "MA 26100",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Multivariate Calculus",
+      "difficulty": 0,
+      "creditHours": 4,
+      "prerequisites": [
+          [
+              "MA 16200",
+              "MA 16600"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  },
+  {
+      "courseID": "67e8f97071a39e0a51dbfd0a",
+      "name": "MA 26500",
+      "semester": "",
+      "semesterIndex": -1,
+      "description": "Linear Algebra",
+      "difficulty": 0,
+      "creditHours": 3,
+      "prerequisites": [
+          [
+              "MA 16200",
+              "MA 16600"
+          ]
+      ],
+      "corequisites": [],
+      "conflicts": []
+  }
+]
 
 describe('Testing course aggregation from major', () => {
   test("Sanity test", () => {
@@ -241,3 +380,6 @@ describe('Testing course aggregation from major', () => {
   })
 })
 
+describe("Testing topological sort for core courses", () => {
+  sortCoursesForAutofill
+})
