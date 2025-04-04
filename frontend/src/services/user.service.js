@@ -7,6 +7,11 @@ const getUserByUsername = async (username) => {
   return response.data
 }
 
+const getUserById = async (id) => {
+  const response = await axios.get(`${baseurl}/${id}`)
+  return response.data
+}
+
 const deleteUser = async (id) => {
   const response = await axios.delete(`${baseurl}/${id}`)
   return response
@@ -26,4 +31,4 @@ const isCourseFavorited = async (userId, courseId) => {
   return res.data;
 }
 
-export { getUserByUsername, deleteUser, updateUser, isCourseFavorited }
+export { getUserByUsername, getUserById, deleteUser, updateUser, isCourseFavorited }
