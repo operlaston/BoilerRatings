@@ -77,7 +77,7 @@ const User = ({ user, setUser }) => {
         <div className="flex pt-16 gap-x-6 items-center">
           <div className="max-w-40 h-30 w-30">
             <img
-              src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + user.id}
+              src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + pageUser.id}
               alt="pfp-image"
               className="rounded-xl"
             />
