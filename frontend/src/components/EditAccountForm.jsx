@@ -22,39 +22,42 @@ const EditAccountForm = ({ user, handleSubmit, onFinish }) => {
     }
   };
 
+  useEffect(() => {
+    getAllMajors();
+  }, []);
+  
   // Initialize form with user data
   useEffect(() => {
-    const initializeForm = async () => {
-      await getAllMajors();
-      if (user && allMajors.length > 0) {
-        const majorPairs = user.major.map(id => {
-          const major = allMajors.find(m => m.id === id);
-          return major ? [major.name, major.id] : ["", ""];
-        });
-        
-        const minorPairs = user.minor.map(id => {
-          const major = allMajors.find(m => m.id === id); // Using majors as placeholder
-          return major ? [major.name, major.id] : ["", ""];
-        });
-
-        setFormData({
-          username: user.username || "",
-          major: majorPairs,
-          minor: minorPairs,
-          graduationSemester: user.graduationSemester || "",
-        });
-      }
-      else {
-        setFormData({
-          username: user.username || "",
-          major: [],
-          minor: [],
-          graduationSemester: user.graduationSemester || "",
-        });
-      }
-    };
-    initializeForm();
-  }, [user]);
+    if (user && allMajors.length > 0) {
+      console.log(user.major);
+      const majorPairs = user.major?.map(major => {
+        const match = allMajors.find(m => m.id === major.id);
+        console.log(match);
+        return match ? [match.name, match.id] : ["", ""];
+      }) || [];
+  
+      const minorPairs = user.major?.map(major => {
+        const match = allMajors.find(m => m.id === major.id);
+        return ["", ""];
+      }) || [];
+  
+      setFormData({
+        username: user.username || "",
+        major: majorPairs,
+        minor: minorPairs,
+        graduationSemester: user.graduationSemester || "",
+      });
+    } else {
+      // If user or majors aren't ready, you can either do nothing,
+      // or reset formData to something empty, etc.
+      setFormData({
+        username: user?.username || "",
+        major: [],
+        minor: [],
+        graduationSemester: user?.graduationSemester || "",
+      });
+    }
+  }, [user, allMajors]);
 
   const handleArrayChange = (arrayName, index, value) => {
     const updatedArray = [...formData[arrayName]];
@@ -123,7 +126,6 @@ const EditAccountForm = ({ user, handleSubmit, onFinish }) => {
               </button>
             </div>
           </div>
-          {console.log("All Majors IDs:", allMajors?.map(m => m.id.toString()))}
           {formData.major.map((pair, index) => (
             <select
               key={index}
