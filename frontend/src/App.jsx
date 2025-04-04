@@ -70,7 +70,6 @@ function App() {
   const getCachedUser = async () => {
     const userid = localStorage.getItem('cachedUser');
     if (userid && userid != "undefined") {
-      console.log("getting user by userid", userid)
       const user = await getUserById(userid)
       return user
     }
