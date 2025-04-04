@@ -203,6 +203,36 @@ test('a favorited course is added to the user\'s favorited array', async () => {
   assert(user.favorited.map(fav => fav.toString()).includes(courseid))
 })
 
+test('a review can be deleted', async () => {
+  const courseRes = await api
+    .post('/api/courses')
+    .send(newCourse)
+    .expect(201)
+  const courseId = courseRes.body.id
+
+  const userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+  const userId = userRes.body.id
+
+  const reviewRes = await api
+    .post('/api/reviews')
+    .send({ review: newReview, course: courseId, userId })
+    .expect(201)
+  const reviewId = reviewRes.body.id
+
+  let reviewInDb = await Review.findById(reviewId)
+  assert(reviewInDb !== null)
+
+  await api
+    .delete(`/api/reviews/${reviewId}`)
+    .expect(200)
+
+  reviewInDb = await Review.findById(reviewId)
+  assert(reviewInDb === null)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
