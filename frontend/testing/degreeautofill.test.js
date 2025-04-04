@@ -1,4 +1,4 @@
-import { aggregateCoreRequirementsIntoArray, sortCoursesForAutofill } from '../src/utils/degreeUtils.js';
+import { aggregateCoreRequirementsIntoArray, sortCoursesForAutofill, sortCoursesForAutofillLowestDifficulty  } from '../src/utils/degreeUtils.js';
 
 const sanity_1_majors = [
   {
@@ -378,9 +378,6 @@ describe('Testing course aggregation from major', () => {
       "CS 44000"
     ]);
   })
-  test("Testing Difficulty Autofill", () => {
-    //expect().toEqual(difficultyAutoFillExpected);
-  }) 
 })
 
 describe("Testing topological sort for core courses", () => {
