@@ -92,7 +92,7 @@ const BaseReviewForm = ({
             className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200"
           >
             <option value="">Select Instructor</option>
-            {console.log(instructorOptions)}
+            {/* {console.log(instructorOptions)} */}
             {instructorOptions.map((instructor) => (
               <option key={instructor.id} value={instructor.id}>
                 {instructor.name}

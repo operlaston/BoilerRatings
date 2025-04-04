@@ -10,7 +10,7 @@ const getReviewsForACourse = async (course) => {
 
 const getUserById= async (userId) => {
   const response = await axios.get(`${baseurl}/api/users/${userId}`)
-  console.log(response.data)
+  // console.log(response.data)
   return response.data
 }
 

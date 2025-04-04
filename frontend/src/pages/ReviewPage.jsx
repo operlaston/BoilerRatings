@@ -21,9 +21,11 @@ import {
   editReview,
   deleteReview,
   reportReview,
+  getReviewsForACourse,
 } from "../services/review.service.js";
 import { getMajorById, getMajors } from "../services/major.service.js";
 import { getUserByUsername } from "../services/user.service.js";
+import { getCourseByName, getCourses } from "../services/course.service.js";
 
 const ReviewPage = ({
   user,
@@ -71,7 +73,7 @@ const ReviewPage = ({
 
   //Temporary, replace with [instructorNames, course.instructors] later
   const instructorOptions = course.instructors
-  console.log(instructorOptions)
+  // console.log(instructorOptions)
 
   const likesOptions = ["negative", "0-2", "3-5", "6-8", "9+"];
 
@@ -156,6 +158,16 @@ const ReviewPage = ({
         };
       });
   }, [filteredReviews, userMap, majorMap, majorNameMap, currentUser?.isAdmin]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
+    getUserByUsername(user.username).then((newUser) => {
+      setUser(newUser)
+    })
+    .catch(e => console.error('could not retrieve user'))
+  }, [])
 
   useEffect(() => {
     if (!filterType || !selectedFilter) {
@@ -260,28 +272,33 @@ const ReviewPage = ({
       const currentLikes = currentReview?.likes || 0;
       
       // 2. IMMEDIATELY update UI
-      setReviews(prev => prev.map(r => 
-        r.id === reviewId ? { ...r, likes: currentLikes + 1 } : r
-      ));
+      // setReviews(prev => prev.map(r => 
+      //   r.id === reviewId ? { ...r, likes: currentLikes + 1 } : r
+      // ));
       
       // 3. Make API call
       const response = await likeReview(reviewId, user.id);
-      
-      // 4. ONLY update if server returned different value
-      if (response?.newReview?.likes !== currentLikes + 1) {
-        setReviews(prev => prev.map(r => 
-          r.id === reviewId ? { ...r, likes: response.newReview.likes } : r
-        ));
-      }
 
-      // const newUser = await getUserByUsername(user.username)
-      // setUser(newUser)
+      setUser(response.newUser)
+
+      // 4. ONLY update if server returned different value
+      // if (response?.newReview?.likes !== currentLikes + 1) {
+      // setCourses(await getCourses())
+      const newCourse = await getCourseByName(course.number)
+      const newReviews = newCourse.reviews
+      setCourse(newCourse)
+      setReviews(newReviews)
+      // setReviews(newReviews)
+        // setReviews(prev => prev.map(r => 
+        //   r.id === reviewId ? { ...r, likes: response.newReview.likes } : r
+        // ));
+      // }
   
     } catch (err) {
       // 5. Reset to original if error
-      setReviews(prev => prev.map(r => 
-        r.id === reviewId ? { ...r, likes: currentLikes } : r
-      ));
+      // setReviews(prev => prev.map(r => 
+      //   r.id === reviewId ? { ...r, likes: currentLikes } : r
+      // ));
       console.error("Like error:", err);
     }
   };
@@ -293,28 +310,32 @@ const ReviewPage = ({
     const currentReview = reviews.find(r => r.id === reviewId);
     const currentLikes = currentReview?.likes || 0;
     
-    setReviews(prev => prev.map(r => 
-      r.id === reviewId ? { ...r, likes: currentLikes - 1 } : r
-    ));
+    // setReviews(prev => prev.map(r => 
+    //   r.id === reviewId ? { ...r, likes: currentLikes - 1 } : r
+    // ));
   
     try {
       // 2. API call
-      const { newReview } = await dislikeReview(reviewId, user.id);
+      const { newUser, newReview } = await dislikeReview(reviewId, user.id);
       
-      // 3. Verify server response
-      if (newReview?.likes !== undefined) {
-        setReviews(prev => prev.map(r => 
-          r.id === reviewId ? { ...r, likes: newReview.likes } : r
-        ));
-      }
 
-      // const newUser = await getUserByUsername(user.username)
-      // setUser(newUser)
+      setUser(newUser)
+
+      const newCourse = await getCourseByName(course.number)
+      const newReviews = newCourse.reviews
+      setCourse(newCourse)
+      setReviews(newReviews)
+      // 3. Verify server response
+      // if (newReview?.likes !== undefined) {
+        // setReviews(prev => prev.map(r => 
+        //   r.id === reviewId ? { ...r, likes: newReview.likes } : r
+        // ));
+      // }
     } catch (err) {
       // 4. Rollback on error (increment back)
-      setReviews(prev => prev.map(r => 
-        r.id === reviewId ? { ...r, likes: currentLikes } : r
-      ));
+      // setReviews(prev => prev.map(r => 
+      //   r.id === reviewId ? { ...r, likes: currentLikes } : r
+      // ));
       console.error("Dislike error:", err);
     }
   };
@@ -477,7 +498,6 @@ const ReviewPage = ({
           </div>
           )}
           {processedReviews.map((review) => (
-            console.log(review),
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
               key={review.id}
@@ -598,7 +618,7 @@ const ReviewPage = ({
               <ThumbsUp
                 className="w-4 h-4 cursor-pointer"
                 onClick={() => handleLike(review.id)}
-                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === 1) 
+                fill={user?.likedReviews?.some(r => (r.review === review.id && r.favorability === 1)) 
                   ? "#9CA3AF"
                   : "transparent"}
               />
@@ -606,7 +626,7 @@ const ReviewPage = ({
               <ThumbsDown
                 className="w-4 h-4 cursor-pointer"
                 onClick={() => handleDislike(review.id)}
-                fill={user?.likedReviews?.some(r => r.review === review.id && r.favorability === -1) 
+                fill={user?.likedReviews?.some(r => (r.review === review.id && r.favorability === -1)) 
                   ? "#9CA3AF" 
                   : "transparent"}
               />
