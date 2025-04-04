@@ -91,8 +91,12 @@ export const sortCoursesForAutofill = (coreCourses, allCourses) => {
           missingPrereqs.add(firstPrereq);
           return firstPrereq;
         }
+        //We have a core course as a prereq
+        const corecoursehit = prereqGroup.find(prereq => coreSet.has(prereq))
+        return corecoursehit
+        
       });
-
+      console.log("Filter Prereqs", filteredPrereqs);
       coursePrereqMap[course.name] = filteredPrereqs.map(prereq => [prereq]);
     }
   });
@@ -608,7 +612,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
     let coreCourses = aggregateCoreRequirementsIntoArray(majors);
     let topologicalCourses = sortCoursesForAutofill(coreCourses, courses.concat(availableCourses));
-    // console.log("Core courses after topological sort: ", topologicalCourses);
+    console.log("Core courses after topological sort: ", topologicalCourses);
     let courseOrder = [[topologicalCourses[0]]];
 
     for (let i = 1; i < topologicalCourses.length; i++) {
@@ -648,12 +652,13 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       semester.forEach((course) => {
         if (!courses.some((c) => c.name === course.name)) {
           //This means the course is in the search bar
-
           let courseIndex = availableCoursesCopy.findIndex((c) => c.name == course.name);
           let courseToTransfer = availableCoursesCopy.splice(courseIndex, 1)[0];
           courseToTransfer.semester = semesters[index].semester;
           courseToTransfer.semesterIndex = index;
           reorderedCourses.push(courseToTransfer);
+          console.log("Course", course)
+          console.log("Index", index)
         }
         else {
           let reorderedCourses = [...courses];
