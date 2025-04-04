@@ -1,4 +1,4 @@
-import { aggregateCoreRequirementsIntoArray } from '../src/utils/degreeUtils.js';
+import { aggregateCoreRequirementsIntoArray, sortCoursesForAutofill } from '../src/utils/degreeUtils.js';
 
 const sanity_1_majors = [
   {
