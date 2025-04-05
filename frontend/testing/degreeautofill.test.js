@@ -379,7 +379,3 @@ describe('Testing course aggregation from major', () => {
     ]);
   })
 })
-
-describe("Testing topological sort for core courses", () => {
-  sortCoursesForAutofill
-})
