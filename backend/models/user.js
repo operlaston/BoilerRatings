@@ -36,7 +36,15 @@ const userSchema = new mongoose.Schema({
           },
           favorability: Number
       }
-  ]
+  ],
+  flag: {
+    type: Boolean,
+    default: false
+  },
+  flagReason: {
+    type: String,
+    default: ""
+  }
 })
 
 userSchema.set('toJSON', {
