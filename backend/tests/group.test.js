@@ -233,6 +233,24 @@ test('a review can be deleted', async () => {
   assert(reviewInDb === null)
 })
 
+test('a user can be banned', async () => {
+  const res = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+  
+  const userBefore = await User.findOne({username: "testusername"})
+  assert(userBefore !== null)
+  assert(userBefore.banned === false)
+
+  await api
+    .post(`/api/users/ban/${userBefore._id}`)
+    .expect(200)
+
+  const userAfter = await User.findOne({username: "testusername"})
+  assert(userAfter !== null)
+  assert(userAfter.banned === true)
+})
+
 after(async () => {
   await mongoose.connection.close()
 })

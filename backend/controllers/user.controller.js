@@ -208,6 +208,21 @@ usersRouter.put('/favorite/:id', async (req, res) => {
   }
 })
 
+usersRouter.post('/ban/:id', async (req, res) => {
+  const userId = req.params.id;
+  try {
+    const userExists = await User.findById(userId);
+    if (!userExists) {
+      return res.status(404).json({error: "User not found"})
+    }
+    await User.findByIdAndUpdate(userId, {$set: {banned: true}})
+    return res.status(200).json({message: "User successfully banned"})
+  }
+  catch (err) {
+    return res.status(401).json({error: "Bad Request"})
+  }
+})
+
 // this is only for testing the backend without having to create an account through the frontend
 usersRouter.post('/test/add', async (req, res) => {
   const {username, email, password, graduationSemester} = req.body;

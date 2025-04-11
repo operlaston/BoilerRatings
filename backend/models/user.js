@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
   verificationCode: String,
   codeExpires: Date,
   graduationSemester: String,
+  banned: {
+    type: Boolean,
+    default: false
+  },
   major: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Major'
