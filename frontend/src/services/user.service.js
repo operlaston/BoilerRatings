@@ -31,4 +31,9 @@ const isCourseFavorited = async (userId, courseId) => {
   return res.data;
 }
 
-export { getUserByUsername, getUserById, deleteUser, updateUser, isCourseFavorited }
+const banUser = async (userId) => {
+  const res = await axios.post(`${baseurl}/ban/${userId}`)
+  return res.data;
+}
+
+export { getUserByUsername, getUserById, deleteUser, updateUser, isCourseFavorited, banUser }
