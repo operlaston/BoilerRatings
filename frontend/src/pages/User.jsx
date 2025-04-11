@@ -55,6 +55,22 @@ const User = ({ user, setUser }) => {
     );
   }
 
+  if (pageUser.banned) {
+    return (
+      <div className="flex items-center flex-col">
+        <h1>
+          <b>404 - User Not Found.</b>
+        </h1>
+        <h1>
+          The user you are searching for no longer exists.
+        </h1>
+        <div className="underline cursor-pointer" onClick={() => navigate("/")}>
+          Return to Home Page
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="
