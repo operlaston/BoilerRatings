@@ -277,4 +277,22 @@ usersRouter.put('/test/flagfalse', async (req, res) => {
   }
 })
 
+/* Puts a flag on the user */
+usersRouter.put('/flags/:id', async (req, res) => {
+  const userId = req.params.id;
+  const {bool, reason} = req.body
+  try {
+    const user = await User.findByIdAndUpdate(userId, 
+      {$set: {
+        flag: bool,
+        flagReason: reason
+      }}, {new:true}
+    )
+    res.status(201).json(user)
+  } catch (error) {
+    res.status(400).json({"error": "Bad request"})
+  }
+})
+
+
 module.exports = usersRouter
