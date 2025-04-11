@@ -5,6 +5,17 @@ const Review = require("../models/review");
 const Report = require("../models/report");
 const Course = require("../models/course");
 
+//This route just gets every review that has a report
+reviewRouter.get('/reports', async(req,res) => {
+  try {
+    const reviewsWithReports = await Review.find({ reports: { $ne: [] } })
+    .populate("reports")
+    return res.status(201).json(reviewsWithReports)
+  } catch (error) {
+    return res.status(400).json({"error": "bad request"})
+  }
+})
+
 reviewRouter.get("/:id", async (req, res) => {
   try {
     const review = await Review.findById(req.params.id)

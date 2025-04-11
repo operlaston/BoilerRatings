@@ -263,5 +263,18 @@ usersRouter.post('/test/add', async (req, res) => {
     res.status(500).json({"error": "server error"})
   }
 })
+/* Writing this route to put every users flag as false and giving them an empty reason */
+/* Should not have to use this ever again*/
+usersRouter.put('/test/flagfalse', async (req, res) => {
+  try {
+    await User.updateMany({}, {$set: { 
+      flag: false,
+      flagReason: ""
+    }})
+    res.status(200).json("Worked")
+  } catch (error) {
+    res.status(400).json({"error": "server error"})
+  }
+})
 
 module.exports = usersRouter
