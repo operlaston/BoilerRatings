@@ -2,6 +2,8 @@ const usersRouter = require('express').Router()
 const bcrypt = require('bcrypt')
 const User = require('../models/user')
 const Major = require('../models/major')
+const Review = require('../models/review')
+const Course = require('../models/course')
 const sendEmail = require('../utils/email')
 const { findById, findByIdAndUpdate } = require('../models/course')
 const {to} = require('await-to-js')
@@ -215,7 +217,20 @@ usersRouter.post('/ban/:id', async (req, res) => {
     if (!userExists) {
       return res.status(404).json({error: "User not found"})
     }
-    await User.findByIdAndUpdate(userId, {$set: {banned: true}})
+    const user = await User.findByIdAndUpdate(userId, {$set: {banned: true}})
+
+    // remove all of their reviews
+    user.reviews.forEach(async (review) => {
+      const rev = Review.findById(review._id);
+      if (rev !== null) {
+        // only need to remove review from the course
+        await Course.findByIdAndUpdate(rev.course, {
+          $pull: {reviews: rev.id}
+        })
+        await Review.findOneAndDelete(rev);
+      }
+    });
+
     return res.status(200).json({message: "User successfully banned"})
   }
   catch (err) {
