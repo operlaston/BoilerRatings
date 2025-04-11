@@ -55,7 +55,7 @@ function App() {
   }
 
   const onLogin = (u) => {
-    if (!u) return
+    if (!u || u.banned) return
     setUser(u);
     console.log("User got", u);
     if (u != getCachedUser()) {
@@ -71,6 +71,7 @@ function App() {
     const userid = localStorage.getItem('cachedUser');
     if (userid && userid != "undefined") {
       const user = await getUserById(userid)
+      if (user.banned) return null
       return user
     }
     return null
