@@ -3,7 +3,14 @@ const Instructor = require('../models/instructor')
 const Course = require('../models/course')
 
 instructorRouter.post('/', async (req, res) =>{
-    const instructor = new Instructor(req.body)
+    const {name} = req.body;
+    const instructor = new Instructor({
+        name: name,
+        gpa: 0,
+        rmp: 0,
+        rmpLink: "",
+        course: []
+    })
     try {
         const savedInstructor = await instructor.save()
         res.status(201).json(savedInstructor)
