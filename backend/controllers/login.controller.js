@@ -30,10 +30,18 @@ loginRouter.post('/', async (req, res) => {
       //   likedReviews: user.likedReviews,
       //   plans: user.plans
       // })
-      user.lastLogin = new Date();
+
+      const now = new Date();
+      const inactiveThreshold = 50000;
+      const isInactive = user.lastLogin && (now - user.lastLogin) > inactiveThreshold;
+
+      user.lastLogin = now;
       await user.save();
 
-      res.status(200).json(user)
+      res.status(200).json({
+        user: user, 
+        isInactive 
+      })
     }
     else {
       console.log("Login failed: bad credentials")

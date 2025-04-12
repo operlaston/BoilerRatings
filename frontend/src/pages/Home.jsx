@@ -4,7 +4,7 @@ import CourseFilterForm from "../components/CourseFilterForm.jsx";
 import { getMajors } from '../services/major.service.js'
 import { getCourses } from "../services/course.service";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Home({ course, setCourse, courses, setCourses, majors, setMajors, user }) {
   const [showFilters, setShowFilters] = useState(false);
@@ -15,8 +15,22 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors, user 
   const [selectedRequirement, setSelectedRequirement] = useState("");
   const [requirements, setRequirements] = useState([]);
   const [showFavorited, setShowFavorited] = useState(false);
+  const [showInactiveWarning, setShowInactiveWarning] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+
+  useEffect(() => {
+    console.log("Current state:", location.state?.warning);
+
+    if (location.state?.warning) {
+      setShowInactiveWarning(true);
+      navigate(".", { 
+        replace: true, 
+        state: {} 
+      });    }
+  }, [location.state, navigate]);
 
   const onClick = async (course) => {
     setCourse(course);
@@ -69,6 +83,14 @@ function Home({ course, setCourse, courses, setCourses, majors, setMajors, user 
 
   return (
     <div className="p-20 bg-gray-900 min-h-screen text-white">
+      {/* Popup for inactive accounts */}
+      {showInactiveWarning && (
+        <div className="inactive-warning-popup">
+          <h2>Your Account Is Inactive</h2>
+          <p>Your last login was over a year ago. Consider deleting your account.</p>
+          <button onClick={() => setShowInactiveWarning(false)}>Close</button>
+        </div>
+      )}
       <div className="pb-8 text-xl">
         <input
           type="text"

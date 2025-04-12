@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useLocation } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { login } from '../services/login.service'
@@ -90,14 +90,17 @@ function Auth({onLogin}) {
       return;
     }
     try {
-      const loggedInUser = await login(email, password)
+      const { user:loggedInUser, isInactive } = await login(email, password);
+      console.log("isInactive ",isInactive)
       onLogin(loggedInUser)
-      navigate('/')
+      navigate('/', {
+        state: {warning: isInactive }
+      });
     }
     catch (e) {
       setError(e.response.data.error)
       console.log("error occurred while logging in", e)
-    }
+    } 
   }
 
   return (
