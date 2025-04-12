@@ -48,7 +48,11 @@ const userSchema = new mongoose.Schema({
   flagReason: {
     type: String,
     default: ""
-  }
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
 })
 
 userSchema.set('toJSON', {

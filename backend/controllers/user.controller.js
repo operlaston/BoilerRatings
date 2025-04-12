@@ -41,7 +41,8 @@ usersRouter.post('/', async (req, res) => {
       isVerified: false,
       reviews: [],
       likedReviews: [],
-      plans: []
+      plans: [],
+      lastLogin: Date.now,
     })
     const savedUser = await user.save()
     await sendEmail(email, verificationCode)

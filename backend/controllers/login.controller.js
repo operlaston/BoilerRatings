@@ -30,6 +30,9 @@ loginRouter.post('/', async (req, res) => {
       //   likedReviews: user.likedReviews,
       //   plans: user.plans
       // })
+      user.lastLogin = new Date();
+      await user.save();
+
       res.status(200).json(user)
     }
     else {

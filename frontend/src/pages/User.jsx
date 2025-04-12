@@ -107,6 +107,9 @@ const User = ({ user, setUser }) => {
             <div className="text-lg">
               Number of Reviews: {pageUser.reviews.length}
             </div>
+            <div className="text-lg">
+              Last login: {pageUser.lastLogin}
+            </div>
             {user == null || user.username !== pageUser.username ? (
               ""
             ) : (
