@@ -369,7 +369,7 @@ const ReviewPage = ({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen">
       {/* Success message for reports */}
       {showReportSuccess && (
         <div className="fixed top-4 right-4 z-50">
@@ -379,35 +379,9 @@ const ReviewPage = ({
           </div>
         </div>
       )}
-      <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Course Header */}
-        <div className="mb-8 text-center">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
-            <div className="w-full">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {course.name}
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400">
-                {course.department} {course.number}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center justify-center gap-4 mb-2">
-            <div className="flex items-center">
-              <Star className="w-5 h-5 text-yellow-400 fill-current" />
-              <span className="ml-1 text-gray-900 dark:text-white">
-                {course.avgEnjoyment?.toFixed(1) || "N/A"} out of 5
-              </span>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Based on {filteredReviews.length} reviews
-              {filteredReviews.length !== reviews.length &&
-                ` (filtered from ${reviews.length})`}
-            </p>
-          </div>
-        </div>
+      <div className="max-w-3xl py-8">
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 justify-left items-center mb-6">
           <select
             value={filterType || ""}
             onChange={(e) => {

@@ -12,6 +12,11 @@ loginRouter.post('/', async (req, res) => {
       res.status(401).json({"error": "email is not registered"})
       return
     }
+    if (user.banned) {
+      console.log("Login failed: user is banned");
+      res.status(401).json({"error": "This account is banned"});
+      return;
+    }
     if (await bcrypt.compare(userCredentials.password, user.passwordHash)) {
       console.log("Login success:", userEmail)
       // res.status(200).json({
@@ -28,7 +33,7 @@ loginRouter.post('/', async (req, res) => {
       res.status(200).json(user)
     }
     else {
-      console.log("Login failed")
+      console.log("Login failed: bad credentials")
       res.status(401).json({"error": "incorrect password"})
     }
   }

@@ -4,11 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import ReviewPage from "./ReviewPage";
 import { useNavigate, useParams } from "react-router-dom";
 import { getCourseByName } from "../services/course.service";
+import ReportForm from "../components/ReportForm";
+import toast, { Toaster } from 'react-hot-toast';
+
 
 function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
   const navigate = useNavigate();
-  const {course} = useParams();
+  const { course } = useParams();
   const [pageCourse, setPageCourse] = useState(null);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
   useEffect(() => {
     if (course) {
       getCourseByName(course)
@@ -20,15 +25,25 @@ function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
         });
     }
   }, [course]);
+
   if (!pageCourse) {
     return <div>Loading</div>
   }
+
+  const handleReportFormSubmit = ( reportContent ) => {
+    //TODO: Implement submitting report content
+    window.alert(reportContent);
+    setIsPopupVisible(false);
+    toast.success('Thanks for your feedback!')
+  }
+
+  const closePopup = () => {
+    setIsPopupVisible(false);
+  };
+
   //console.log(pageCourse)
   return (
     <div className="w-full h-min-screen flex items-center justify-center p-4 dark:bg-gray-900 overflow-y-auto">
-      <div className="absolute top-2/3 w-40 h-40 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-1 ease-in-out duration-150  translate-x-2/3 -translate-y-1/4"></div>
-      <div className="absolute top-1/4 w-64 h-64 bg-gray-300 dark:bg-gray-800 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-2 ease-in-out duration-300 translate-x-full -translate-y-1/3"></div>
-      <div className="absolute top-1/2 w-52 h-52 bg-gray-200 dark:bg-gray-700 rounded-full mix-blend-multiply dark:mix-blend-normal filter blur-2xl opacity-70 animate-blob-3 ease-in-out duration-200 -translate-x-2/3"></div>
       <div className="relative flex flex-col w-full max-w-7xl min-h-screen py-12">
         <button className="absolute text-white -left-15 top-20 rounded-full cursor-pointer items-center ">
           <ArrowLeft
@@ -36,16 +51,39 @@ function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
             onClick={() => navigate("/")}
           />
         </button>
-        <CoursePanel course={pageCourse} user={user}/>
-        <ReviewPage
-          course={pageCourse}
-          user={user}
-          setUser={setUser}
-          setCourse={setCourse}
-          setCourses={setCourses}
-          refreshCourses={refreshCourses}
-        />
+        <div className="relative w-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg">
+          <CoursePanel 
+            course={pageCourse} 
+            user={user} 
+            setIsPopupVisible={setIsPopupVisible}
+          />
+          <ReviewPage
+            course={pageCourse}
+            user={user}
+            setUser={setUser}
+            setCourse={setCourse}
+            setCourses={setCourses}
+            refreshCourses={refreshCourses}
+          />
+        </div>
+        {isPopupVisible && (
+          
+          <ReportForm 
+            handleReportFormSubmit={handleReportFormSubmit}
+            closePopup={closePopup}
+          />
+        )}
       </div>
+      <Toaster
+        toastOptions={{
+          className: '',
+          style: {
+            padding: '16px',
+            color: '#fefefe',
+            backgroundColor: '#1f2937'
+          },
+        }}
+      />
     </div>
   );
 }

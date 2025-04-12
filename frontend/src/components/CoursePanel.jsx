@@ -6,6 +6,7 @@ import {
   BookOpen,
   MessageCircle,
   Star,
+  Flag
 } from "lucide-react";
 import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
@@ -25,7 +26,7 @@ const COURSE_DATA = {
   },
 };
 
-function CoursePanel({ course, user }) {
+function CoursePanel({ course, user, setIsPopupVisible }) {
   const [courseData, setCourseData] = useState(COURSE_DATA);
   const [favorited, setFavorited] = useState(false);
   const [canFavorite, setCanFavorite] = useState(false);
@@ -40,8 +41,13 @@ function CoursePanel({ course, user }) {
     }
   }, []);
 
+  const handleReportClick = () => {
+    setIsPopupVisible(true);
+    return;
+  }
+
   return (
-    <div className="relative w-full p-8 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm shadow-xl rounded-lg">
+    <>
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Left Column - Course Information */}
         <div className="lg:col-span-2 space-y-6">
@@ -89,6 +95,13 @@ function CoursePanel({ course, user }) {
               <Icon icon="mdi:reddit" className="w-4 h-4 mr-2" />
               Reddit
             </button>
+            <button
+              onClick={handleReportClick}
+              className="cursor-pointer inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700/50 text-gray-900 dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+            >
+              <Flag className="w-4 h-4 mr-2" />
+              Report
+            </button>
 
             {/* Favorite button */}
             {canFavorite === true && (
@@ -124,21 +137,21 @@ function CoursePanel({ course, user }) {
                 Prerequisites
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {courseData.prerequisites}
+                {courseData.prerequisites ? "N/A" : courseData.prerequisites}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center">
                 <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
                 <span className="text-gray-600 dark:text-gray-400">
-                  {courseData.credits} Credits
+                  {courseData.creditHours} Credits
                 </span>
               </div>
             </div>
           </div>
         </div>
         {/* Right Column - Ratings */}
-        <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 h-fit">
+        <div className="sticky top-10 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 h-fit">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
             Course Ratings
           </h3>
@@ -189,9 +202,8 @@ function CoursePanel({ course, user }) {
           <MessageCircle className="w-6 h-6 mr-2" />
           Student Reviews
         </h3>
-        {/* TODO: Put reviews here */}
       </div>
-    </div>
+    </>
   );
 }
 export default CoursePanel;

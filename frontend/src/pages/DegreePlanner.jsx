@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import { jsPDF } from "jspdf";
-import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2, ReceiptPoundSterling } from "lucide-react";
+import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2, Flag } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
 import SaveDegreeForm from "../components/SaveDegreeForm";
 import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
 import { LoadingPage } from "../components/Loading";
+import ReportForm from "../components/ReportForm";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -404,6 +405,18 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     }
     setPopupState("Settings");
     setIsPopupVisible(true);
+  }
+  const handleReportClick = () => {
+    if (isLoading) {
+      return;
+    }
+    setPopupState("Report");
+    setIsPopupVisible(true);
+  }
+  const handleReportFormSubmit = ( reportContent ) => {
+    window.alert(reportContent);
+    setIsPopupVisible(false);
+    toast.success('Thanks for your feedback!')
   }
 
   //Functions related to saving degree
@@ -900,6 +913,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8" />
           </button>
+          <button className="p-2 cursor-pointer" onClick={handleReportClick}>
+            <Flag className="text-gray-300 h-8 w-8" />
+          </button>
         </div>
 
         <div className="col-span-11 grid grid-cols-4 grid-rows-2 gap-4 grid-flow-col">
@@ -1025,6 +1041,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 majors={majors}
                 setMajors={setMajors}
                 setIsPopupVisible={setIsPopupVisible}
+              />
+            }
+            {(popupState == "Report") && 
+              <ReportForm 
+                handleReportFormSubmit={handleReportFormSubmit}
+                closePopup={closePopup}
               />
             }
           </div>
