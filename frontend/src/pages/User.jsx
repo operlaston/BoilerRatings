@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import AccountDeletionPopup from "../components/AccountDeletionPopup";
 import EditAccountForm from "../components/EditAccountForm.jsx";
+import AddCourseForm from "../components/AddCourseForm.jsx";
 import { useParams } from "react-router-dom";
 import { getUserByUsername } from "../services/user.service.js";
 import { useNavigate } from "react-router-dom";

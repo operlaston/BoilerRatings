@@ -35,6 +35,10 @@ export function Navbar({user, onLogout}) {
       name: 'Compare Classes',
       href: '/compare'
     },
+    {
+      name: 'Add Course Test',
+      href: '/add-course',
+    },
   ]
   return (
     <nav className="bg-white/80 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
