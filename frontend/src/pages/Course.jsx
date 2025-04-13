@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getCourseByName } from "../services/course.service";
 import ReportForm from "../components/ReportForm";
 import toast, { Toaster } from 'react-hot-toast';
+import { sendReport } from "../services/pagereport.service";
 
 
 function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
@@ -32,7 +33,7 @@ function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
 
   const handleReportFormSubmit = ( reportContent ) => {
     //TODO: Implement submitting report content
-    window.alert(reportContent);
+    sendReport(pageCourse.number, reportContent)
     setIsPopupVisible(false);
     toast.success('Thanks for your feedback!')
   }
