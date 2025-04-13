@@ -18,6 +18,7 @@ import { Navbar } from "./components/navbar";
 import { getUserById } from "./services/user.service";
 import CourseManagement from "./pages/CourseManagement";
 import RequirementForm from "./components/RequirementForm";
+import PrerequisiteForm from "./components/PrerequisiteForm";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -181,6 +182,10 @@ function App() {
         <Route 
           path="/requirements"
           element={<RequirementForm majors={majors} setMajors={setMajors} />}
+        />
+        <Route 
+          path="/prerequisites"
+          element={<PrerequisiteForm courses={courses} setCourses={setCourses} />}
         />
         {/* Update route */}
       </Routes>
