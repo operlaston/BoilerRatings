@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import AccountDeletionPopup from "../components/AccountDeletionPopup";
+import AccountBanPopup from "../components/AccountBanPopup.jsx";
 import EditAccountForm from "../components/EditAccountForm.jsx";
 import AddCourseForm from "../components/AddCourseForm.jsx";
 import { useParams } from "react-router-dom";
@@ -8,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 
 const User = ({ user, setUser }) => {
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
+  const [banPopupOpen, setBanPopupOpen] = useState(false);
   const [editingInfo, setEditingInfo] = useState(false);
   const { username } = useParams();
   const [pageUser, setPageUser] = useState(null);
@@ -23,6 +25,7 @@ const User = ({ user, setUser }) => {
       getUserByUsername(username)
         .then((returnedUser) => {
           setPageUser(returnedUser);
+          console.log("Pageuser: ",returnedUser);
         })
         .catch((err) => {
           if (err.response.status === 404) {
@@ -33,6 +36,8 @@ const User = ({ user, setUser }) => {
           console.log("error occurred while grabbing user");
         });
     }
+    
+    console.log("Logged in user: ", user);
   }, []);
 
   if (pageUser === null) {
@@ -79,7 +84,7 @@ const User = ({ user, setUser }) => {
       gap-x-24    
     "
     >
-      {deletePopupOpen ? (
+      {deletePopupOpen && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
           <AccountDeletionPopup
             setDeletePopupOpen={setDeletePopupOpen}
@@ -87,9 +92,16 @@ const User = ({ user, setUser }) => {
             setUser={setUser}
           />
         </div>
-      ) : (
-        ""
       )}
+      {banPopupOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/30 backdrop-blur-sm z-50">
+          <AccountBanPopup
+            setBanPopupOpen={setBanPopupOpen}
+            pageUser={pageUser}
+          />
+        </div>
+      )}
+
       <div className="flex flex-col">
         <div className="flex pt-16 gap-x-6 items-center">
           <div className="max-w-40 h-30 w-30">
@@ -111,9 +123,7 @@ const User = ({ user, setUser }) => {
             <div className="text-lg">
               Last login: {pageUser.lastLogin}
             </div>
-            {user == null || user.username !== pageUser.username ? (
-              ""
-            ) : (
+            {(user != null && user.username === pageUser.username) && (
               <div className="pt-3 flex flex-row gap-x-2">
                 <button
                   className="px-3 py-2 bg-gray-200/10 cursor-pointer
@@ -131,18 +141,30 @@ const User = ({ user, setUser }) => {
                 </button>
               </div>
             )}
+            {(user != null && user.admin && pageUser.username !== user.username && !pageUser.admin && !pageUser.banned) && (
+              <div className="pt-3 flex flex-row gap-x-2">
+                <button
+                  className="px-3 py-2 bg-gray-200/10 cursor-pointer
+              rounded-lg text-red-600 border-1 border-red-600"
+                  onClick={() => setBanPopupOpen(true)}
+                >
+                  Ban user
+                </button>
+              </div>
+            )
+            }
           </div>
         </div>
         <div className="flex">
-          { editingInfo ? (
-          <EditAccountForm
-            user={pageUser}
-            handleSubmit={(updatedUser) => {
-              // Your update logic here
-              console.log("Updated user:", updatedUser);
-            }}
-            onFinish={() => setEditingInfo(false)}
-          />) : ""
+          {editingInfo ? (
+            <EditAccountForm
+              user={pageUser}
+              handleSubmit={(updatedUser) => {
+                // Your update logic here
+                console.log("Updated user:", updatedUser);
+              }}
+              onFinish={() => setEditingInfo(false)}
+            />) : ""
           }
         </div>
         <div></div>
@@ -161,7 +183,6 @@ const User = ({ user, setUser }) => {
 };
 
 const Review = ({ review }) => {
-  console.log(review)
   return (
     <div className="bg-white/10 px-4 py-3 rounded-lg flex flex-col gap-y-1">
       <h2 className="text-xl font-semibold ">{review.course ? `${review.course.number}: ${review.course.name}` : 'course name goes here'}</h2>
@@ -180,9 +201,8 @@ const Review = ({ review }) => {
           Enjoyment: {review.enjoyment}/5
         </div>
         <div
-          className={` px-2 py-1 rounded-md ${
-            review.recommend ? "bg-green-700/50" : "bg-red-700/50"
-          }`}
+          className={` px-2 py-1 rounded-md ${review.recommend ? "bg-green-700/50" : "bg-red-700/50"
+            }`}
         >
           {review.recommend
             ? "Recommends this course"
