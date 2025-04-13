@@ -31,7 +31,7 @@ const AccountDeletionPopup = ({setDeletePopupOpen, userId, setUser}) => {
           <IoMdClose />
         </div>
         <div>
-          <h3>Would you really like to delete your account?</h3>
+          <h3 className="text-lg font-bold">Delete your account?</h3>
           <h4 className="text-red-600">Warning: This action cannot be undone</h4>
         </div>
         <div className="flex justify-center gap-x-6">

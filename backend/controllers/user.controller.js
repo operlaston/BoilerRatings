@@ -43,6 +43,8 @@ usersRouter.post('/', async (req, res) => {
       likedReviews: [],
       plans: [],
       lastLogin: Date.now,
+      banned: false, 
+      admin: false
     })
     const savedUser = await user.save()
     await sendEmail(email, verificationCode)
