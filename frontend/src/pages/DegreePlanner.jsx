@@ -9,6 +9,7 @@ import SaveDegreeForm from "../components/SaveDegreeForm";
 import DegreePlannersettingsForm from "../components/DegreePlannerSettingsForm";
 import { LoadingPage } from "../components/Loading";
 import ReportForm from "../components/ReportForm";
+import { sendReport } from "../services/pagereport.service";
 
 //Need to set INITIAL_CLASSES to all classes in the data base
 //const INITIAL_CLASSES = await getCourses()
@@ -414,7 +415,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setIsPopupVisible(true);
   }
   const handleReportFormSubmit = ( reportContent ) => {
-    window.alert(reportContent);
+    sendReport("Degree Planner Page", reportContent)
     setIsPopupVisible(false);
     toast.success('Thanks for your feedback!')
   }
