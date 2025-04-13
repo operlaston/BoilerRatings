@@ -282,6 +282,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [majors, setMajors] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showFavorited, setShowFavorited] = useState(false);
+  const [semesterDisplayState, setsemesterDisplayState] = useState("Hours");
 
   const fetchInitialData = async () => {
     try {
@@ -300,7 +301,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             creditHours: course.creditHours,
             prerequisites: course.prerequisites,
             corequisites: [],
-            conflicts: []
+            conflicts: [],
+            numReviews: course.reviews.length
           }));
           if (!user) {
             const savedData = localStorage.getItem("degreeData");
@@ -887,7 +889,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         className="relative grid gap-4 w-full bg-white dark:bg-gray-900 py-6 pr-20"
         style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
       >
-        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-1/3 w-3/4 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
+        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-2/5 w-1/2 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
           <button
             className="p-2 cursor-pointer"
             onClick={handleCreatePDF}
@@ -914,6 +916,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8" />
           </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className="p-2 cursor-pointer" onClick={handleReportClick}>
             <Flag className="text-gray-300 h-8 w-8" />
           </button>
@@ -937,6 +940,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 availableCourses={availableCourses}
                 setAvailableCourses={setAvailableCourses}
                 setIsSaved={setIsSaved}
+                semesterDisplayState={semesterDisplayState}
+                setsemesterDisplayState={setsemesterDisplayState}
               />
             );
           })}
@@ -1123,7 +1128,7 @@ const DropIndicator = ({ beforeId, semester }) => {
   );
 };
 
-function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, setSemesters, allSemesters, availableCourses, setAvailableCourses, setIsSaved }) {
+function Semester({ semester, semesterIndex, courses, setCourses, errors, setErrors, semesterDisplayState, setsemesterDisplayState, allSemesters, availableCourses, setAvailableCourses, setIsSaved }) {
   let semesterToUpdate = allSemesters.find((s) => s.semester === semester)
 
   const [active, setActive] = useState(false);
@@ -1139,6 +1144,14 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     setActive(true);
   };
 
+  const handleDisplayClicked = () => {
+    if (semesterDisplayState == "Hours") {
+      setsemesterDisplayState("Difficulty");
+    }
+    else {
+      setsemesterDisplayState("Hours");
+    }
+  }
 
   const clearHighlights = (els) => {
     const indicators = els || getIndicators();
@@ -1277,6 +1290,27 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     }
   }
 
+  const getDifficultyDisplayColors = (difficulty) => {
+    let str = "text-sm "
+    if (difficulty == "~") {
+      return str + "text-gray-500";
+    }
+    else {
+      difficulty = parseFloat(difficulty);
+      if (difficulty < 2.5) {
+        return str + "text-green-300";
+      }
+      else if (difficulty < 3.5) {
+        return str + "text-yellow-300";
+      }
+      else if (difficulty < 4.5) {
+        return str + "text-orange-300";
+      }
+      else {
+        return str + "text-red-300";
+      }
+    }
+  }
 
   const handleDragEnd = (e) => {
     const name = e.dataTransfer.getData("name");
@@ -1332,6 +1366,11 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
   const totalCreditHours = filteredCourses.reduce((total, course) => {
     return total + course.creditHours
   }, 0);
+  const coursesWithReviews = filteredCourses.filter((c) => (c.numReviews > 0));
+  const totalDifficulty = coursesWithReviews.reduce((total, course) => {
+    return total + course.difficulty
+  }, 0);
+  const displayedDifficulty = (coursesWithReviews.length == 0) ? "~" : (totalDifficulty/coursesWithReviews.length).toFixed(2);
 
 
 
@@ -1339,9 +1378,20 @@ function Semester({ semester, semesterIndex, courses, setCourses, errors, setErr
     <div className="bg-gray-50 dark:bg-gray-800/20 rounded-lg p-4 border border-gray-200 dark:border-gray-800">
       <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{semester}</h3>
-        <span className={getCreditHourDisplayColors(totalCreditHours)}>
-          {totalCreditHours + " hrs"}
-        </span>
+        <button className="cursor-pointer" onClick={handleDisplayClicked}>
+          {
+            (semesterDisplayState == "Hours") &&
+            <span className={getCreditHourDisplayColors(totalCreditHours)}>
+            {totalCreditHours + " hrs"}
+            </span>
+          }
+          {
+            (semesterDisplayState == "Difficulty") &&
+            <span className={getDifficultyDisplayColors(displayedDifficulty)}>
+            {displayedDifficulty}
+            </span>
+          }
+        </button>
       </div>
       <div
         onDrop={handleDragEnd}
