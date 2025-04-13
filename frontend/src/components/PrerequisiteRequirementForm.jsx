@@ -4,6 +4,10 @@ const PrerequisiteRequirementForm = ({majors, setMajors}) => {
   const [selectedMajor, setSelectedMajor] = useState("")
   const [requirements, setRequirements] = useState(null)
 
+  const [name, setName] = useState("");
+  const [credits, setCredits] = useState("");
+  const isDisabled = name.trim() === "" || credits.trim() === "";
+
   const handleMajorChange = (e) => {
     setSelectedMajor(e.target.value)
     if (e.target.value === "") return;
@@ -43,18 +47,23 @@ const PrerequisiteRequirementForm = ({majors, setMajors}) => {
             <form handleSubmit={handleSubmit} className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
                 <div className="text-lg">
-                  <input id="name" type="text" placeholder="Requirement Name"
+                  <input id="name" type="text" placeholder="Requirement Name" onChange={(e) => setName(e.target.value)}
                     className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1"
                   />
                 </div>
                 <div>
                   <div className="text-lg">Subrequirement</div>
-                  <input id="credits" type="text" placeholder="Number of Credits"
+                  <input id="credits" type="text" placeholder="Number of Credits" onChange={(e) => setCredits(e.target.value)}
                     className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1"
                   />
                 </div>
               </div>
-              <button className="cursor-pointer border border-solid rounded-lg p-2" type="submit">Add Requirement</button>
+              <button type="submit" disabled={isDisabled} className={`cursor-pointer border border-solid rounded-lg p-2
+                ${isDisabled
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-gray-500 text-white hover:bg-gray-600"}`
+                }> Add Requirement
+              </button>
             </form>
           </div>
         </div>
