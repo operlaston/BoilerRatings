@@ -42,7 +42,6 @@ usersRouter.post('/', async (req, res) => {
       reviews: [],
       likedReviews: [],
       plans: [],
-      lastLogin: Date.now,
       banned: false, 
       admin: false
     })
