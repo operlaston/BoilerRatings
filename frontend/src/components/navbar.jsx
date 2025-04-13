@@ -39,6 +39,10 @@ export function Navbar({user, onLogout}) {
       name: 'Add Course Test',
       href: '/add-course',
     },
+    {
+      name: 'Prereq + Requirement Form (Temporary)',
+      href: '/prereqandrequirements'
+    }
   ]
   return (
     <nav className="bg-white/80 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
