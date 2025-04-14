@@ -53,6 +53,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  admin: {
+    type: Boolean,
+    default: false
+  }
 })
 
 userSchema.set('toJSON', {
