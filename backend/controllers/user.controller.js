@@ -313,7 +313,7 @@ usersRouter.put('/admin/:id', async (req, res) => {
   try {
     const user = await User.findByIdAndUpdate(userId, 
       {$set: {
-        admin: bool,
+        admin: true,
       }}, {new:true}
     )
     res.status(201).json(user)
