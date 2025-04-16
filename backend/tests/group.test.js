@@ -251,6 +251,12 @@ test('a user can be banned', async () => {
   assert(userAfter.banned === true)
 })
 
+test('a requirement can be added to a major', async () => {
+  const requirementRes = await api.post('/api/requirements').send(newRequirement)
+  const majorRes = await api.post('/api/majors').send(newMajor)
+  //TODO
+})
+
 after(async () => {
   await mongoose.connection.close()
 })

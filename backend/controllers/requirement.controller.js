@@ -65,7 +65,7 @@ requirementRouter.put('/courses', async (req, res) => {
   }
 })
 
-// update an object
+// update a requirement 
 requirementRouter.put('/:id', async (req, res) => {
   const editedRequirement = req.body
   try {
