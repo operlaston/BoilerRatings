@@ -40,12 +40,16 @@ export function Navbar({user, onLogout}) {
       href: '/add-course',
     },
     {
-      name: 'Requirement Form (Temp)',
+      name: 'Requirement (Temp)',
       href: '/requirements'
     },
     {
-      name: 'Prerequisite Form (Temp)',
+      name: 'Prereq (Temp)',
       href: '/prerequisites'
+    },
+    {
+      name: 'Admin',
+      href: '/admin'
     }
   ]
   return (
