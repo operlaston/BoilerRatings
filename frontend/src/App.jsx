@@ -181,7 +181,7 @@ function App() {
         {/* TEMPORARY ROUTES */}
         <Route 
           path="/requirements"
-          element={<RequirementForm majors={majors} setMajors={setMajors} />}
+          element={<RequirementForm majors={majors} setMajors={setMajors} courses={courses}/>}
         />
         <Route 
           path="/prerequisites"

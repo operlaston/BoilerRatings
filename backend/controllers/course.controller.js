@@ -106,6 +106,18 @@ courseRouter.put('/favorite/:id', async (req,res) => {
     }
 })
 
+// update prerequisites
+courseRouter.put('/prerequisite/:id', async (req, res) => {
+    const { newPrerequisites } = req.body
+    try {
+        const course = await Course.findByIdAndUpdate(req.params.id, {prerequisites: newPrerequisites}, {new: true})
+        res.status(200).json(course)
+    }
+    catch(e) {
+        res.status(500).json({error: 'server error'})
+    }
+})
+
 // courseRouter.post('/groupadd', async (req, res) => {
 //     const courses = req.body
 //     try {

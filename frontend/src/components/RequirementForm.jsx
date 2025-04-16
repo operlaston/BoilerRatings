@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react"
+import { createRequirement, deleteRequirement } from "../services/requirement.service"
+import { addRequirementToMajor, getMajors } from "../services/major.service"
 
-const RequirementForm = ({majors, setMajors}) => {
+const RequirementForm = ({majors, setMajors, courses}) => {
   const [selectedMajor, setSelectedMajor] = useState("")
   const [requirements, setRequirements] = useState(null)
   const [requirementName, setRequirementName] = useState("")
@@ -11,20 +13,56 @@ const RequirementForm = ({majors, setMajors}) => {
     setSelectedMajor(e.target.value)
     if (e.target.value === "") return;
     setRequirements(majors.find(major => major.name === e.target.value).requirements)
+    setError("")
   }
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    console.log("new requirement", {
-      name: requirementName,
-      subrequirements: subrequirements
-    })
-    console.log("create new requirement")
     // verify credits inputs
-    // verify courses exist
+    for (const s of subrequirements) {
+      if (!Number.isInteger(Number(s.credits)) || parseInt(s.credits) < 0) {
+        setError("Credits must be a valid integer >= 0")
+        return;
+      }
+    }
 
+    // verify courses exist
+    const courseSet = new Set(courses.map(course => course.number))
+    for (const s of subrequirements) {
+      for (const course of s.courses) {
+        if (!courseSet.has(course)) {
+          setError("At least one course entered doesn't exist")
+          return;
+        }
+      }
+    }
 
     // send request to backend to create new requirement for selected major
+    try {
+      const addRequirement = {name: requirementName, subrequirements: subrequirements}
+      const majorId = majors.find(major => major.name === selectedMajor).id
+      setRequirements([...requirements, addRequirement])
+      setMajors(majors.map(major => major.id === majorId ? {...major, requirements: [...major.requirements, addRequirement]} : major))
+      setRequirementName("")
+      setSubrequirements([])
+      const newRequirement = await createRequirement(addRequirement)
+      const newMajor = await addRequirementToMajor(newRequirement.id, majorId)
+    }
+    catch(e) {
+      console.error("an error occurred while creating a new requirement", e)
+    }
+  }
+
+  const handleDelete = async (requirementId) => {
+    try {
+      await deleteRequirement(requirementId)
+      const newMajors = await getMajors()
+      setMajors(newMajors)
+      setRequirements(newMajors.find(major => major.name === selectedMajor).requirements)
+    }
+    catch(e) {
+      console.error("an error occurred while trying to delete a requirement", e)
+    }
   }
 
   return (
@@ -49,7 +87,7 @@ const RequirementForm = ({majors, setMajors}) => {
         "" :
         <div className="flex flex-col gap-2">
           {requirements.map(req =>
-            <Requirement requirement={req} />
+            <Requirement requirement={req} handleDeleteRequirement={handleDelete}/>
           )}
           <div className="border border-solid rounded-lg py-3 px-4">
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
@@ -59,7 +97,7 @@ const RequirementForm = ({majors, setMajors}) => {
                     type="text" 
                     placeholder="Requirement Name"
                     value={requirementName}
-                    onChange={(e) => setRequirementName(e.target.value)}
+                    onChange={(e) => {setRequirementName(e.target.value);setError("")}}
                     className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1 w-full"
                   />
                 </div>
@@ -67,7 +105,7 @@ const RequirementForm = ({majors, setMajors}) => {
                   <div className="pb-6 flex flex-col gap-2">
                     {
                       subrequirements.map((subreq, index) =>
-                        <Subrequirement key={index} subrequirements={subrequirements} setSubrequirements={setSubrequirements} subreqsIndex={index}/>
+                        <Subrequirement key={index} subrequirements={subrequirements} setSubrequirements={setSubrequirements} subreqsIndex={index} setError={setError}/>
                       )
                     }
                   </div>
@@ -89,6 +127,7 @@ const RequirementForm = ({majors, setMajors}) => {
                   </div>
                 </div>
               </div>
+              {error !== "" ? <div className="text-red-800">{error}</div> : ''}
               <button className="cursor-pointer bg-white text-gray-900 rounded-lg p-2 font-semibold" type="submit">Add Requirement</button>
             </form>
           </div>
@@ -102,6 +141,13 @@ export default RequirementForm
 
 
 const Requirement = ({requirement, handleDeleteRequirement}) => {
+  const handleDelete = async () => {
+    let confirmation = confirm("Are you sure you want to delete this?")
+    if (confirmation) {
+      await handleDeleteRequirement(requirement.id)
+    }
+  }
+
   return (
     <div className="border border-solid py-3 px-4 rounded-xl flex flex-col gap-2">
       <h2 className="text-lg"><b>Requirement: </b>{requirement.name}</h2>
@@ -117,12 +163,12 @@ const Requirement = ({requirement, handleDeleteRequirement}) => {
           )
         }
       </div>
-      <button className="bg-red-800 p-2 rounded-lg cursor-pointer">Delete Requirement</button>
+      <button className="bg-red-800 p-2 rounded-lg cursor-pointer" onClick={handleDelete}>Delete Requirement</button>
     </div>
   )
 }
 
-const Subrequirement = ({subrequirements, setSubrequirements, subreqsIndex}) => {
+const Subrequirement = ({subrequirements, setSubrequirements, subreqsIndex, setError}) => {
   const [subrequirement, setSubrequirement] = useState({
     credits: "",
     courses: []
@@ -139,10 +185,10 @@ const Subrequirement = ({subrequirements, setSubrequirements, subreqsIndex}) => 
         type="text" 
         placeholder="Number of Credits"
         value={subrequirement.credits}
-        onChange={(e) => setSubrequirement({
+        onChange={(e) => {setSubrequirement({
           credits: e.target.value,
           courses: subrequirement.courses
-        })}
+        });setError("")}}
         className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1 w-full"
       />
       <div>
@@ -153,10 +199,10 @@ const Subrequirement = ({subrequirements, setSubrequirements, subreqsIndex}) => 
                 type="text"
                 placeholder="Course Number (e.g. CS 18000)"
                 value={course}
-                onChange={(e) => setSubrequirement({
+                onChange={(e) => {setSubrequirement({
                   credits: subrequirement.credits, 
                   courses: subrequirement.courses.map((c, i) => i === index ? e.target.value : c)
-                })}
+                });setError("")}}
                 className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1 w-full"
               />
             </div>

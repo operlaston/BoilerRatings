@@ -36,6 +36,19 @@ majorsRouter.post('/', async (req, res) => {
   }
 })
 
+majorsRouter.put('/addrequirement/:id', async (req, res) => {
+  const { newRequirementId } = req.body
+  const majorId = req.params.id
+  try {
+    const returnedMajor = await Major.findByIdAndUpdate(majorId, {$push: {requirements: newRequirementId}}, {new: true}).populate('requirements')
+    res.status(200).json(returnedMajor)
+  }
+  catch(e) {
+    console.log(e)
+    res.status(500).json({error: 'server error'})
+  }
+})
+
 majorsRouter.delete('/:id', async (req, res) => {
   try {
     await Major.findByIdAndDelete(req.params.id)

@@ -19,4 +19,9 @@ const favoriteCourse = async (courseId, userId) => {
   return res.data;
 }
 
-export { getCourses, getCourseByName, favoriteCourse }
+const updatePrerequisites = async (courseId, newPrerequisites) => {
+  const res = await axios.put(`${baseurl}/api/courses/prerequisite/${courseId}`, { newPrerequisites })
+  return res.data
+}
+
+export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites }

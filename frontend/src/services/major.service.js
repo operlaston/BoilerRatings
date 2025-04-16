@@ -11,4 +11,9 @@ const getMajorById = async (majorId) => {
   return res.data;
 }
 
-export { getMajors, getMajorById }
+const addRequirementToMajor = async (newRequirementId, majorId) => {
+  const res = await axios.put(`${baseurl}/api/majors/addrequirement/${majorId}`, {newRequirementId})
+  return res.data
+}
+
+export { getMajors, getMajorById, addRequirementToMajor }

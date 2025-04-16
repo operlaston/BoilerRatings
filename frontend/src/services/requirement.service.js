@@ -11,4 +11,13 @@ const getCoursesFromRequirement = async (requirement) => {
   return res.data;
 }
 
-export { getRequirements, getCoursesFromRequirement }
+const createRequirement = async (requirement) => {
+  const res = await axios.post(`${baseurl}/api/requirements`, requirement)
+  return res.data
+}
+
+const deleteRequirement = async (requirementId) => {
+  await axios.delete(`${baseurl}/api/requirements/${requirementId}`)
+}
+
+export { getRequirements, getCoursesFromRequirement, createRequirement, deleteRequirement }

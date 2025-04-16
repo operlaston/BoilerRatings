@@ -1,5 +1,7 @@
 const requirementRouter = require('express').Router()
 const Requirement = require('../models/requirement')
+const Major = require('../models/major')
+const mongoose = require('mongoose')
 
 requirementRouter.get('/', async (req, res) => {
   try {
@@ -76,6 +78,28 @@ requirementRouter.put('/:id', async (req, res) => {
   }
 })
 
+// delete a requirement
+requirementRouter.delete('/:id', async (req, res) => {
+  try {
+    const id = req.params.id
+    const majors = await Major.find({}).lean()
+    console.log("majors", majors)
+    for (const major of majors) {
+      const modifiedRequirements = major.requirements.map(i => i.toString())
+      if (modifiedRequirements.includes(id)) {
+        const newRequirements = major.requirements.filter(r => r.toString() !== id)
+        await Major.findByIdAndUpdate(major._id, {requirements: newRequirements}, {new: true})
+      }
+    }
+    await Requirement.findByIdAndDelete(id)
+    res.status(204).end()
+  }
+  catch(e) {
+    res.status(500).json({error: 'server error'})
+  }
+})
+
+/*
 requirementRouter.delete('/deleteall', async (req, res) => {
   try {
     await Requirement.deleteMany({})
@@ -85,5 +109,6 @@ requirementRouter.delete('/deleteall', async (req, res) => {
     res.status(500).json({'error': 'server error'})
   }
 })
+  */
 
 module.exports = requirementRouter
