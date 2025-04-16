@@ -295,6 +295,30 @@ usersRouter.put('/flags/:id', async (req, res) => {
     res.status(400).json({"error": "Bad request"})
   }
 })
-
-
+//Sets all users to non admins
+usersRouter.put('/test/falseAdmin', async (req, res) => {
+  try {
+    await User.updateMany({}, {$set: { 
+      admin: false,
+    }})
+    res.status(200).json("Worked")
+  } catch (error) {
+    res.status(400).json({"error": "server error"})
+  }
+})
+/* Makes user an admin */
+usersRouter.put('/admin/:id', async (req, res) => {
+  const userId = req.params.id;
+  const {bool} = req.body
+  try {
+    const user = await User.findByIdAndUpdate(userId, 
+      {$set: {
+        admin: true,
+      }}, {new:true}
+    )
+    res.status(201).json(user)
+  } catch (error) {
+    res.status(400).json({"error": "Bad request"})
+  }
+})
 module.exports = usersRouter
