@@ -43,7 +43,7 @@ const PrerequisiteForm = ({courses, setCourses}) => {
   }
 
   return (
-    <div className="bg-gray-900 min-h-[calc(100vh-3rem)] text-white p-4 flex justify-between gap-6">
+    <div className="bg-gray-900 min-h-[calc(100vh-15rem)] text-white p-4 flex justify-between gap-6">
       {
         selectedCourse 
         ?
@@ -81,7 +81,7 @@ const CourseForm = ({course, handleDeletePrerequisite, newCourses, setNewCourses
         <h3 className="text-lg text-gray-400">{course.name}</h3>
       </div>
       <div className="flex gap-6 items-start">
-        <div className="flex flex-col gap-1 max-h bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 overflow-y-auto">
+        <div className="flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 overflow-y-auto">
           <div className="text-2xl pb-2">Current Prerequisites</div>
           <div className="flex flex-col gap-1">
             {
@@ -112,7 +112,7 @@ const CourseForm = ({course, handleDeletePrerequisite, newCourses, setNewCourses
         </div>
         <form 
           onSubmit={handleSubmit}
-          className="flex flex-col gap-1 max-h bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 overflow-y-auto"
+          className="flex flex-col gap-1 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 overflow-y-auto"
         >
           <div className="text-2xl">
             Add a Prerequisite
@@ -182,7 +182,7 @@ const CourseSearch = ({setSelectedCourse, courses}) => {
   }
 
   return (
-    <div className="flex flex-col max-w-[23.1rem] min-w-[23.1rem] flex-shrink-0 gap-1 h-[calc(100vh-5rem)] bg-white dark:bg-gray-800 
+    <div className="flex flex-col max-w-[23.1rem] min-w-[23.1rem] flex-shrink-0 gap-1 h-[calc(100vh-15rem)] bg-white dark:bg-gray-800 
     rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto">
       <input
         type="text"

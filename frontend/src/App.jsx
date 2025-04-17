@@ -180,17 +180,10 @@ function App() {
         </Route>
         <Route 
           path="/admin"
-          element={<AdminDashboard activeUser={user}/>}
+          element={<AdminDashboard activeUser={user} majors={majors} 
+          setMajors={setMajors} courses={courses} setCourses={setCourses}/>}
         />
         {/* TEMPORARY ROUTES */}
-        <Route 
-          path="/requirements"
-          element={<RequirementForm majors={majors} setMajors={setMajors} courses={courses}/>}
-        />
-        <Route 
-          path="/prerequisites"
-          element={<PrerequisiteForm courses={courses} setCourses={setCourses} />}
-        />
         {/* Update route */}
       </Routes>
     </Router>

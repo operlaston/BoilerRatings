@@ -4,7 +4,13 @@ import {
     Users,
     Flag,
     School,
+    ArrowBigLeftDash,
+    Plus
 } from 'lucide-react'
+
+import RequirementForm from '../components/RequirementForm'
+import PrerequisiteForm from '../components/PrerequisiteForm'
+
 function AdminPanel({
     title,
     description,
@@ -48,6 +54,7 @@ function AdminPanel({
 }
 
 function ExpandedPanel({ title, onClose, children }) {
+
     return (
         <div className="fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-y-auto">
             <div className="max-w-7xl mx-auto px-4 py-6">
@@ -68,7 +75,7 @@ function ExpandedPanel({ title, onClose, children }) {
     )
 }
 
-export function AdminDashboard({activeUser}) {
+export function AdminDashboard({activeUser, majors, setMajors, courses, setCourses}) {
     const [expandedPanel, setExpandedPanel] = useState("")
     const mockData = {
         instructors: 42,
@@ -80,6 +87,12 @@ export function AdminDashboard({activeUser}) {
             <div>Access forbidden: You are not an admin</div>
         )
     }
+
+    let coursesWithoutPrereqs = 0;
+    courses.forEach(course => {
+        if (course.prerequisites.length === 0) coursesWithoutPrereqs++;
+    })
+
     return (
         <div className="w-full h-screen dark:bg-gray-900">
             <div className="relative w-full max-w-7xl mx-auto p-6">
@@ -113,9 +126,30 @@ export function AdminDashboard({activeUser}) {
                             icon={
                                 <School className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                             }
-                            stat={mockData.majors}
+                            stat={majors.length}
                             statLabel="Active Majors"
                             onExpand={() => setExpandedPanel('majors')}
+                        />
+                        <AdminPanel
+                            title="Add a Course"
+                            description="Create a new course"
+                            icon={
+                                <Plus className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            }
+                            stat={courses.length}
+                            statLabel="Courses available"
+                            // make this onExpand actually expand to the add a course page
+                            onExpand={() => setExpandedPanel('majors')}
+                        />
+                        <AdminPanel
+                            title="Prerequisites"
+                            description="Delete or add prerequisites"
+                            icon={
+                                <ArrowBigLeftDash className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            }
+                            stat={coursesWithoutPrereqs}
+                            statLabel="Courses without prerequisites"
+                            onExpand={() => setExpandedPanel('prerequisites')}
                         />
                     </div>
                 </div>
@@ -162,6 +196,23 @@ export function AdminDashboard({activeUser}) {
                                 </h3>
                                 {/* Major editing interface would go here */}
                             </div>
+                            <RequirementForm majors={majors} setMajors={setMajors} courses={courses} />                            
+                        </div>
+                    </ExpandedPanel>
+                )}
+                {expandedPanel === 'prerequisites' && (
+                    <ExpandedPanel
+                        title="Prerequisites"
+                        onClose={() => setExpandedPanel(null)}
+                    >
+                        <div className="space-y-6">
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                                    Add or Remove Prerequisites
+                                </h3>
+                                {/* Major editing interface would go here */}
+                            </div>
+                            <PrerequisiteForm courses={courses} setCourses={setCourses} />                            
                         </div>
                     </ExpandedPanel>
                 )}

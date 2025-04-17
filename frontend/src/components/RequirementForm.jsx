@@ -11,7 +11,11 @@ const RequirementForm = ({majors, setMajors, courses}) => {
 
   const handleMajorChange = (e) => {
     setSelectedMajor(e.target.value)
-    if (e.target.value === "") return;
+    if (e.target.value === "") {
+      setRequirements(null)
+      setError("")
+      return;
+    }
     setRequirements(majors.find(major => major.name === e.target.value).requirements)
     setError("")
   }
@@ -66,7 +70,7 @@ const RequirementForm = ({majors, setMajors, courses}) => {
   }
 
   return (
-    <div className="flex flex-col items-center gap-6 min-h-screen bg-gray-900 text-white p-4">
+    <div className="flex flex-col items-center gap-6 min-h-screen text-white p-4">
       <div className="text-lg">
         <label htmlFor="majors-dropdown">
           Select a major to change the degree requirements of: &nbsp;
@@ -89,7 +93,7 @@ const RequirementForm = ({majors, setMajors, courses}) => {
           {requirements.map(req =>
             <Requirement requirement={req} handleDeleteRequirement={handleDelete}/>
           )}
-          <div className="border border-solid rounded-lg py-3 px-4">
+          <div className="dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all py-3 px-4">
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
                 <div className="text-lg">
@@ -149,7 +153,7 @@ const Requirement = ({requirement, handleDeleteRequirement}) => {
   }
 
   return (
-    <div className="border border-solid py-3 px-4 rounded-xl flex flex-col gap-2">
+    <div className="dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-all py-3 px-4 rounded-xl flex flex-col gap-2">
       <h2 className="text-lg"><b>Requirement: </b>{requirement.name}</h2>
       <div>
         {
