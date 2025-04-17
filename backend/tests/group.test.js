@@ -363,6 +363,40 @@ test('a user can have a flag added', async () => {
   assert(flaggedUser._body.flagReason, "Test Flag Data")
 })
 
+test('Reviews can be reported', async () => {
+  const courseRes = await api
+    .post('/api/courses')
+    .send(newCourse)
+    .expect(201)
+
+  const courseid = courseRes.body.id
+
+  const userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+  const userid = userRes.body.id
+
+  const review = await api
+    .post('/api/reviews')
+    .send({review: newReview, course: courseid, userId: userid})
+    .expect(201)
+  const reportData = {
+    reportString: "Test",
+    reportReason: "Test Reason"
+  }
+  const reviewId = review.body.id
+  await api
+  .put(`/api/reviews/report/${reviewId}`)
+  .send(reportData)
+  .expect(200);
+  const report = await Review.findById(reviewId).populate("reports")
+  
+  assert(report.reports[0].content, "Test Reason");
+  assert(report.reports[0].reason, "Test")
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
