@@ -343,6 +343,26 @@ test('a instructor can be added to a course', async () => {
   assert(updatedCourse.instructors.map(i => i.toString()).includes(instructorId))
 })
 
+test('a user can have a flag added', async () => {
+  const res = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+    const userId = res.body.id;
+    const flagData = {
+      bool: true,
+      reason: "Test Flag Data"
+    }
+    const flaggedUser = await api
+    .put(`/api/users/flags/${userId}`)
+    .send(flagData)
+    .expect(201)
+
+  assert(flaggedUser._body.flag, true)
+  assert(flaggedUser._body.flagReason, "Test Flag Data")
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
