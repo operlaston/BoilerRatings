@@ -3,7 +3,7 @@ const { populate } = require('../models/review')
 const Course = require('../models/course')
 const User = require('../models/user')
 
-/*courseRouter.get('/:id', async (req, res) => { // Commenting this out it might break something 
+courseRouter.get('/byid/:id', async (req, res) => { // Commenting this out it might break something 
     try {
         const course = await Course.findById(req.params.id)
         .populate({
@@ -11,7 +11,7 @@ const User = require('../models/user')
         })
         .populate('prerequisites', 'name number')
         .populate('instructors', 'name')
-        if (course) {
+        if (!course) {
             return res.status(401).json({error: 'Course not found'})
         } 
         res.status(200).json(course)
@@ -19,7 +19,7 @@ const User = require('../models/user')
         console.log('Course Fetch error', err)
         res.status(400).json({error: "1 bad request"})
     }
-})*/
+})
 
 courseRouter.get('/', async (req, res) => {
     try {
@@ -63,7 +63,7 @@ courseRouter.get('/:courseNumber', async (req,res) => {
         })
         .populate('instructors', 'name')
         if (!course) {
-            res.status(404).json({message: "Course Not Found"});
+            return res.status(404).json({message: "Course Not Found"});
         }
         res.status(200).json(course)
     }

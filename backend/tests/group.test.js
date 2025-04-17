@@ -296,6 +296,20 @@ test('a requirement can be deleted and is deleted from any majors it is part of'
   assert(majorAfter.requirements.length === majorBefore.requirements.length - 1)
 })
 
+test('the prerequisites of a course are updated properly', async () => {
+  let courseRes = await api.post('/api/courses').send(newCourse)
+  const newPrerequisites = [
+    ["a", "b"],
+    ["c", "d"]
+  ]
+  assert(courseRes.body.prerequisites.length === 0)
+  await api.put(`/api/courses/prerequisite/${courseRes.body.id}`).send({newPrerequisites}).expect(200)
+  courseRes = await api.get(`/api/courses/byid/${courseRes.body.id}`)
+  const course = courseRes.body
+  assert(course.prerequisites.length === newPrerequisites.length)
+  assert(JSON.stringify(course.prerequisites) === JSON.stringify(newPrerequisites))
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
