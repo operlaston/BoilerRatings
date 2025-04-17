@@ -254,7 +254,46 @@ test('a user can be banned', async () => {
 test('a requirement can be added to a major', async () => {
   const requirementRes = await api.post('/api/requirements').send(newRequirement)
   const majorRes = await api.post('/api/majors').send(newMajor)
-  //TODO
+  await api
+    .put(`/api/majors/addrequirement/${majorRes.body.id}`)
+    .send({newRequirementId: requirementRes.body.id})
+    .expect(200)
+
+  const newMajorRes = await api
+    .get(`/api/majors/${majorRes.body.id}`)
+    .expect(200)
+  
+  assert(newMajorRes.body.requirements.length === 1)
+})
+
+test('a requirement can be deleted and is deleted from any majors it is part of', async () => {
+
+  let requirementRes = await api.post('/api/requirements').send(newRequirement)
+  let majorRes = await api.post('/api/majors').send(newMajor)
+  await api
+    .put(`/api/majors/addrequirement/${majorRes.body.id}`)
+    .send({newRequirementId: requirementRes.body.id})
+    .expect(200)
+
+  majorRes = await api
+    .get(`/api/majors/${majorRes.body.id}`)
+    .expect(200)
+
+  const majorBefore = majorRes.body
+
+  await api
+    .delete(`/api/requirements/${requirementRes.body.id}`)
+
+  majorRes = await api
+    .get(`/api/majors/${majorRes.body.id}`)
+    .expect(200)
+
+  await api
+    .get(`/api/requirements/${requirementRes.body.id}`)
+    .expect(404)
+
+  const majorAfter = majorRes.body
+  assert(majorAfter.requirements.length === majorBefore.requirements.length - 1)
 })
 
 after(async () => {

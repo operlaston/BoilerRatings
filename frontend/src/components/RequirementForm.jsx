@@ -112,14 +112,14 @@ const RequirementForm = ({majors, setMajors, courses}) => {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSubrequirements([...subrequirements, {}])}
-                      className="cursor-pointer border border-solid rounded-lg p-2"
+                      className="cursor-pointer bg-green-800 rounded-lg p-2"
                       type="button"
                     >
                       New Subrequirement
                     </button>
                     <button
                       onClick={() => setSubrequirements(subrequirements.slice(0, -1))}
-                      className="cursor-pointer border border-solid border-red-800 text-red-600 rounded-lg p-2"
+                      className="cursor-pointer bg-red-900 rounded-lg p-2"
                       type="button"
                     >
                       Remove Subrequirement
@@ -209,24 +209,27 @@ const Subrequirement = ({subrequirements, setSubrequirements, subreqsIndex, setE
           )
         }
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <button
           type="button"
-          className="cursor-pointer bg-green-600 text-white rounded-lg p-2 text-sm"
+          className="cursor-pointer bg-green-600 text-white rounded-full px-2 py-1 text-sm/tight"
           onClick={() => setSubrequirement({credits: subrequirement.credits, courses: [...subrequirement.courses, ""]})}
         >
-          New Course
+          +
         </button>
+        <div>
+          Courses
+        </div>
         <button
           type="button"
-          className="cursor-pointer bg-red-800 text-white rounded-lg p-2"
+          className="cursor-pointer bg-red-800 text-white rounded-full px-2 py-1 text-sm/tight"
           onClick={() => setSubrequirement({
             ...subrequirement,
             courses: subrequirement.courses.slice(0, -1)
           }
           )}
         >
-          Remove Course
+          -
         </button>
       </div>
     </div>

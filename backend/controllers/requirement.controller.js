@@ -18,6 +18,9 @@ requirementRouter.get('/', async (req, res) => {
 requirementRouter.get('/:id', async (req, res) => {
   try {
     const requirement = await Requirement.findById(req.params.id)
+    if (requirement === null) {
+      return res.status(404).json({error: 'requirement id not found'})
+    }
     res.status(200).json(requirement)
   }
   catch(e) {
@@ -83,7 +86,6 @@ requirementRouter.delete('/:id', async (req, res) => {
   try {
     const id = req.params.id
     const majors = await Major.find({}).lean()
-    console.log("majors", majors)
     for (const major of majors) {
       const modifiedRequirements = major.requirements.map(i => i.toString())
       if (modifiedRequirements.includes(id)) {

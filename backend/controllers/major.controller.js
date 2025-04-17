@@ -44,7 +44,7 @@ majorsRouter.put('/addrequirement/:id', async (req, res) => {
     res.status(200).json(returnedMajor)
   }
   catch(e) {
-    console.log(e)
+    console.error(e)
     res.status(500).json({error: 'server error'})
   }
 })
