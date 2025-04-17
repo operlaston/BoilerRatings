@@ -9,7 +9,7 @@ instructorRouter.post('/', async (req, res) =>{
         gpa: 0,
         rmp: 0,
         rmpLink: "",
-        course: []
+        courses: []
     })
     try {
         const savedInstructor = await instructor.save()

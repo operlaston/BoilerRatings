@@ -51,7 +51,7 @@ const newRequirement = {
   subrequirements: [
     {
       credits: 6,
-      courses: ["testcourse1", "testcourse2"]
+      courses: ["testnumber", "testcourse2"]
     }
   ]
 }
@@ -308,6 +308,19 @@ test('the prerequisites of a course are updated properly', async () => {
   const course = courseRes.body
   assert(course.prerequisites.length === newPrerequisites.length)
   assert(JSON.stringify(course.prerequisites) === JSON.stringify(newPrerequisites))
+})
+
+test('deleting a course deletes the references to it in requirements', async () => {
+  let res = await api.post(`/api/courses`).send(newCourse)
+  const course = res.body
+  res = await api.post(`/api/requirements`).send(newRequirement)
+  let requirement = res.body
+  assert(requirement.subrequirements[0].courses.length === newRequirement.subrequirements[0].courses.length)
+  await api.delete(`/api/courses/${course.id}`).expect(204)
+  res = await api.get(`/api/requirements/${requirement.id}`)
+  requirement = res.body
+  assert(requirement.subrequirements[0].courses.length === newRequirement.subrequirements[0].courses.length - 1)
+  await api.get(`/api/courses/byid/${course.id}`).expect(404)
 })
 
 after(async () => {
