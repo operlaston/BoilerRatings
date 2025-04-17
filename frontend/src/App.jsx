@@ -19,6 +19,7 @@ import { getUserById } from "./services/user.service";
 import CourseManagement from "./pages/CourseManagement";
 import RequirementForm from "./components/RequirementForm";
 import PrerequisiteForm from "./components/PrerequisiteForm";
+import { AdminDashboard } from "./pages/Admin";
 
 function App() {
   // const [user, setUser] = useState('test')
@@ -54,7 +55,7 @@ function App() {
   const onLogout = () => {
     // localStorage.setItem('cachedUser', "");
     localStorage.removeItem('cachedUser')
-    window.location.reload();
+    window.location.href = "/";
   }
 
   const onLogin = (u) => {
@@ -177,7 +178,10 @@ function App() {
             element={<User user={user} setUser={setUser} />}
           />
         </Route>
-
+        <Route 
+          path="/admin"
+          element={<AdminDashboard activeUser={user}/>}
+        />
         {/* TEMPORARY ROUTES */}
         <Route 
           path="/requirements"
