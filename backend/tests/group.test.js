@@ -323,6 +323,26 @@ test('deleting a course deletes the references to it in requirements', async () 
   await api.get(`/api/courses/byid/${course.id}`).expect(404)
 })
 
+test('a instructor can be added', async () => {
+  const res = await api.post('/api/instructors').send({name: "Test Instructor"})
+  .expect(201)
+  assert.strictEqual(res.body.name, 'Test Instructor')
+  assert.strictEqual(res.body.gpa, 0)
+  assert.strictEqual(res.body.rmp, 0)
+  assert.strictEqual(res.body.rmpLink, '')
+  assert.deepStrictEqual(res.body.courses, [])
+})
+
+test('a instructor can be added to a course', async () => {
+  const courseRes = await api.post('/api/courses').send(newCourse).expect(201)
+  const courseId = courseRes.body.id
+  const instructorRes = await api.post('/api/instructors').send({ name: 'Course Instructor' }).expect(201)
+  const instructorId = instructorRes.body.id
+  await api.put(`/api/instructors/${instructorId}/courses`).send({ courseId }).expect(200)
+  const updatedCourse = await Course.findById(courseId).lean()
+  assert(updatedCourse.instructors.map(i => i.toString()).includes(instructorId))
+})
+
 after(async () => {
   await mongoose.connection.close()
 })
