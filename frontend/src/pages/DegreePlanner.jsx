@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from 'react-hot-toast';
 import { jsPDF } from "jspdf";
-import { Search, AlertCircle, Info, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2, Flag } from "lucide-react";
+import { Search, AlertCircle, Trash, FileDown, Save, CalendarSync, CalendarHeart, Settings2, Flag, Star } from "lucide-react";
 import "../styles/App.css"
 import { getCourses } from "../services/course.service";
 import { createDegreePlan, getMajorById } from "../services/degreeplan.service";
@@ -283,6 +283,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const [isLoading, setIsLoading] = useState(true);
   const [showFavorited, setShowFavorited] = useState(false);
   const [semesterDisplayState, setsemesterDisplayState] = useState("Hours");
+  const [suggestedCourses, setsuggestedCourses] = useState([]);
 
   const fetchInitialData = async () => {
     try {
@@ -302,7 +303,8 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
             prerequisites: course.prerequisites,
             corequisites: [],
             conflicts: [],
-            numReviews: course.reviews.length
+            numReviews: course.reviews.length,
+            suggested: false
           }));
           if (!user) {
             const savedData = localStorage.getItem("degreeData");
@@ -333,7 +335,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 creditHours: course.course.creditHours,
                 prerequisites: course.course.prerequisites,
                 corequisites: [],
-                conflicts: []
+                conflicts: [],
+                numReviews: course.reviews.length,
+                suggested: false
               };
             });
             setCourses(updatePrerequisiteErrors(updatedCourses));
@@ -381,23 +385,63 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     fetchInitialData();
   }, []);
 
-  const filteredCourses = availableCourses //Filter courses to show in search bar
-    .filter(course => {
-      if (showFavorited) {
-        return user.favorited.find(courseId => courseId == course.courseID)
-      }
-      return true
+  const updateSuggestedStars = () => {
+    courses.filter(course => course.suggested).forEach(course => {
+      course.suggested = false;
     })
-    .filter((course) => {
-      const normalizedCourseName = course.name.replace(/\s+/g, '').toLowerCase();
+    availableCourses.filter(course => course.suggested).forEach(course => {
+      course.suggested = false;
+    })
+  }
 
-      const searchTerms = searchQuery.split('AND').map(term => term.trim().toLowerCase());
-
-      return searchTerms.some(term => {
-        const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
-        return normalizedCourseName.includes(normalizedTerm);
+  const searchFilteredCourses = (() => {
+    updateSuggestedStars();
+    if (!searchQuery.trim()) return availableCourses.slice(0, 20);
+  
+    // Split into OR groups, then flatten to get all terms
+    const orGroups = searchQuery
+      .split(/\s+AND\s+/i)
+      .map(group =>
+        group
+          .split(/\s+OR\s+/i)
+          .map(term => term.trim().replace(/\s+/g, '').toLowerCase())
+      );
+  
+    // Flatten all terms from all OR groups
+    const allTerms = orGroups.flat();
+  
+    // Match any course that includes any term
+    let matchedCourses = availableCourses.filter(course => {
+      const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
+      return allTerms.some(term => normalizedName.includes(term));
+    });
+  
+    // Star lowest-difficulty course in each OR group
+    orGroups.forEach(group => {
+      const matches = matchedCourses.filter(course => {
+        const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
+        return group.some(term => normalizedName.includes(term));
       });
-    }).slice(0, 20)
+  
+      if (matches.length > 0) {
+        const easiest = matches.reduce((a, b) =>
+          a.difficulty < b.difficulty ? a : b
+        );
+        easiest.suggested = true;
+      }
+    });
+  
+    // Optional: Filter by favorites
+    if (showFavorited) {
+      matchedCourses = matchedCourses.filter(course =>
+        user.favorited.includes(course.courseID)
+      );
+    }
+  
+    return matchedCourses.slice(0, 20);
+  })();
+
+  
 
   const closePopup = () => {
     setIsPopupVisible(false);
@@ -600,7 +644,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     setMissingRequirements(arr);
   }, [courses, majors]);
   const handleErrorClick = (requirement) => {
-    setSearchQuery(requirement.courses.map(group => group.join(" AND ")).join(" AND "));
+    setSearchQuery(requirement.courses.map(group => group.join(" OR ")).join(" AND "));
   }
 
   // Generate the PDF
@@ -969,9 +1013,9 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
               onDrop={handleDragEnd}
               onDragLeave={handleDragLeave}
             >
-              {filteredCourses.length > 0 && (
+              {searchFilteredCourses.length > 0 && (
                 <div className="mt-2 h-full bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-2 overflow-y-auto searchContainer">
-                  {filteredCourses.map((c) => (
+                  {searchFilteredCourses.map((c) => (
                     <Course key={c.courseID} handleDragStart={handleDragStart} course={c} />
                   ))}
                 </div>
@@ -1063,7 +1107,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
 }
 
 const Course = ({ course, handleDragStart }) => {
-  const { name, semester, conflicts } = course;
+  const { name, semester, conflicts, suggested } = course;
   const [hovered, setHovered] = useState(false);
   const handleMouseOver = (e) => {
     setHovered(true);
@@ -1105,14 +1149,9 @@ const Course = ({ course, handleDragStart }) => {
             (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
           }
         </p>
-        {/* {hovered && (
-          <button
-            className={`absolute top-4 right-4 cursor-pointer w-6 h-6`}
-            onClick={(e) => handleInfoClicked(e)}
-          >
-            <Info className="text-gray-400 hover:text-gray-200" />
-          </button>
-        )} */}
+         {suggested && (
+          <Star className="absolute top-5 right-4 cursor-pointer w-3 h-3 text-gray-400" />
+        )}
       </div>
     </>
   );
