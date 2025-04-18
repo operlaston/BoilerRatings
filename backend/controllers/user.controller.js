@@ -222,17 +222,19 @@ usersRouter.post('/ban/:id', async (req, res) => {
     const user = await User.findByIdAndUpdate(userId, {$set: {banned: true}})
 
     // remove all of their reviews
-    user.reviews.forEach(async (review) => {
-      const rev = Review.findById(review._id);
+    for await (const review of user.reviews) {
+      const rev = await Review.findById(review._id);
       if (rev !== null) {
-        // only need to remove review from the course
+        // remove review from the course
         await Course.findByIdAndUpdate(rev.course, {
-          $pull: {reviews: rev.id}
+          $pull: {reviews: rev._id}
         })
-        await Review.findOneAndDelete(rev);
+        await User.findByIdAndUpdate(user._id, {
+          $pull: {reviews: rev._id}
+        })
+        await Review.findByIdAndDelete(rev._id);
       }
-    });
-
+    }
     return res.status(200).json({message: "User successfully banned"})
   }
   catch (err) {

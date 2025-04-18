@@ -495,6 +495,54 @@ test('Reported reviews are gathered', async () => {
   assert(!returnedIds.includes(reviewId2));
 })
 
+test('Reviews of a banned user are deleted', async () => {
+  var userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+
+  const userId = userRes.body.id;
+
+  const courseRes = await api
+    .post('/api/courses')
+    .send(newCourse)
+    .expect(201)
+
+  const courseId = courseRes.body.id;
+
+  var reviewRes = await api
+    .post('/api/reviews')
+    .send({review: newReview, course: courseId, userId: userId})
+    .expect(201)
+
+  const reviewId = reviewRes.body.id;
+
+  userRes = await api
+    .get(`/api/users/${userId}`)
+    .expect(200)
+
+  assert(userRes.body.reviews.length == 1);
+
+  await api
+    .post(`/api/users/ban/${userId}`)
+    .expect(200)
+
+
+  reviewRes = await api
+    .get(`/api/reviews/${reviewId}`)
+    .expect(404)
+
+  userRes = await api
+    .get(`/api/users/${userId}`)
+    .expect(200)
+
+  console.log(userRes.body)
+  assert(userRes.body.banned)
+  assert(userRes.body.reviews.length == 0);
+  
+})
+
 after(async () => {
   await mongoose.connection.close()
 })

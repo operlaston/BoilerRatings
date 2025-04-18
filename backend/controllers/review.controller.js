@@ -24,7 +24,7 @@ reviewRouter.get("/:id", async (req, res) => {
       .populate("reports")
       .populate("course")
     if (!review) {
-      return res.status(401).json({ error: "Review not found" });
+      return res.status(404).json({ error: "Review not found" });
     }
     res.status(200).json(review);
   } catch (err) {
