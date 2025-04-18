@@ -25,6 +25,32 @@ const newCourse = {
   creditHours: 0,
   conflicts: []
 }
+const newCourse2 = {
+  name: "testcourse3",
+  number: "testnumber3",
+  description: "testdescription",
+  instructors: [],
+  difficulty: 0,
+  enjoyment: 0,
+  recommended: 0,
+  reviews: [],
+  prerequisites: [],
+  creditHours: 0,
+  conflicts: []
+}
+const newCourse3 = {
+  name: "testcourse3",
+  number: "testnumber3",
+  description: "testdescription",
+  instructors: [],
+  difficulty: 0,
+  enjoyment: 0,
+  recommended: 0,
+  reviews: [],
+  prerequisites: [],
+  creditHours: 0,
+  conflicts: []
+}
 
 const newUser = {
   username: "testusername",
@@ -395,6 +421,78 @@ test('Reviews can be reported', async () => {
   
   assert(report.reports[0].content, "Test Reason");
   assert(report.reports[0].reason, "Test")
+})
+
+test('Reported reviews are gathered', async () => {
+  const courseRes = await api
+  .post('/api/courses')
+  .send(newCourse)
+  .expect(201)
+  const courseRes2 = await api
+  .post('/api/courses')
+  .send(newCourse2)
+  .expect(201)
+  const courseRes3 = await api
+  .post('/api/courses')
+  .send(newCourse3)
+  .expect(201)
+  const courseid = courseRes.body.id
+  const courseid2 = courseRes2.body.id
+  const courseid3 = courseRes3.body.id
+  const userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+  const userid = userRes.body.id
+
+  const review = await api
+    .post('/api/reviews')
+    .send({review: newReview, course: courseid, userId: userid})
+    .expect(201)
+  
+    const review2 = await api
+    .post('/api/reviews')
+    .send({review: newReview, course: courseid2, userId: userid})
+    .expect(201)
+  
+    const review3 = await api
+    .post('/api/reviews')
+    .send({review: newReview, course: courseid3, userId: userid})
+    .expect(201)
+  
+    const reportData = {
+      reportString: "Test",
+      reportReason: "Test Reason"
+    }
+
+    const reviewId = review.body.id
+
+    const reviewId2 = review2.body.id
+
+    const reviewId3 = review3.body.id
+
+  await api
+  .put(`/api/reviews/report/${reviewId}`)
+  .send(reportData)
+  .expect(200);
+
+
+  
+  await api
+  .put(`/api/reviews/report/${reviewId3}`)
+  .send(reportData)
+  .expect(200);
+
+  const reportReviews = await api
+  .get('/api/reviews/reports')
+  .expect(201);
+
+  const returnedIds = reportReviews.body.map((r) => r.id);
+
+  assert(returnedIds.includes(reviewId));
+  assert(returnedIds.includes(reviewId3));
+  assert(!returnedIds.includes(reviewId2));
 })
 
 after(async () => {
