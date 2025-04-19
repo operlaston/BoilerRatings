@@ -29,7 +29,11 @@ const courseSchema = new mongoose.Schema({
     conflicts: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Course'
-    }]
+    }],
+    timeToReview: {
+        type: Date,
+        default: Date.now
+    }
 })
 
 courseSchema.set('toJSON', {

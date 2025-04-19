@@ -162,6 +162,29 @@ courseRouter.delete('/:id', async(req, res) => {
     }
 })
 
+courseRouter.put('/date/:id', async(req,res) => {
+    const courseId = req.params.id
+    const { newDate } = req.body;
+    try {
+        const courseExists = await Course.findById(courseId)
+        if (!courseExists) {
+            return res.status(404).json({error: "Course not found"})
+        }
+
+        const year = newDate.substring(0,4)
+        const month = newDate.substring(5,7)
+        const day = newDate.substring(8,10)
+        const date = new Date(year, month - 1, day).toISOString();
+
+        console.log(month + " " + day + " " + year)
+        await Course.findByIdAndUpdate(courseId, {$set : {timeToReview: date}})
+        return res.status(200).json({message: "date updated successfully"})
+    }
+    catch (err) {
+        return res.status(401).json({error: "bad request"})
+    }
+})
+
 // courseRouter.post('/groupadd', async (req, res) => {
 //     const courses = req.body
 //     try {

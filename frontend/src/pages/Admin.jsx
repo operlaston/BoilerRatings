@@ -5,11 +5,13 @@ import {
     Flag,
     School,
     ArrowBigLeftDash,
-    Plus
+    Plus,
+    PencilLine
 } from 'lucide-react'
 
 import RequirementForm from '../components/RequirementForm'
 import PrerequisiteForm from '../components/PrerequisiteForm'
+import ReviewTimeForm from '../components/ReviewTimeForm'
 
 function AdminPanel({
     title,
@@ -89,9 +91,13 @@ export function AdminDashboard({activeUser, majors, setMajors, courses, setCours
     }
 
     let coursesWithoutPrereqs = 0;
-    courses.forEach(course => {
+    let coursesUnreviewable = 0;
+    for (const course of courses) {
         if (course.prerequisites.length === 0) coursesWithoutPrereqs++;
-    })
+        const date = new Date(course.timeToReview)
+        const date2 = new Date(Date.now())
+        if (date.getTime() < date2.getTime()) coursesUnreviewable++;
+    }
 
     return (
         <div className="w-full h-screen dark:bg-gray-900">
@@ -150,6 +156,16 @@ export function AdminDashboard({activeUser, majors, setMajors, courses, setCours
                             stat={coursesWithoutPrereqs}
                             statLabel="Courses without prerequisites"
                             onExpand={() => setExpandedPanel('prerequisites')}
+                        />
+                        <AdminPanel
+                            title="Course Reviews"
+                            description="Manage which Courses can be reviewed"
+                            icon={
+                                <PencilLine className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                            }
+                            stat={coursesUnreviewable}
+                            statLabel="Courses that can't be reviewed"
+                            onExpand={() => setExpandedPanel('courseReviews')}
                         />
                     </div>
                 </div>
@@ -213,6 +229,22 @@ export function AdminDashboard({activeUser, majors, setMajors, courses, setCours
                                 {/* Major editing interface would go here */}
                             </div>
                             <PrerequisiteForm courses={courses} setCourses={setCourses} />                            
+                        </div>
+                    </ExpandedPanel>
+                )}
+                {expandedPanel === 'courseReviews' && (
+                    <ExpandedPanel
+                        title="Prerequisites"
+                        onClose={() => setExpandedPanel(null)}
+                    >
+                        <div className="space-y-6">
+                            <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+                                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                                    Set time for reviews to become available
+                                </h3>
+                                {/* Major editing interface would go here */}
+                            </div>
+                            <ReviewTimeForm courses={courses} setCourses={setCourses} />                            
                         </div>
                     </ExpandedPanel>
                 )}

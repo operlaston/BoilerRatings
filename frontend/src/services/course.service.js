@@ -24,4 +24,9 @@ const updatePrerequisites = async (courseId, newPrerequisites) => {
   return res.data
 }
 
-export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites }
+const updateTimeToReview = async (courseId, newDate) => {
+  const res = await axios.put(`${baseurl}/api/courses/date/${courseId}`, {newDate})
+  return res.data
+}
+
+export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview }
