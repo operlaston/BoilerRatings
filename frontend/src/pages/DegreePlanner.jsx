@@ -411,7 +411,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     const allTerms = orGroups.flat();
   
     // Match any course that includes any term
-    let matchedCourses = availableCourses.filter(course => {
+    let matchedCourses = availableCourses.concat(courses).filter(course => {
       const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
       return allTerms.some(term => normalizedName.includes(term));
     });
@@ -437,6 +437,17 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         user.favorited.includes(course.courseID)
       );
     }
+
+    //Include courses alr in degree plan for calculations, but filter them out of search
+    matchedCourses = matchedCourses.filter(c => !courses.includes(c));
+
+    //filter results by starred results first
+    matchedCourses.sort((a, b) => {
+      if (a.suggested && !b.suggested) return -1;
+      if (!a.suggested && b.suggested) return 1; 
+      return 0;
+    });
+    
   
     return matchedCourses.slice(0, 20);
   })();
@@ -883,11 +894,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       courseOrder[highest].push(curr)
     }
     console.log("Collapsed courses", courseOrder);
-
-
-
-
-    //TODO: uncomment this VV
     setIsSaved(false);
     let availableCoursesCopy = [...availableCourses];
     let reorderedCourses = [...courses];
@@ -1149,7 +1155,7 @@ const Course = ({ course, handleDragStart }) => {
             (course.conflicts.length == 0) ? course.description : "Prerequisite " + getConflictMessage()
           }
         </p>
-         {suggested && (
+         {(suggested && semester < 1) && (
           <Star className="absolute top-5 right-4 cursor-pointer w-3 h-3 text-gray-400" />
         )}
       </div>
