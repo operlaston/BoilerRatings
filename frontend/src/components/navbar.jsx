@@ -43,7 +43,7 @@ export function Navbar({user, onLogout}) {
       name: 'Admin',
       href: '/admin'
     }
-  ]
+  ].filter(tab => tab.name !== 'Admin' || user?.admin)
   return (
     <nav className="bg-white/80 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
       <div className="max-w-full mx-14">
