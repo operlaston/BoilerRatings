@@ -36,6 +36,45 @@ instructorRouter.put('/:id/courses', async (req, res) => {
         res.status(400).json({error: 'Invalid Data'})
     }
 })
+
+// Edit instructors and also update courses 
+instructorRouter.patch('/:id/add-to-all-courses', async (req, res) => {
+    const instructorId = req.params.id;
+    const session = await mongoose.startSession();
+    session.startTransaction();
+  
+    try {
+      const instructor = await Instructor.findById(instructorId).session(session);
+      if (!instructor) {
+        await session.abortTransaction();
+        return res.status(404).json({ error: "Instructor not found" });
+      }
+  
+      // Find all courses where this instructor is not listed
+      const coursesToUpdate = await Course.find({
+        instructors: { $ne: instructorId }
+      }).session(session);
+  
+      for (const course of coursesToUpdate) {
+        course.instructors.push(instructorId);
+        await course.save({ session });
+  
+        if (!instructor.courses.includes(course._id)) {
+          instructor.courses.push(course._id);
+        }
+      }
+  
+      await instructor.save({ session });
+      await session.commitTransaction();
+      res.json({ updatedCoursesCount: coursesToUpdate.length });
+    } catch (err) {
+      await session.abortTransaction();
+      res.status(400).json({ error: err.message });
+    } finally {
+      session.endSession();
+    }
+  });
+
 //Puts the instrucor id in every courses course array
 //Probably dont use this in general use but for sprint 2 we need instructors in our courses so putting test instructor 1 and test instructor 2 in
 instructorRouter.put('/:id', async (req, res) => {
