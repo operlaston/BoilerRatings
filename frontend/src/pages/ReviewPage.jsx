@@ -12,6 +12,7 @@ import {
   Trash2,
   Flag,
   CheckCircle,
+  Heading1,
 } from "lucide-react";
 import {
   addReview,
@@ -76,7 +77,8 @@ const ReviewPage = ({
   const likesOptions = ["negative", "0-2", "3-5", "6-8", "9+"];
 
   useEffect(() => {
-    if (user) {
+    const timeCheck = new Date(course.timeToReview).getTime() < new Date(Date.now()).getTime()
+    if (user && timeCheck) {
       setCanAddReview(true);
     }
     setReviews(course.reviews || []);
@@ -699,6 +701,19 @@ const ReviewPage = ({
               canAddReview={canAddReview}
               instructorOptions={instructorOptions}
             />
+          )}
+          {new Date(course.timeToReview).getTime() >= new Date(Date.now()).getTime() && (
+            <div className="p-4 gap-4 items-center flex flex-col gap-2 mb-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm">
+              <h1 className="text-md py-2 font-medium text-gray-700 dark:text-gray-300">
+                Review creation is not available for this course yet!
+              </h1>
+              <h2 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Reviews will become available:
+              </h2>
+              <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {new Date(course.timeToReview).toDateString()}
+              </h3>
+            </div>
           )}
         </div>
       </div>
