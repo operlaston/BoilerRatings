@@ -12,7 +12,6 @@ import {
   Trash2,
   Flag,
   CheckCircle,
-  Heading1,
 } from "lucide-react";
 import {
   addReview,
