@@ -13,6 +13,7 @@ import RequirementForm from "../components/RequirementForm";
 import PrerequisiteForm from "../components/PrerequisiteForm";
 import ReviewTimeForm from "../components/ReviewTimeForm";
 import ManageCourseForm from "../components/ManageCourseForm";
+import EditInstructorForm from "../components/EditInstructorForm";
 
 function AdminPanel({ title, description, icon, stat, statLabel, onExpand }) {
   return (
@@ -180,6 +181,16 @@ export function AdminDashboard({
                 </h3>
                 {/* Add instructor form would go here */}
               </div>
+
+              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
+                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                  Edit / Delete Instructor
+                </h3>
+                <EditInstructorForm/>
+
+
+              </div>
+
             </div>
           </ExpandedPanel>
         )}
