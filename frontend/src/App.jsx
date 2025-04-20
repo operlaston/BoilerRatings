@@ -16,7 +16,6 @@ import { getCourses } from "./services/course.service";
 import { getRequirements } from "./services/requirement.service";
 import { Navbar } from "./components/navbar";
 import { getUserById } from "./services/user.service";
-import CourseManagement from "./pages/CourseManagement";
 import RequirementForm from "./components/RequirementForm";
 import PrerequisiteForm from "./components/PrerequisiteForm";
 import { AdminDashboard } from "./pages/Admin";
