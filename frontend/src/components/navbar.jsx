@@ -36,10 +36,6 @@ export function Navbar({user, onLogout}) {
       href: '/compare'
     },
     {
-      name: 'Add Course Test',
-      href: '/add-course',
-    },
-    {
       name: 'Admin',
       href: '/admin'
     }

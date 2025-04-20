@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import AccountDeletionPopup from "../components/AccountDeletionPopup";
 import AccountBanPopup from "../components/AccountBanPopup.jsx";
 import EditAccountForm from "../components/EditAccountForm.jsx";
-import AddCourseForm from "../components/AddCourseForm.jsx";
 import { useParams } from "react-router-dom";
 import { getUserByUsername } from "../services/user.service.js";
 import { useNavigate } from "react-router-dom";
@@ -25,7 +24,7 @@ const User = ({ user, setUser }) => {
       getUserByUsername(username)
         .then((returnedUser) => {
           setPageUser(returnedUser);
-          console.log("Pageuser: ",returnedUser);
+          console.log("Pageuser: ", returnedUser);
         })
         .catch((err) => {
           if (err.response.status === 404) {
@@ -36,7 +35,7 @@ const User = ({ user, setUser }) => {
           console.log("error occurred while grabbing user");
         });
     }
-    
+
     console.log("Logged in user: ", user);
   }, []);
 
@@ -67,9 +66,7 @@ const User = ({ user, setUser }) => {
         <h1>
           <b>404 - User Not Found.</b>
         </h1>
-        <h1>
-          The user you are searching for no longer exists.
-        </h1>
+        <h1>The user you are searching for no longer exists.</h1>
         <div className="underline cursor-pointer" onClick={() => navigate("/")}>
           Return to Home Page
         </div>
@@ -106,7 +103,9 @@ const User = ({ user, setUser }) => {
         <div className="flex pt-16 gap-x-6 items-center">
           <div className="max-w-40 h-30 w-30">
             <img
-              src={`https://api.dicebear.com/9.x/identicon/svg?seed=` + pageUser.id}
+              src={
+                `https://api.dicebear.com/9.x/identicon/svg?seed=` + pageUser.id
+              }
               alt="pfp-image"
               className="rounded-xl"
             />
@@ -115,15 +114,15 @@ const User = ({ user, setUser }) => {
             <h1 className="text-4xl font-bold">{pageUser.username}</h1>
             <h2 className="text-2xl font-medium">
               Major:{" "}
-              {pageUser.major.length === 0 ? "none" : pageUser.major.map(maj => maj.name)}
+              {pageUser.major.length === 0
+                ? "none"
+                : pageUser.major.map((maj) => maj.name)}
             </h2>
             <div className="text-lg">
               Number of Reviews: {pageUser.reviews.length}
             </div>
-            <div className="text-lg">
-              Last login: {pageUser.lastLogin}
-            </div>
-            {(user != null && user.username === pageUser.username) && (
+            <div className="text-lg">Last login: {pageUser.lastLogin}</div>
+            {user != null && user.username === pageUser.username && (
               <div className="pt-3 flex flex-row gap-x-2">
                 <button
                   className="px-3 py-2 bg-gray-200/10 cursor-pointer
@@ -141,18 +140,21 @@ const User = ({ user, setUser }) => {
                 </button>
               </div>
             )}
-            {(user != null && user.admin && pageUser.username !== user.username && !pageUser.admin && !pageUser.banned) && (
-              <div className="pt-3 flex flex-row gap-x-2">
-                <button
-                  className="px-3 py-2 bg-gray-200/10 cursor-pointer
+            {user != null &&
+              user.admin &&
+              pageUser.username !== user.username &&
+              !pageUser.admin &&
+              !pageUser.banned && (
+                <div className="pt-3 flex flex-row gap-x-2">
+                  <button
+                    className="px-3 py-2 bg-gray-200/10 cursor-pointer
               rounded-lg text-red-600 border-1 border-red-600"
-                  onClick={() => setBanPopupOpen(true)}
-                >
-                  Ban user
-                </button>
-              </div>
-            )
-            }
+                    onClick={() => setBanPopupOpen(true)}
+                  >
+                    Ban user
+                  </button>
+                </div>
+              )}
           </div>
         </div>
         <div className="flex">
@@ -164,15 +166,20 @@ const User = ({ user, setUser }) => {
                 console.log("Updated user:", updatedUser);
               }}
               onFinish={() => setEditingInfo(false)}
-            />) : ""
-          }
+            />
+          ) : (
+            ""
+          )}
         </div>
         <div></div>
       </div>
       <div className="flex flex-col gap-y-4">
         <h2 className="text-2xl font-bold min-w-lg">Reviews</h2>
         {pageUser.reviews.map((review) => {
-          if ((review.hidden === undefined || review.hidden === false) && review.anon === false) {
+          if (
+            (review.hidden === undefined || review.hidden === false) &&
+            review.anon === false
+          ) {
             return <Review key={review.id} review={review} />;
           }
           return;
@@ -185,7 +192,11 @@ const User = ({ user, setUser }) => {
 const Review = ({ review }) => {
   return (
     <div className="bg-white/10 px-4 py-3 rounded-lg flex flex-col gap-y-1">
-      <h2 className="text-xl font-semibold ">{review.course ? `${review.course.number}: ${review.course.name}` : 'course name goes here'}</h2>
+      <h2 className="text-xl font-semibold ">
+        {review.course
+          ? `${review.course.number}: ${review.course.name}`
+          : "course name goes here"}
+      </h2>
       <div className="flex gap-x-3">
         <div>{new Date(review.date).toLocaleDateString("en-US")}</div>
         <div>•</div>
@@ -201,8 +212,9 @@ const Review = ({ review }) => {
           Enjoyment: {review.enjoyment}/5
         </div>
         <div
-          className={` px-2 py-1 rounded-md ${review.recommend ? "bg-green-700/50" : "bg-red-700/50"
-            }`}
+          className={` px-2 py-1 rounded-md ${
+            review.recommend ? "bg-green-700/50" : "bg-red-700/50"
+          }`}
         >
           {review.recommend
             ? "Recommends this course"

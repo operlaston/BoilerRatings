@@ -32,7 +32,7 @@ loginRouter.post('/', async (req, res) => {
       // })
 
       const now = new Date();
-      const inactiveThreshold = 5000;
+      const inactiveThreshold = 500000;
       const isInactive = user.lastLogin && (now - user.lastLogin) > inactiveThreshold;
 
       user.lastLogin = now;

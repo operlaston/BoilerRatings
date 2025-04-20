@@ -1,5 +1,5 @@
 import { useState } from "react";
-import AddCourseForm from "../components/AddCourseForm";
+import ManageCourseForm from "../components/ManageCourseForm";
 import { IoMdClose } from "react-icons/io";
 
 const CourseManagement = () => {
@@ -40,11 +40,7 @@ const CourseManagement = () => {
 
           {showForm && (
             <div className="mt-4">
-              <AddCourseForm
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-                isSubmitting={false}
-              />
+              <ManageCourseForm />
             </div>
           )}
         </div>
