@@ -150,13 +150,6 @@ function App() {
             />
           }
         />
-        {/* Route for add course test page */}
-        <Route
-          path="/add-course"
-          element={
-            <CourseManagement />
-          }
-        />
         {/* Route for the Saved Degree Plans page */}
         <Route
           path="/saved-degree"
