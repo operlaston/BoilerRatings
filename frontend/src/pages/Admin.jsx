@@ -161,7 +161,7 @@ export function AdminDashboard({
               icon={
                 <PencilLine className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               }
-              stat={coursesUnreviewable}
+              stat={courseUnreviewable}
               statLabel="Courses that can't be reviewed"
               onExpand={() => setExpandedPanel("courseReviews")}
             />
