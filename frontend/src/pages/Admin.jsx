@@ -179,18 +179,84 @@ export function AdminDashboard({
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Add New Instructor
                 </h3>
-                {/* Add instructor form would go here */}
+                <form className="space-y-4">
+                  <div>
+                    <label htmlFor="instructorName" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Instructor Name
+                    </label>
+                    <input
+                      type="text"
+                      id="instructorName"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter instructor name"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="instructorGPA" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      GPA
+                    </label>
+                    <input
+                      type="number"
+                      id="instructorGPA"
+                      min="0"
+                      max="4"
+                      step="0.1"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter GPA (0-4)"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="instructorRMP" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      RateMyProfessor Rating
+                    </label>
+                    <input
+                      type="number"
+                      id="instructorRMP"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter RMP rating (0-5)"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label htmlFor="instructorRMPLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      RateMyProfessor Link
+                    </label>
+                    <input
+                      type="url"
+                      id="instructorRMPLink"
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="Enter RMP profile URL"
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      className="px-4 py-2 bg-gray-200 dark:bg-gray-600 rounded-md text-gray-800 dark:text-white hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors mr-3"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-indigo-600 rounded-md text-white hover:bg-indigo-700 transition-colors"
+                    >
+                      Add Instructor
+                    </button>
+                  </div>
+                </form>
               </div>
 
               <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Edit / Delete Instructor
                 </h3>
-                <EditInstructorForm/>
-
-
+                <EditInstructorForm />
               </div>
-
             </div>
           </ExpandedPanel>
         )}
