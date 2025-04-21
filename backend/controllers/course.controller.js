@@ -185,6 +185,22 @@ courseRouter.put('/date/:id', async(req,res) => {
     }
 })
 
+// test route to set all review dates to yesterday
+courseRouter.put('/test/date/setall', async (req, res) => {
+    console.log('changing all dates...')
+    try {
+        const date = new Date(Date.now() - (1000 * 60 * 60 * 24))
+        console.log(`Setting all course dates to ${date.toDateString()}...`)
+        await Course.updateMany({}, {$set: {timeToReview: date}})
+        return res.status(200)
+    }
+    catch (err) {
+        console.log(err)
+        return res.status(500).json({error: "server error"})
+    }
+})
+
+
 // courseRouter.post('/groupadd', async (req, res) => {
 //     const courses = req.body
 //     try {

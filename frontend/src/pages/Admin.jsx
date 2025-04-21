@@ -88,14 +88,13 @@ export function AdminDashboard({
     return <div>Access forbidden: You are not an admin</div>;
   }
 
-  let coursesWithoutPrereqs = 0;
-  let coursesUnreviewable = 0;
-  for (const course of courses) {
-    if (course.prerequisites.length === 0) coursesWithoutPrereqs++;
-    const date = new Date(course.timeToReview);
-    const date2 = new Date(Date.now());
-    if (date.getTime() < date2.getTime()) coursesUnreviewable++;
-  }
+    let coursesWithoutPrereqs = 0;
+    let coursesUnreviewable = 0;
+    for (const course of courses) {
+        if (course.prerequisites.length === 0) coursesWithoutPrereqs++;
+        const date = new Date(course.timeToReview).getTime() > new Date(Date.now()).getTime()
+        if (date) coursesUnreviewable++;
+    }
 
   return (
     <div className="w-full h-screen dark:bg-gray-900">
