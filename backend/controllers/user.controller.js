@@ -56,6 +56,28 @@ usersRouter.post('/', async (req, res) => {
   }
 })
 
+usersRouter.get('/inactive', async (req, res) => {
+  const oneYearAgo = new Date();
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  try {
+    const inactive = await User.find({
+      lastLogin: { $lt : oneYearAgo},
+      banned: false,
+    })
+    for (const user of inactive) {
+      await sendEmail.inactiveEmail(
+        user.email,
+        "Test Email",
+        "Test Text"
+      )
+    }
+    console.log(inactive)
+    res.status(201).json(inactive)
+  } catch (error) {
+    res.status(400).json({"error": "Bad Request"})
+  }
+})
+
 usersRouter.post('/verify', async (req, res) => {
   const { email, code } = req.body;
 
@@ -323,4 +345,6 @@ usersRouter.put('/admin/:id', async (req, res) => {
     res.status(400).json({"error": "Bad request"})
   }
 })
+
+
 module.exports = usersRouter
