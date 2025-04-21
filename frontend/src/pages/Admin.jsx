@@ -28,33 +28,27 @@ function EditCourseForm({ courses, setCourses }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleCourseChange = (e) => {
-    const courseName = e.target.value;
-    setSelectedCourse(courseName);
+  const handleCourseChange = async (e) => {
+    const courseId = e.target.value;
+    setSelectedCourse(courseId);
     
-    if (courseName === "") {
-      setCourseData({
-        name: "",
-        number: "",
-        description: "",
-        creditHours: 0,
-        instructors: []
-      });
+    if (!courseId) {
+      setCourseData({ /* reset fields */ });
       return;
     }
-    
-    const course = courses.find(c => c.name === courseName);
-    if (course) {
+
+    try {
+      const course = await getCourseById(courseId);
       setCourseData({
         name: course.name,
         number: course.number,
         description: course.description,
         creditHours: course.creditHours || 0,
-        instructors: [...(course.instructors || [])]
+        instructors: course.instructors.map(i => i.name || i._id.toString())
       });
+    } catch (err) {
+      setError("Failed to load course details");
     }
-    setError("");
-    setSuccess("");
   };
 
   const handleAddInstructor = () => {
@@ -86,11 +80,23 @@ function EditCourseForm({ courses, setCourses }) {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Just UI - no backend logic
-    setSuccess("Course changes saved (UI only - no backend)");
-    console.log("Would submit:", courseData);
+    try {
+      await updateCourse(selectedCourse, {
+        name: courseData.name,
+        number: courseData.number,
+        description: courseData.description,
+        creditHours: courseData.creditHours,
+        instructors: courseData.instructors // Need to convert back to ObjectIds if needed
+      });
+      setSuccess("Course updated successfully");
+      // Refresh course list
+      const updated = await getCourses();
+      setCourses(updated);
+    } catch (err) {
+      setError("Failed to update course");
+    }
   };
 
   return (
