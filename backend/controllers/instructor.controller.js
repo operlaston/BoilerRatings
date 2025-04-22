@@ -130,7 +130,7 @@ instructorRouter.put('/difficulty/course/:id', async (req, res) => {
     if (count > 0)
       score = score / count
     else
-      score = 0
+      score = -1
 
     return res.status(200).json(score)
 

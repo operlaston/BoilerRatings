@@ -57,6 +57,7 @@ function CourseInfo({ user, setUser, setCourse, refreshCourses, setCourses }) {
             course={pageCourse} 
             user={user} 
             setIsPopupVisible={setIsPopupVisible}
+            refreshCourses={refreshCourses}
           />
           <ReviewPage
             course={pageCourse}
