@@ -7,6 +7,7 @@ const Review = require('../models/review')
 const Major = require('../models/major')
 const Course = require('../models/course')
 const User = require('../models/user')
+const PageReport = require('../models/pagereport')
 const Requirement = require('../models/requirement')
 
 const api = supertest(app)
@@ -537,10 +538,39 @@ test('Reviews of a banned user are deleted', async () => {
     .get(`/api/users/${userId}`)
     .expect(200)
 
-  console.log(userRes.body)
   assert(userRes.body.banned)
   assert(userRes.body.reviews.length == 0);
   
+})
+test('a page report can be added', async() => {
+  const initialReports = await PageReport.find({})
+
+  const newReport = {
+    page: "Test Page",
+    reportContent: "Test report"
+  }
+  await api
+    .post('/api/pageReports')
+    .send(newReport)
+    .expect(200)
+  
+  const reportsAfter = await PageReport.find({})
+  assert.strictEqual(reportsAfter.length, initialReports.length + 1)
+  assert(reportsAfter.map(r => r.page).includes('Test Page'))
+})
+
+test('page reports can be fetched', async() => {
+  const newReport = new PageReport({
+    page: 'Fetch Test Page',
+    reportContent: 'Report test.'
+  })
+  await newReport.save()
+  const res = await api
+    .get('/api/pageReports')
+    .expect(201)
+
+  const pages = res.body.map(r => r.page)
+  assert(pages.includes('Fetch Test Page'))
 })
 
 after(async () => {
