@@ -88,6 +88,11 @@ const newMajor = {
   requirements: []
 }
 
+const newInstructor = {
+  name: 'testinstructor',
+  courses: []
+}
+
 beforeEach(async () => {
   await Review.deleteMany({})
   await Major.deleteMany({})
@@ -571,6 +576,86 @@ test('page reports can be fetched', async() => {
 
   const pages = res.body.map(r => r.page)
   assert(pages.includes('Fetch Test Page'))
+})
+
+test('instructor difficulty can be correctly calculated', async() => {
+  var userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+  const userId = userRes.body.id;
+
+  var res = await api
+    .post('/api/courses')
+    .send(newCourse)
+    .expect(201)
+  const course = res.body
+
+  res = await api  
+    .post('/api/instructors')
+    .send(newInstructor)
+    .expect(201)
+  const instructor = res.body
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(400)
+  
+  await Course.findByIdAndUpdate(course.id, { $push: {instructors: instructor.id}})
+  
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+  
+  assert(res.body == -1)
+
+  var review = newReview
+  review.instructor = instructor.id
+  review.difficulty = 5
+
+  res = await api
+    .post(`/api/reviews`)
+    .send({review: review, course: course.id, userId: userId})
+    .expect(201)
+
+  const review1Id = res.body.id
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+  
+  assert(res.body == 5)
+
+  review.difficulty = 3;
+
+  res = await api
+    .post(`/api/reviews`)
+    .send({review: review, course: course.id, userId: userId})
+    .expect(201)
+
+  const review2Id = res.body.id
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+
+  assert(res.body == 4)
+
+  await api
+    .delete(`/api/reviews/${review1Id}`)
+    .expect(200)
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+
+  assert(res.body == 3)
 })
 
 after(async () => {

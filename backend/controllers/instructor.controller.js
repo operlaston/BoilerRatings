@@ -100,6 +100,7 @@ instructorRouter.put('/:id', async (req, res) => {
 instructorRouter.put('/difficulty/course/:id', async (req, res) => {
   const profId = req.params.id;
   const { courseId } = req.body;
+  //console.log(`{\n  profId: ${profId},\n  courseId: ${courseId}\n}`)
   try {
     const courseExists = await Course.findById(courseId);
     if (!courseExists) {
@@ -111,8 +112,9 @@ instructorRouter.put('/difficulty/course/:id', async (req, res) => {
       return res.status(404).json({error: "Instructor not found"})
     }
 
-    if (!courseExists.instructors.includes(profId)) {
-      return res.status(400).json({ error: "Professor not in course"})
+    const included = courseExists.instructors.includes(profId)
+    if (!included) {
+      return res.status(400).json({ error: "Instructor not in course"})
     }
 
     var count = 0;
