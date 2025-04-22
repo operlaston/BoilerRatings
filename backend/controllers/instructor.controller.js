@@ -1,6 +1,7 @@
 const instructorRouter = require('express').Router()
 const Instructor = require('../models/instructor')
-const Course = require('../models/course')
+const Course = require('../models/course');
+const Review = require('../models/review');
 
 instructorRouter.post('/', async (req, res) =>{
     const {name} = req.body;
@@ -93,6 +94,50 @@ instructorRouter.put('/:id', async (req, res) => {
 } catch (error) {
     res.status(400).json({error: error.message})
 }
+})
+
+// calculate difficulty of instructor in a certain course
+instructorRouter.put('/difficulty/course/:id', async (req, res) => {
+  const profId = req.params.id;
+  const { courseId } = req.body;
+  try {
+    const courseExists = await Course.findById(courseId);
+    if (!courseExists) {
+      return res.status(404).json({error: "Course not found"})
+    }
+
+    const profExists = await Instructor.findById(profId);
+    if (!profExists) {
+      return res.status(404).json({error: "Instructor not found"})
+    }
+
+    if (!courseExists.instructors.includes(profId)) {
+      return res.status(400).json({ error: "Professor not in course"})
+    }
+
+    var count = 0;
+    var score = 0;
+    for (const review of courseExists.reviews) {
+      const r = await Review.findById(review)
+
+      if (r?.instructor != profId)
+        continue;
+
+      score = score + r.difficulty
+      count = count + 1
+    }
+
+    if (count > 0)
+      score = score / count
+    else
+      score = 0
+
+    return res.status(200).json(score)
+
+  } catch (err) {
+    console.log(err)
+    return res.status(400).json({error: "Bad Request"})
+  }
 })
 
 module.exports = instructorRouter
