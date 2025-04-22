@@ -200,6 +200,66 @@ courseRouter.put('/test/date/setall', async (req, res) => {
     }
 })
 
+courseRouter.put('/:id', async (req, res) => {
+    try {
+      console.log("Incoming update for:", req.params.id);
+      console.log("Update data:", req.body);
+  
+      const courseId = req.params.id;
+      const updates = req.body;
+  
+      // Validate required fields
+      if (!updates.name || !updates.number) {
+        console.log("Validation failed - missing name/number");
+        return res.status(400).json({ error: 'Course name and number are required' });
+      }
+  
+      // Convert instructor names to IDs
+      if (updates.instructors && Array.isArray(updates.instructors)) {
+        console.log("Processing instructors:", updates.instructors);
+        updates.instructors = await Promise.all(
+          updates.instructors.map(async (instructor) => {
+            if (mongoose.Types.ObjectId.isValid(instructor)) {
+              console.log("Existing instructor ID:", instructor);
+              return instructor;
+            }
+            console.log("Looking up instructor:", instructor);
+            let inst = await Instructor.findOne({ name: instructor });
+            if (!inst) {
+              console.log("Creating new instructor:", instructor);
+              inst = new Instructor({ name: instructor });
+              await inst.save();
+            }
+            return inst._id;
+          })
+        );
+        console.log("Converted instructors:", updates.instructors);
+      }
+  
+      const updatedCourse = await Course.findByIdAndUpdate(
+        courseId,
+        updates,
+        { new: true, runValidators: true }
+      )
+      .populate('instructors', 'name')
+      .populate('prerequisites', 'name number');
+  
+      if (!updatedCourse) {
+        console.log("Course not found with ID:", courseId);
+        return res.status(404).json({ error: 'Course not found' });
+      }
+  
+      console.log("Successfully updated course:", updatedCourse);
+      res.status(200).json(updatedCourse);
+    } catch (err) {
+      console.error('Update error:', err);
+      res.status(500).json({ 
+        error: 'Failed to update course',
+        details: err.message 
+      });
+    }
+  });
+
 
 // courseRouter.post('/groupadd', async (req, res) => {
 //     const courses = req.body

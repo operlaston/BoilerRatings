@@ -16,7 +16,7 @@ import ManageCourseForm from "../components/ManageCourseForm";
 import EditInstructorForm from "../components/EditInstructorForm";
 
 function EditCourseForm({ courses, setCourses }) {
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedCourseName, setSelectedCourseName] = useState("");
   const [courseData, setCourseData] = useState({
     name: "",
     number: "",
@@ -28,26 +28,32 @@ function EditCourseForm({ courses, setCourses }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleCourseChange = async (e) => {
-    const courseId = e.target.value;
-    setSelectedCourse(courseId);
+  const handleCourseChange = (e) => {
+    const courseName = e.target.value;
+    setSelectedCourseName(courseName);
     
-    if (!courseId) {
-      setCourseData({ /* reset fields */ });
+    if (!courseName) {
+      setCourseData({
+        name: "",
+        number: "",
+        description: "",
+        creditHours: 0,
+        instructors: []
+      });
       return;
     }
 
-    try {
-      const course = await getCourseById(courseId);
+    // Find course in local state by name - JUST LIKE REVIEWTIMEFORM
+    const course = courses.find(c => c.name === courseName);
+    
+    if (course) {
       setCourseData({
         name: course.name,
         number: course.number,
         description: course.description,
         creditHours: course.creditHours || 0,
-        instructors: course.instructors.map(i => i.name || i._id.toString())
+        instructors: course.instructors.map(i => i.name || i._id?.toString() || i)
       });
-    } catch (err) {
-      setError("Failed to load course details");
     }
   };
 
@@ -83,19 +89,21 @@ function EditCourseForm({ courses, setCourses }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateCourse(selectedCourse, {
-        name: courseData.name,
-        number: courseData.number,
-        description: courseData.description,
-        creditHours: courseData.creditHours,
-        instructors: courseData.instructors // Need to convert back to ObjectIds if needed
+      // Find the full course object to get its ID
+      const course = courses.find(c => c.name === selectedCourseName);
+      
+      await updateCourse(course._id, {
+        ...courseData,
+        // Ensure instructors are sent as array of strings/IDs
+        instructors: courseData.instructors
       });
-      setSuccess("Course updated successfully");
-      // Refresh course list
-      const updated = await getCourses();
-      setCourses(updated);
+      
+      setSuccess("Course updated successfully!");
+      const updatedCourses = await getCourses();
+      setCourses(updatedCourses);
     } catch (err) {
-      setError("Failed to update course");
+      console.error("Update error:", err);
+      setError(err.response?.data?.error || "Failed to update course");
     }
   };
 
@@ -105,7 +113,7 @@ function EditCourseForm({ courses, setCourses }) {
         <label htmlFor="course-select">Select a course to edit: </label>
         <select
           id="course-select"
-          value={selectedCourse}
+          value={selectedCourseName}
           onChange={handleCourseChange}
           className="border rounded-md p-1 bg-white dark:bg-gray-800 dark:text-gray-200"
         >
@@ -118,7 +126,7 @@ function EditCourseForm({ courses, setCourses }) {
         </select>
       </div>
 
-      {selectedCourse && (
+      {selectedCourseName && (
         <div className="w-full max-w-2xl dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="space-y-4">
@@ -222,7 +230,7 @@ function EditCourseForm({ courses, setCourses }) {
       )}
     </div>
   );
-};
+}
 
 function AdminPanel({ title, description, icon, stat, statLabel, onExpand }) {
   return (
