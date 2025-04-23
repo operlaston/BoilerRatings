@@ -370,7 +370,7 @@ const ReviewPage = ({
     setReportingReview(null);
   };
 
-  const handleBanUser = (userId) => {
+  const handleFlagUser = (userId) => {
     // Implement flag user logic here
     console.log("Flag user with ID:", userId);
   }
@@ -564,12 +564,12 @@ const ReviewPage = ({
                     )}
                     {currentUser?.id && currentUser?.admin === true && (
                       <button
-                        onClick={() => handleBanUser(review.user)}
+                        onClick={() => handleFlagUser(review.user)}
                         className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
-                        title="Ban This Guy"
+                        title="Flag This Guy"
                       >
                         <Ban className="w-5 h-5" />
-                        <span className="sr-only">Ban This Guy</span>
+                        <span className="sr-only">Flag This Guy</span>
                       </button>
                     )}
                     {currentUser?.id && review.user === currentUser.id && (
