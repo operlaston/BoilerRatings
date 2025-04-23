@@ -397,7 +397,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   const searchFilteredCourses = (() => {
     updateSuggestedStars();
     if (!searchQuery.trim()) return availableCourses.slice(0, 20);
-  
     // Split into OR groups, then flatten to get all terms
     const orGroups = searchQuery
       .split(/\s+AND\s+/i)
@@ -415,22 +414,24 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
       const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
       return allTerms.some(term => normalizedName.includes(term));
     });
-  
-    // Star lowest-difficulty course in each OR group
-    orGroups.forEach(group => {
-      const matches = matchedCourses.filter(course => {
-        const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
-        return group.some(term => normalizedName.includes(term));
+    
+    if (searchQuery.includes("OR")) {
+      // Star lowest-difficulty course in each OR group
+      orGroups.forEach(group => {
+        const matches = matchedCourses.filter(course => {
+          const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
+          return group.some(term => normalizedName.includes(term));
+        });
+
+        if (matches.length > 0) {
+          const easiest = matches.reduce((a, b) =>
+            a.difficulty < b.difficulty ? a : b
+          );
+          easiest.suggested = true;
+        }
       });
-  
-      if (matches.length > 0) {
-        const easiest = matches.reduce((a, b) =>
-          a.difficulty < b.difficulty ? a : b
-        );
-        easiest.suggested = true;
-      }
-    });
-  
+    }
+
     // Optional: Filter by favorites
     if (showFavorited) {
       matchedCourses = matchedCourses.filter(course =>
