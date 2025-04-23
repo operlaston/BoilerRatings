@@ -3,19 +3,24 @@ import { X } from 'lucide-react';
 import { getReviews, deleteReview } from '../services/review.service'; // Assuming you have this service
 
 function ReviewItem({ review, onDelete }) {
-  return (
-    <div className="bg-gray-700 rounded-md p-4 mb-2 flex items-center justify-between">
-      <div>
-        <p className="text-white font-semibold">{review.course?.name || 'Unknown Course'}</p>
-        <p className="text-gray-400">{review.reviewContent.substring(0, 50)}...</p>
-        <small className="text-gray-500">By: {review.user?.username || 'Anonymous'}</small>
+    return (
+      <div className="bg-gray-700 rounded-md p-4 mb-2 flex items-center justify-between">
+        <div className="flex-1 mr-4"> {/* Added flex-1 and margin for spacing */}
+          <p className="text-white font-semibold">{review.course?.name || 'Unknown Course'}</p>
+          <p className="text-gray-400 whitespace-pre-wrap"> {/* Added whitespace-pre-wrap */}
+            {review.reviewContent}
+          </p>
+          <small className="text-gray-500">By: {review.user?.username || 'Anonymous'}</small>
+        </div>
+        <button 
+          onClick={() => onDelete(review.id)} 
+          className="text-red-500 hover:text-red-400 flex-shrink-0"
+        >
+          <X className="h-5 w-5" />
+        </button>
       </div>
-      <button onClick={() => onDelete(review.id)} className="text-red-500 hover:text-red-400">
-        <X className="h-5 w-5" />
-      </button>
-    </div>
-  );
-}
+    );
+  }
 
 function ReviewManagement() {
   const [reviews, setReviews] = useState([]);
@@ -53,12 +58,13 @@ function ReviewManagement() {
 
   const filteredReviews = reviews.filter((review) => {
     const courseName = review.course?.name || '';
-    const comment = review.comment || '';
+    const reviewText = review.reviewContent || ''; // Changed from comment to reviewContent
     const username = review.user?.username || '';
     const searchLower = searchQuery.toLowerCase();
+    
     return (
       courseName.toLowerCase().includes(searchLower) ||
-      comment.toLowerCase().includes(searchLower) ||
+      reviewText.toLowerCase().includes(searchLower) || // Now searching actual review content
       username.toLowerCase().includes(searchLower)
     );
   });
