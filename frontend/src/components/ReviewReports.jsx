@@ -30,7 +30,7 @@ const MOCK_REPORTS = [
 
 
 
-export function AdminReports() {
+export function ReviewReports() {
   const [reports, setReports] = useState(MOCK_REPORTS)
 
   const sortedReports = (() => {

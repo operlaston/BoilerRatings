@@ -18,7 +18,7 @@ import EditInstructorForm from "../components/EditInstructorForm";
 import { addInstructor, getInstructors } from "../services/instructor.service";
 import { updateCourse, getCourses } from "../services/course.service";
 
-import { AdminReports } from "../components/AdminReports";
+import { ReviewReports } from "../components/ReviewReports";
 import ReviewManagement from "../components/ReviewManagement";
 
 function EditCourseForm({ courses, setCourses }) {
@@ -528,7 +528,7 @@ useEffect(() => {
             title="Report Management"
             onClose={() => setExpandedPanel(null)}
           >
-            <AdminReports />
+            <ReviewReports />
           </ExpandedPanel>
         )}
         {expandedPanel === "majors" && (
