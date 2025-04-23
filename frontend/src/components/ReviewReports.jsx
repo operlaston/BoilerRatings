@@ -66,6 +66,12 @@ export function ReviewReports() {
     banUser(userId.id)
     // Implement ban user logic
   }
+
+  const handleFlagUser = (userId) => {
+    console.log('Flag user:', userId.id)
+    // Implement flag user logic
+  }
+
   const handleDeleteReview = ( review ) => {
     console.log('Delete review from author:', review)
     deleteReview(review.id)
@@ -124,6 +130,7 @@ export function ReviewReports() {
             key={report.id}
             report={report}
             onBanUser={handleBanUser}
+            onFlagUser={handleFlagUser}
             onDeleteReview={handleDeleteReview}
             onIgnoreReport={handleIgnoreReport}
           />
@@ -217,9 +224,11 @@ function ReportCard({
   onBanUser,
   onDeleteReview,
   onIgnoreReport,
+  onFlagUser,
 }) {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showBanModal, setShowBanModal] = useState(false)
+  const [showFlagModal, setShowFlagModal] = useState(false)
 
 
   return (
@@ -305,6 +314,13 @@ function ReportCard({
                 >
                   <Trash2 className="h-4 w-4" />
                   <span>Delete Review</span>
+                </button>
+                <button
+                  onClick={() => onFlagUser(report.review.user)}
+                  className="px-3 py-2 text-sm rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors flex items-center space-x-2 cursor-pointer"
+                >
+                  <Flag className="h-4 w-4" />
+                  <span>Flag User</span>
                 </button>
                 <button
                   onClick={() => setShowBanModal(true)}
