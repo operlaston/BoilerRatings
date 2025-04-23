@@ -14,6 +14,7 @@ import PrerequisiteForm from "../components/PrerequisiteForm";
 import ReviewTimeForm from "../components/ReviewTimeForm";
 import ManageCourseForm from "../components/ManageCourseForm";
 import EditInstructorForm from "../components/EditInstructorForm";
+import { AdminReports } from "../components/AdminReports";
 
 function EditCourseForm({ courses, setCourses }) {
   const [selectedCourseName, setSelectedCourseName] = useState("");
@@ -489,14 +490,7 @@ export function AdminDashboard({
             title="Report Management"
             onClose={() => setExpandedPanel(null)}
           >
-            <div className="space-y-6">
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-6">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Unresolved Reports
-                </h3>
-                {/* Reports list would go here */}
-              </div>
-            </div>
+            <AdminReports />
           </ExpandedPanel>
         )}
         {expandedPanel === "majors" && (
