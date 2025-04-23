@@ -25,19 +25,82 @@ instructorRouter.put('/:id/courses', async (req, res) => {
     try {
         const course = await Course.findById(courseId)
         const instructor = await Instructor.findById(req.params.id)
+        if(!course) {
+          res.status(404).json({ error: 'Course not found'})
+        }
 
         if (course && instructor) {
+            instructor.courses.push(courseId)
+            await instructor.save()
             course.instructors.push(instructor._id)
             await course.save()
             res.json(course)
         } else {
-            res.status(404).json({ error: 'Instructor or Course not found'})
+            res.status(404).json({ error: 'Instructor not found'})
         }
     } catch (error) {
-        res.status(400).json({error: 'Invalid Data'})
+        res.status(400).json(error)
     }
 })
+instructorRouter.put('/:id/save', async (req, res) => {
+  const {name, gpa, rmp, rmpLink, courses} = req.body
+  try {
+    const instructor = await Instructor.findById(req.params.id);
+    instructor.name = name;
+    instructor.gpa = gpa;
+    instructor.rmp = rmp;
+    instructor.rmpLink = rmpLink;
+    for (let courseId of courses) {
+      const course = await Course.findById(courseId);
+      if (course && !course.instructors.includes(instructor._id)) {
+        course.instructors.push(instructor._id);
+        await course.save();
+      }
+    }
+    for (let currentCourseId of instructor.courses) {
+      if (!courses.includes(currentCourseId.toString())) {
+        const course = await Course.findById(currentCourseId);
+        if (course) {
+          // Remove instructor from the course's instructors array
+          course.instructors = course.instructors.filter(id => !id.equals(instructor._id));
+          await course.save();
+        }
+      }
+    }
+    instructor.courses = courses;
+    await instructor.save();
+    res.status(200).json(instructor)
+  } catch (error) {
+    res.status(400).json(error)
+    console.log("Error: ", error)
+  }
+})
+instructorRouter.patch('/:id/remove-from-courses', async (req, res) => {
+  try {
+    const instructorId = req.params.id;
 
+    // Optional: check if the instructor exists
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructor) {
+      return res.status(404).json({ error: 'Instructor not found' });
+    }
+
+    // Remove the instructor from all courses
+    await Course.updateMany(
+      { instructors: instructorId },
+      { $pull: { instructors: instructorId } }
+    );
+
+    // Optional: clear the instructor's courses array too
+    instructor.courses = [];
+    await instructor.save();
+
+    res.json({ message: 'Instructor removed from all courses.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 // Edit instructors and also update courses 
 instructorRouter.patch('/:id/add-to-all-courses', async (req, res) => {
     const instructorId = req.params.id;
@@ -144,11 +207,12 @@ instructorRouter.put('/difficulty/course/:id', async (req, res) => {
 //Gets all the instructors from the db
 instructorRouter.get('/', async (req, res) => {
   try {
-    const instrucors = await Instructor.find({})
+    const instrucors = await Instructor.find({}).populate("courses")
     return res.status(201).json(instrucors)
   } catch (error) {
     return res.status(400).json({error: "Bad request"})
   }
 })
+
 
 module.exports = instructorRouter

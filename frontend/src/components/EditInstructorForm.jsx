@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
-import { getInstructors } from "../services/instructor.service";
+import { getInstructors, saveInstructor } from "../services/instructor.service";
+import { getCourseByName } from "../services/course.service";
 
 /**
  * EditInstructorForm
@@ -38,13 +39,7 @@ const EditInstructorForm = (instructors) => {
 
   const parseCourses = (input) =>
     input
-      .split(";")
-      .map((group) =>
-        group
-          .split(",")
-          .map((c) => c.trim())
-          .filter(Boolean)
-      )
+      .split(",")
       .filter((group) => group.length);
 
   const isDisabled =
@@ -81,16 +76,28 @@ const EditInstructorForm = (instructors) => {
       gpa: instructorData.gpa?.toString() || "",
       rmp: instructorData.rmp?.toString() || "",
       rmpLink: instructorData.rmpLink || "",
-      coursesRaw: instructorData.courses?.map((c) => c.name).join(", ") || "",
+      coursesRaw: instructorData.courses?.map((c) => c.number).join(", ") || "",
     });
     // also prefill delete input with instructor name for convenience
     setInstructorToDelete(instructorData.name || "");
   }, [instructorData]);
-
-  const handleSubmit = (e) => {
+  console.log("Instructor Data", instructorData)
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (isDisabled) return;
-
+    const courses = parseCourses(formData.coursesRaw).map(course =>
+      course.replace(/\s+/g, '').toLowerCase()
+    );
+    const courseIds = (
+      await Promise.all(
+        courses.map(async (courseName) => {
+          const course = await getCourseByName(courseName);
+          return course?.id || null;
+        })
+      )
+    ).filter(Boolean);
+    console.log(courses)
+    console.log(courseIds)
     const instructor = {
       name: formData.name.trim(),
       gpa: Number(formData.gpa),
@@ -99,6 +106,7 @@ const EditInstructorForm = (instructors) => {
       courses: parseCourses(formData.coursesRaw),
     };
 
+    saveInstructor(instructorData.id, instructor.name, instructor.gpa, instructor.rmp, instructor.rmpLink, courseIds)
     console.log("[MOCK] Save instructor:", instructor);
     setInstructorData(null);
     setFormData({ name: "", gpa: "", rmp: "", rmpLink: "", coursesRaw: "" });
