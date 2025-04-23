@@ -12,6 +12,7 @@ import {
   Trash2,
   Flag,
   CheckCircle,
+  Ban,
 } from "lucide-react";
 import {
   addReview,
@@ -369,6 +370,12 @@ const ReviewPage = ({
     setReportingReview(null);
   };
 
+  const handleBanUser = (userId) => {
+    // Implement flag user logic here
+    console.log("Flag user with ID:", userId);
+  }
+
+
   return (
     <div className="min-h-screen">
       {/* Success message for reports */}
@@ -553,6 +560,16 @@ const ReviewPage = ({
                       >
                         <Flag className="w-5 h-5" />
                         <span className="sr-only">Report</span>
+                      </button>
+                    )}
+                    {currentUser?.id && currentUser?.admin === true && (
+                      <button
+                        onClick={() => handleBanUser(review.user)}
+                        className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
+                        title="Ban This Guy"
+                      >
+                        <Ban className="w-5 h-5" />
+                        <span className="sr-only">Ban This Guy</span>
                       </button>
                     )}
                     {currentUser?.id && review.user === currentUser.id && (

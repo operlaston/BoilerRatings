@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   X,
   Users,
@@ -14,6 +14,9 @@ import PrerequisiteForm from "../components/PrerequisiteForm";
 import ReviewTimeForm from "../components/ReviewTimeForm";
 import ManageCourseForm from "../components/ManageCourseForm";
 import EditInstructorForm from "../components/EditInstructorForm";
+import { addInstructor, getInstructors } from "../services/instructor.service";
+
+
 import { AdminReports } from "../components/AdminReports";
 
 function EditCourseForm({ courses, setCourses }) {
@@ -296,6 +299,37 @@ export function AdminDashboard({
   courses,
   setCourses,
 }) {
+const [instructorName, setInstructorName] = useState('');
+const [instructorGPA, setInstructorGPA] = useState('');
+const [instructorRMP, setInstructorRMP] = useState('');
+const [instructorRMPLink, setInstructorRMPLink] = useState('');
+
+const handleAddInstructor = (e) => {
+  e.preventDefault();
+
+  const newInstructor = {
+    name: instructorName,
+    gpa: parseFloat(instructorGPA),
+    rmp: parseFloat(instructorRMP),
+    rmpLink: instructorRMPLink
+  };
+
+  console.log("Submitting instructor:", newInstructor);
+  try {
+    addInstructor(instructorName, instructorGPA, instructorRMP, instructorRMPLink)
+  } catch (error) {
+    console.log("Error", error)
+  }
+}
+const [instructorData, setInstructorData] = useState(null);
+useEffect(() => {
+    const fetchInstructors = async () => {
+      const instructors = await getInstructors();
+      setInstructorData(instructors); // assuming instructors is the data you want to set
+    };
+  
+    fetchInstructors();
+  }, []);
   const [expandedPanel, setExpandedPanel] = useState("");
   const mockData = {
     instructors: 42,
@@ -411,6 +445,8 @@ export function AdminDashboard({
                     </label>
                     <input
                       type="text"
+                      value={instructorName}
+                      onChange={(e) => setInstructorName(e.target.value)}
                       id="instructorName"
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Enter instructor name"
@@ -427,6 +463,8 @@ export function AdminDashboard({
                       min="0"
                       max="4"
                       step="0.1"
+                      value={instructorGPA}
+                      onChange={(e) => setInstructorGPA(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Enter GPA (0-4)"
                     />
@@ -442,6 +480,8 @@ export function AdminDashboard({
                       min="0"
                       max="5"
                       step="0.1"
+                      value={instructorRMP}
+                      onChange={(e) => setInstructorRMP(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Enter RMP rating (0-5)"
                     />
@@ -454,6 +494,8 @@ export function AdminDashboard({
                     <input
                       type="url"
                       id="instructorRMPLink"
+                      value={instructorRMPLink}
+                      onChange={(e) => setInstructorRMPLink(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white"
                       placeholder="Enter RMP profile URL"
                     />
@@ -468,6 +510,7 @@ export function AdminDashboard({
                     </button>
                     <button
                       type="submit"
+                      onClick={handleAddInstructor}
                       className="px-4 py-2 bg-indigo-600 rounded-md text-white hover:bg-indigo-700 transition-colors"
                     >
                       Add Instructor
@@ -480,7 +523,7 @@ export function AdminDashboard({
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
                   Edit / Delete Instructor
                 </h3>
-                <EditInstructorForm />
+                <EditInstructorForm instructors={instructorData}/>
               </div>
             </div>
           </ExpandedPanel>

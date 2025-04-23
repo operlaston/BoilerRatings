@@ -4,12 +4,12 @@ const Course = require('../models/course');
 const Review = require('../models/review');
 
 instructorRouter.post('/', async (req, res) =>{
-    const {name} = req.body;
+    const {name, gpa, rmp, rmpLink} = req.body;
     const instructor = new Instructor({
         name: name,
-        gpa: 0,
-        rmp: 0,
-        rmpLink: "",
+        gpa: gpa,
+        rmp: rmp,
+        rmpLink: rmpLink,
         courses: []
     })
     try {
@@ -139,6 +139,15 @@ instructorRouter.put('/difficulty/course/:id', async (req, res) => {
   } catch (err) {
     console.log(err)
     return res.status(400).json({error: "Bad Request"})
+  }
+})
+//Gets all the instructors from the db
+instructorRouter.get('/', async (req, res) => {
+  try {
+    const instrucors = await Instructor.find({})
+    return res.status(201).json(instrucors)
+  } catch (error) {
+    return res.status(400).json({error: "Bad request"})
   }
 })
 
