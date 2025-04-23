@@ -30,6 +30,10 @@ const reviewSchema = new mongoose.Schema({
   hidden: {
       type: Boolean,
       default: false
+  },
+  isResolved: {
+    type: Boolean,
+    default: false
   }
 });
 

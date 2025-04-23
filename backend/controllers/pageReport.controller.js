@@ -38,8 +38,7 @@ pageReportRouter.patch('/', async (req, res) => {
         await pageReport.updateMany({}, 
             {
                 $set: {
-                    user: '67e9851ec6738eb634941cdf',
-                    createdAt: new Date()
+                    isResolved: false
                 }
             })
         res.status(200).json("Added")

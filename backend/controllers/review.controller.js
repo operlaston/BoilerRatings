@@ -224,32 +224,44 @@ reviewRouter.delete('/reports/:id', async (req, res) => {
   try {
     const reportId = req.params.id;
 
-    // Find the report before deleting
+    // Find the report
     const report = await Report.findById(reportId);
     if (!report) {
       return res.status(404).json({ error: "Report not found" });
     }
 
+    // Mark the report as resolved
+    report.isResolved = true;
+    await report.save();
+
     const reviewId = report.review;
 
-    await Report.findByIdAndDelete(reportId);
-
     if (reviewId) {
-      const review = await Review.findById(reviewId);
+      const review = await Review.findById(reviewId).populate('reports');
       if (review) {
-        review.reports = review.reports.filter(
-          rId => rId.toString() !== reportId
-        );
+        // Remove this report's ID from the review's reports array
+        review.reports = review.reports
+          .filter(r => !r._id.equals(reportId))
+          .map(r => r._id); // ensure we keep only IDs in the array
 
-        if (review.reports.length < 3) {
+        // Count how many unresolved reports are left
+        const unresolvedReports = review.reports.filter(r => !r.isResolved);
+
+        // If fewer than 3 unresolved reports, unhide the review
+        if (unresolvedReports.length < 3) {
           review.hidden = false;
+        }
+
+        // If no unresolved reports, mark the review as resolved
+        if (unresolvedReports.length === 0) {
+          review.isResolved = true;
         }
 
         await review.save();
       }
     }
 
-    res.status(200).json("Deleted and updated review");
+    res.status(200).json("Report marked as resolved and review updated");
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Server error" });
