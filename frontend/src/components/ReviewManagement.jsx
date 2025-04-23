@@ -7,7 +7,7 @@ function ReviewItem({ review, onDelete }) {
     <div className="bg-gray-700 rounded-md p-4 mb-2 flex items-center justify-between">
       <div>
         <p className="text-white font-semibold">{review.course?.name || 'Unknown Course'}</p>
-        <p className="text-gray-400">{review.comment.substring(0, 50)}...</p>
+        <p className="text-gray-400">{review.reviewContent.substring(0, 50)}...</p>
         <small className="text-gray-500">By: {review.user?.username || 'Anonymous'}</small>
       </div>
       <button onClick={() => onDelete(review.id)} className="text-red-500 hover:text-red-400">
