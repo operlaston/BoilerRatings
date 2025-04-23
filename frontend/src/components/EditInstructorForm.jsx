@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
+import { getInstructors } from "../services/instructor.service";
 
 /**
  * EditInstructorForm
@@ -14,11 +15,14 @@ import { IoMdClose } from "react-icons/io";
  * 6. All network operations are mocked with console.log calls.
  */
 
-const EditInstructorForm = () => {
+ 
+
+const EditInstructorForm = (instructors) => {
   const [searchName, setSearchName] = useState("");
+  const [instructorList, setInstructorList] = useState(instructors)
   const [instructorData, setInstructorData] = useState(null);
   const [error, setError] = useState("");
-
+  console.log("InstructorList", instructorList)
   // editable form values
   const [formData, setFormData] = useState({
     name: "",
@@ -52,23 +56,18 @@ const EditInstructorForm = () => {
 
   const handleFindInstructor = async () => {
     setError("");
-    setInstructorData(null);
 
-    /* TODO: replace with real API call */
     try {
-      const tempInstructorData = {
-        name: "John Doe",
-        gpa: 3.5,
-        rmp: 4.2,
-        rmpLink: "https://www.ratemyprofessors.com/ShowRatings.jsp?tid=123456",
-        courses: [
-          { _id: "1", name: "CS 101" },
-          { _id: "2", name: "CS 102" },
-        ],
-      };
-      if (searchName.trim().toLowerCase() !== "john doe")
-        throw new Error("Instructor not found (mock)");
-      setInstructorData(tempInstructorData);
+      const match = instructorList.instructors.find(
+        (instructor) =>
+          instructor.name.toLowerCase().trim() === searchName.toLowerCase().trim()
+      );
+  
+      if (!match) {
+        throw new Error("Instructor not found");
+      }
+  
+      setInstructorData(match);
     } catch (err) {
       setError(err.message || "Failed to fetch instructor");
     }

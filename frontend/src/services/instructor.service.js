@@ -8,5 +8,13 @@ const calculateDifficulty = async (instructorId, courseId) => {
     })
     return res.data
 }
+const addInstructor = async (name, gpa, rmp, rmpLink) => {
+    const res = await axios.post(`${baseurl}/api/instructors/`, {name, gpa, rmp, rmpLink})
+    return res.data
+}
+const getInstructors = async () => {
+    const res = await axios.get(`${baseurl}/api/instructors`);
+    return res.data
+}
 
-export { calculateDifficulty }
+export { calculateDifficulty, addInstructor, getInstructors }
