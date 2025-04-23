@@ -219,7 +219,42 @@ reviewRouter.get("/course", async (req, res) => {
     res.status(400).json({ error: "Bad Request" });
   }
 });
+//Deletes a report
+reviewRouter.delete('/reports/:id', async (req, res) => {
+  try {
+    const reportId = req.params.id;
 
+    // Find the report before deleting
+    const report = await Report.findById(reportId);
+    if (!report) {
+      return res.status(404).json({ error: "Report not found" });
+    }
+
+    const reviewId = report.review;
+
+    await Report.findByIdAndDelete(reportId);
+
+    if (reviewId) {
+      const review = await Review.findById(reviewId);
+      if (review) {
+        review.reports = review.reports.filter(
+          rId => rId.toString() !== reportId
+        );
+
+        if (review.reports.length < 3) {
+          review.hidden = false;
+        }
+
+        await review.save();
+      }
+    }
+
+    res.status(200).json("Deleted and updated review");
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Server error" });
+  }
+})
 // delete a review
 // client should send a review_id
 reviewRouter.delete("/:id", async (req, res) => {
@@ -393,5 +428,6 @@ reviewRouter.put('/report/:id', async(req, res) => {
         return res.status(400).json({ "error": "bad request" })
     }
 })
+
 
 module.exports = reviewRouter
