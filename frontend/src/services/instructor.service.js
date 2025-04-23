@@ -16,5 +16,9 @@ const getInstructors = async () => {
     const res = await axios.get(`${baseurl}/api/instructors`);
     return res.data
 }
+const saveInstructor = async (id, name, gpa, rmp, rmpLink, courses) => {
+    const res = await axios.put(`${baseurl}/api/instructors/${id}/save`, {name, gpa, rmp, rmpLink, courses})
+    return res.data
+}
 
-export { calculateDifficulty, addInstructor, getInstructors }
+export { calculateDifficulty, addInstructor, getInstructors, saveInstructor }
