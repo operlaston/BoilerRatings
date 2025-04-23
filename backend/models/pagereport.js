@@ -2,7 +2,15 @@ const mongoose = require('mongoose')
 
 const pageReportSchema = new mongoose.Schema({
     page: String,
-    reportContent: String
+    reportContent: String,
+    createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 })
 
 pageReportSchema.set('toJSON', {

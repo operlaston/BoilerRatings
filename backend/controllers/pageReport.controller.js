@@ -2,10 +2,11 @@ const pageReportRouter = require('express').Router()
 const pageReport = require('../models/pagereport')
 /* Saves a page report */
 pageReportRouter.post('/', async (req, res) => {
-    const {page, reportContent} = req.body
+    const {page, reportContent, userId} = req.body
     const report = new pageReport({
         page: page,
-        reportContent: reportContent
+        reportContent: reportContent,
+        user: userId
     })
     try {
         await report.save();
@@ -30,6 +31,21 @@ pageReportRouter.delete('/:id', async (req, res) => {
         res.status(200).json("Deleted")
     } catch (error) {
         res.status(400).json({"error": "Server error"})
+    }
+})
+pageReportRouter.patch('/', async (req, res) => {
+    try {
+        await pageReport.updateMany({}, 
+            {
+                $set: {
+                    user: '67e9851ec6738eb634941cdf',
+                    createdAt: new Date()
+                }
+            })
+        res.status(200).json("Added")
+    } catch (error) {
+        res.status(400).json({"Error": "Server error"})
+        console.log(error)
     }
 })
 
