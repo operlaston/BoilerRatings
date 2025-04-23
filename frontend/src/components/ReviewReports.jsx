@@ -60,12 +60,6 @@ export function ReviewReports() {
   })();
 
 
-  const handleBanUser = (userId) => {
-    console.log('Ban user:', userId.id)
-    //This ban isn't working properly gavin 
-    banUser(userId.id)
-    // Implement ban user logic
-  }
   const handleDeleteReview = ( review ) => {
     console.log('Delete review from author:', review)
     deleteReview(review.id)
@@ -73,7 +67,8 @@ export function ReviewReports() {
   }
   const handleIgnoreReport = (reportId) => {
     console.log('Ignore report:', reportId)
-    //resolveReport(reportId)
+    resolveReport(reportId)
+    //No optomistic update but is functional
     // Implement ignore report logic
   }
   if (reports == MOCK_REPORTS) {
@@ -123,7 +118,6 @@ export function ReviewReports() {
           <ReportCard
             key={report.id}
             report={report}
-            onBanUser={handleBanUser}
             onDeleteReview={handleDeleteReview}
             onIgnoreReport={handleIgnoreReport}
           />
@@ -305,13 +299,6 @@ function ReportCard({
                 >
                   <Trash2 className="h-4 w-4" />
                   <span>Delete Review</span>
-                </button>
-                <button
-                  onClick={() => setShowBanModal(true)}
-                  className="px-3 py-2 text-sm rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors flex items-center space-x-2 cursor-pointer"
-                >
-                  <Ban className="h-4 w-4" />
-                  <span>Ban User</span>
                 </button>
               </div>
             )
