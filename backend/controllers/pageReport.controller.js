@@ -24,4 +24,13 @@ pageReportRouter.get('/', async (req, res) => {
     }
 })
 
+pageReportRouter.delete('/:id', async (req, res) => {
+    try {
+        const pageReportToDelete = await pageReport.findByIdAndDelete(req.params.id)
+        res.status(200).json("Deleted")
+    } catch (error) {
+        res.status(400).json({"error": "Server error"})
+    }
+})
+
 module.exports = pageReportRouter
