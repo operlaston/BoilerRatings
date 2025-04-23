@@ -8,6 +8,7 @@ import {
   Plus,
   PencilLine,
   MessageSquare,
+  Bug
 } from "lucide-react";
 
 import RequirementForm from "../components/RequirementForm";
@@ -366,9 +367,9 @@ useEffect(() => {
             />
             <AdminPanel
               title="Page Issues"
-              description="Manage reported bugs and incorrect information"
+              description="Manage reported bugss"
               icon={
-                <Flag className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                <Bug className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               }
               stat={mockData.reports}
               statLabel="Unresolved Reports"
