@@ -68,8 +68,9 @@ usersRouter.get('/inactive', async (req, res) => {
     for (const user of inactive) {
       await sendEmail.inactiveEmail(
         user.email,
-        "Test Email",
-        "Test Text"
+        "Inactive Account: Boiler Ratings",
+        "Your account has been inactive for over a year. Please log in to reactivate your account. If you do not log in within 30 days, your account will be deleted.\n\n" +
+        "If you have any questions, please contact us at: testadmin@purdue.edu"
       )
     }
     console.log(inactive)
