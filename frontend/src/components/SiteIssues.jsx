@@ -10,6 +10,7 @@ import {
   X
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { deletePageReport, getReports } from '../services/pagereport.service'
 
 const MOCK_REPORTS = [
   {
@@ -26,7 +27,18 @@ const MOCK_REPORTS = [
 
 export function SiteIssues() {
   const [reports, setReports] = useState(MOCK_REPORTS)
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const data = await getReports()
+        setReports(data)
+      } catch (error) {
+        console.error('Error fetching reports:', error)
+      }
+    }
 
+    fetchReports()
+  }, [])
   const sortedReports = (() => {
     let unresolvedReports = reports
       .filter((r) => !r.isResolved)
@@ -42,6 +54,8 @@ export function SiteIssues() {
 
   const handleIgnoreReport = (reportId) => {
     console.log('Ignore report:', reportId)
+    deletePageReport(reportId)
+    //We should add optimistic updates but rn I want to get everything else working
     // Implement ignore report logic
   }
   return (

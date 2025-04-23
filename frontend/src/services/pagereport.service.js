@@ -12,9 +12,9 @@ const getReports = async () => {
     return response.data
 }
 
-const deleteReport = async(id) => {
+const deletePageReport = async(id) => {
     const response = await axios.delete(`${baseurl}/api/pagereports/${id}`)
     return response.data
 }
 
-export { sendReport, getReports, deleteReport }
+export { sendReport, getReports, deletePageReport }

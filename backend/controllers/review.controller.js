@@ -18,14 +18,22 @@ reviewRouter.get('/', async (req, res) => {
   }
 });
 
-//This route just gets every review that has a report
+//This route just gets every report
 reviewRouter.get('/reports', async(req,res) => {
   try {
-    const reviewsWithReports = await Review.find({ reports: { $ne: [] } })
-    .populate("reports")
-    return res.status(201).json(reviewsWithReports)
+    const reports = await Report.find({})
+    .populate({
+      path: "review",
+      populate: {
+        path: "user",
+        select: "username" // only populate the name field of the user
+      }
+    });
+    res.status(201).json(reports)
   } catch (error) {
-    return res.status(400).json({"error": "bad request"})
+    console.log(error)
+    res.status(400).json({"error": "bad request"})
+    
   }
 })
 
@@ -284,7 +292,7 @@ reviewRouter.delete("/:id", async (req, res) => {
     await Course.findByIdAndUpdate(r.course, {
       $pull: {reviews: r.id}
     })
-    await Review.findOneAndDelete(r);
+    await Review.findByIdAndDelete(r.id);
     res.status(200).json({ message: "review successfully deleted" });
     return;
   } catch (err) {

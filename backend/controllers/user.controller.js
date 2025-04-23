@@ -4,6 +4,7 @@ const User = require('../models/user')
 const Major = require('../models/major')
 const Review = require('../models/review')
 const Course = require('../models/course')
+const Report = require('../models/report')
 const sendEmail = require('../utils/email')
 const { findById, findByIdAndUpdate } = require('../models/course')
 const {to} = require('await-to-js')
@@ -257,9 +258,39 @@ usersRouter.post('/ban/:id', async (req, res) => {
         await Review.findByIdAndDelete(rev._id);
       }
     }
+    const userReports = await Report.find({ user: userId });
+
+    for await (const report of userReports) {
+      const review = await Review.findById(report.review).populate("reports");
+      if (review) {
+        // Remove report reference from the review
+        review.reports = review.reports
+          .filter(r => !r._id.equals(report._id))
+          .map(r => r._id); // keep only IDs
+
+        const unresolved = await Report.find({
+          _id: { $in: review.reports },
+          isResolved: false
+        });
+
+        if (unresolved.length < 3) {
+          review.hidden = false;
+        }
+
+        if (unresolved.length === 0) {
+          review.isResolved = true;
+        }
+
+        await review.save();
+      }
+
+      // Delete the report
+      await Report.findByIdAndDelete(report._id);
+    }
     return res.status(200).json({message: "User successfully banned"})
   }
   catch (err) {
+    console.log(err)
     return res.status(401).json({error: "Bad Request"})
   }
 })

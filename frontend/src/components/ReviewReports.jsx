@@ -11,6 +11,8 @@ import {
   X
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { banUser } from '../services/user.service'
+import { deleteReview, resolveReport, getReports } from '../services/review.service'
 
 const MOCK_REPORTS = [
   {
@@ -32,7 +34,19 @@ const MOCK_REPORTS = [
 
 export function ReviewReports() {
   const [reports, setReports] = useState(MOCK_REPORTS)
-
+    useEffect(() => {
+      const fetchReports = async () => {
+        try {
+          const data = await getReports()
+          setReports(data)
+        } catch (error) {
+          console.error('Error fetching reports:', error)
+        }
+      }
+  
+      fetchReports()
+    }, [])
+    console.log("reports", reports)
   const sortedReports = (() => {
     let unresolvedReports = reports
       .filter((r) => !r.isResolved)
@@ -47,16 +61,23 @@ export function ReviewReports() {
 
 
   const handleBanUser = (userId) => {
-    console.log('Ban user:', userId)
+    console.log('Ban user:', userId.id)
+    //This ban isn't working properly gavin 
+    banUser(userId.id)
     // Implement ban user logic
   }
   const handleDeleteReview = ( review ) => {
-    console.log('Delete review from author:', review.author)
+    console.log('Delete review from author:', review)
+    deleteReview(review.id)
     // Implement delete review logic
   }
   const handleIgnoreReport = (reportId) => {
     console.log('Ignore report:', reportId)
+    //resolveReport(reportId)
     // Implement ignore report logic
+  }
+  if (reports == MOCK_REPORTS) {
+    return <div>Loading</div>
   }
   return (
     <div className="space-y-6">
@@ -247,14 +268,14 @@ function ReportCard({
                 <div className="h-4 w-4">
                   <img
                     src={
-                      `https://api.dicebear.com/9.x/identicon/svg?seed=` + report.review.author
+                      `https://api.dicebear.com/9.x/identicon/svg?seed=` + report.review.user
                     }
                     alt="pfp-image"
                     className="rounded-xl"
                   />
                 </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {report.review.author}
+                  {report.review.user.username}
                 </span>
               </div>
               <div className="flex items-center space-x-2">
@@ -265,7 +286,7 @@ function ReportCard({
               </div>
             </div>
             <p className="text-gray-600 dark:text-gray-300">
-              {report.review.content}
+              {report.review.reviewContent}
             </p>
           </div>
           {
@@ -311,9 +332,9 @@ function ReportCard({
       <ConfirmationModal
         isOpen={showBanModal}
         onClose={() => setShowBanModal(false)}
-        onConfirm={() => onBanUser(report.review.author)}
+        onConfirm={() => onBanUser(report.review.user)}
         title="Ban User"
-        message={`Are you sure you want to ban ${report.review.author}? This will prevent them from submitting new reviews.`}
+        message={`Are you sure you want to ban ${report.review.user.username}? This will prevent them from submitting new reviews.`}
         confirmText="Ban User"
         variant="ban"
       />

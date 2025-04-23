@@ -57,5 +57,9 @@ const resolveReport = async (id) => {
   const response = await axios.delete(`${baseurl}/api/reviews/reports/${id}`)
   return response.data
 }
+const getReports = async () => {
+  const response = await axios.get(`${baseurl}/api/reviews/reports`)
+  return response.data
+}
 
-export { getReviews, getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview, deleteReport };
+export { getReviews, getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview, resolveReport, getReports };
