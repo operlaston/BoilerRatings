@@ -19,6 +19,7 @@ import { addInstructor, getInstructors } from "../services/instructor.service";
 import { updateCourse, getCourses } from "../services/course.service";
 
 import { ReviewReports } from "../components/ReviewReports";
+import { SiteIssues } from "../components/SiteIssues";
 import ReviewManagement from "../components/ReviewManagement";
 
 function EditCourseForm({ courses, setCourses }) {
@@ -354,7 +355,7 @@ useEffect(() => {
               onExpand={() => setExpandedPanel("instructors")}
             />
             <AdminPanel
-              title="Reports"
+              title="Review Reports"
               description="Handle user reports and issues"
               icon={
                 <Flag className="h-5 w-5 text-gray-600 dark:text-gray-300" />
@@ -362,6 +363,16 @@ useEffect(() => {
               stat={mockData.reports}
               statLabel="Unresolved Reports"
               onExpand={() => setExpandedPanel("reports")}
+            />
+            <AdminPanel
+              title="Page Issues"
+              description="Manage reported bugs and incorrect information"
+              icon={
+                <Flag className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              }
+              stat={mockData.reports}
+              statLabel="Unresolved Reports"
+              onExpand={() => setExpandedPanel("issues")}
             />
             <AdminPanel
               title="Major Management"
@@ -525,12 +536,21 @@ useEffect(() => {
         )}
         {expandedPanel === "reports" && (
           <ExpandedPanel
-            title="Report Management"
+            title="Review Reports"
             onClose={() => setExpandedPanel(null)}
           >
             <ReviewReports />
           </ExpandedPanel>
         )}
+        {expandedPanel === "issues" && (
+          <ExpandedPanel
+            title="Site Issues"
+            onClose={() => setExpandedPanel(null)}
+          >
+            <SiteIssues />
+          </ExpandedPanel>
+        )
+        }
         {expandedPanel === "majors" && (
           <ExpandedPanel
             title="Major Management"

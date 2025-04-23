@@ -940,7 +940,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         className="relative grid gap-4 w-full bg-white dark:bg-gray-900 py-6 pr-20"
         style={{ gridTemplateColumns: 'repeat(16, minmax(0, 1fr))' }}
       >
-        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-2/5 w-1/2 ml-4 bg-gray-800/50 rounded border border-gray-200 dark:border-gray-700 ">
+        <div className="col-span-1 grid-rows-1 flex flex-col items-center pt-3 h-2/5 w-1/2 ml-6">
           <button
             className="p-2 cursor-pointer"
             onClick={handleCreatePDF}
