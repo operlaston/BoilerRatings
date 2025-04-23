@@ -7,6 +7,7 @@ const Review = require('../models/review')
 const Major = require('../models/major')
 const Course = require('../models/course')
 const User = require('../models/user')
+const PageReport = require('../models/pagereport')
 const Requirement = require('../models/requirement')
 
 const api = supertest(app)
@@ -85,6 +86,11 @@ const newRequirement = {
 const newMajor = {
   name: 'testmajor',
   requirements: []
+}
+
+const newInstructor = {
+  name: 'testinstructor',
+  courses: []
 }
 
 beforeEach(async () => {
@@ -537,10 +543,119 @@ test('Reviews of a banned user are deleted', async () => {
     .get(`/api/users/${userId}`)
     .expect(200)
 
-  console.log(userRes.body)
   assert(userRes.body.banned)
   assert(userRes.body.reviews.length == 0);
   
+})
+test('a page report can be added', async() => {
+  const initialReports = await PageReport.find({})
+
+  const newReport = {
+    page: "Test Page",
+    reportContent: "Test report"
+  }
+  await api
+    .post('/api/pageReports')
+    .send(newReport)
+    .expect(200)
+  
+  const reportsAfter = await PageReport.find({})
+  assert.strictEqual(reportsAfter.length, initialReports.length + 1)
+  assert(reportsAfter.map(r => r.page).includes('Test Page'))
+})
+
+test('page reports can be fetched', async() => {
+  const newReport = new PageReport({
+    page: 'Fetch Test Page',
+    reportContent: 'Report test.'
+  })
+  await newReport.save()
+  const res = await api
+    .get('/api/pageReports')
+    .expect(201)
+
+  const pages = res.body.map(r => r.page)
+  assert(pages.includes('Fetch Test Page'))
+})
+
+test('instructor difficulty can be correctly calculated', async() => {
+  var userRes = await api
+    .post('/api/users/test/add')
+    .send(newUser)
+    .expect(201)
+
+  const userId = userRes.body.id;
+
+  var res = await api
+    .post('/api/courses')
+    .send(newCourse)
+    .expect(201)
+  const course = res.body
+
+  res = await api  
+    .post('/api/instructors')
+    .send(newInstructor)
+    .expect(201)
+  const instructor = res.body
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(400)
+  
+  await Course.findByIdAndUpdate(course.id, { $push: {instructors: instructor.id}})
+  
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+  
+  assert(res.body == -1)
+
+  var review = newReview
+  review.instructor = instructor.id
+  review.difficulty = 5
+
+  res = await api
+    .post(`/api/reviews`)
+    .send({review: review, course: course.id, userId: userId})
+    .expect(201)
+
+  const review1Id = res.body.id
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+  
+  assert(res.body == 5)
+
+  review.difficulty = 3;
+
+  res = await api
+    .post(`/api/reviews`)
+    .send({review: review, course: course.id, userId: userId})
+    .expect(201)
+
+  const review2Id = res.body.id
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+
+  assert(res.body == 4)
+
+  await api
+    .delete(`/api/reviews/${review1Id}`)
+    .expect(200)
+
+  res = await api
+    .put(`/api/instructors/difficulty/course/${instructor.id}`)
+    .send({courseId: course.id})
+    .expect(200)
+
+  assert(res.body == 3)
 })
 
 after(async () => {

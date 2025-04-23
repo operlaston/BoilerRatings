@@ -12,6 +12,7 @@ import { Icon } from "@iconify/react";
 import { useState, useEffect } from "react";
 import { favoriteCourse } from "../services/course.service";
 import { isCourseFavorited } from "../services/user.service";
+import InstructorCoursePanel from "../components/InstructorCoursePanel";
 
 const COURSE_DATA = {
   number: "CS 180",
@@ -26,10 +27,11 @@ const COURSE_DATA = {
   },
 };
 
-function CoursePanel({ course, user, setIsPopupVisible }) {
+function CoursePanel({ course, user, setIsPopupVisible, refreshCourses }) {
   const [courseData, setCourseData] = useState(COURSE_DATA);
   const [favorited, setFavorited] = useState(false);
   const [canFavorite, setCanFavorite] = useState(false);
+
   useEffect(() => {
     const fetchFavorite = async () => {
       setFavorited(await isCourseFavorited(user.id, course.id));
@@ -147,6 +149,12 @@ function CoursePanel({ course, user, setIsPopupVisible }) {
                   {courseData.creditHours} Credits
                 </span>
               </div>
+            </div>
+            <div>
+            <InstructorCoursePanel
+              course={course}
+              refreshCourses={refreshCourses}
+            />
             </div>
           </div>
         </div>

@@ -29,4 +29,14 @@ const updateTimeToReview = async (courseId, newDate) => {
   return res.data
 }
 
+export const updateCourse = async (courseId, updatedData) => {
+  const res = await axios.put(`${baseurl}/api/courses/${courseId}`, updatedData);
+  return res.data;
+};
+
+export const getCourseById = async (id) => {
+  const res = await axios.get(`${baseurl}/api/courses/byid/${id}`);
+  return res.data;
+};
+
 export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview }
