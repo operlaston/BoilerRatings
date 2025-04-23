@@ -2,6 +2,16 @@ import axios from "axios";
 
 const baseurl = "http://localhost:3000";
 
+const getReviews = async () => {
+  try {
+    const response = await axios.get(`${baseurl}/api/reviews`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all reviews:", error);
+    throw error;
+  }
+};
+
 const getReviewsForACourse = async (course) => {
   console.log(course);
   const response = await axios.get(`${baseurl}/api/reviews/course`, course);
@@ -9,13 +19,9 @@ const getReviewsForACourse = async (course) => {
 };
 
 const addReview = async (review, courseId, userId, instructorID) => {
-  // console.log('enjoyment type')
-  // console.log(typeof review.enjoyment)
-  // console.log('difficulty type')
-  // console.log(typeof review.difficulty)
   const response = await axios.post(`${baseurl}/api/reviews`, {
     review,
-    course: courseId, //this was the issue, it was course by itself before,
+    course: courseId,
     userId
   });
   return response.data;
@@ -29,7 +35,7 @@ const editReview = async (reviewId, updatedReview) => {
 
 const likeReview = async (reviewId, userId) => {
     const response = await axios.put(`${baseurl}/api/reviews/like/${reviewId}`, {userId})
-    return response.data // contains new user and review objects
+    return response.data
 }
 
 const dislikeReview = async (reviewId, userId) => {
@@ -48,4 +54,4 @@ const reportReview = async (reviewId, reportString, reportReason) => {
   return response.data
 }
 
-export { getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview };
+export { getReviews, getReviewsForACourse, addReview, likeReview, dislikeReview, editReview, deleteReview, reportReview };

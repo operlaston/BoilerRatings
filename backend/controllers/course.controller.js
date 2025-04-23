@@ -53,30 +53,6 @@ courseRouter.post('/', async (req,res) => {
     }
 })
 
-courseRouter.get('/:courseNumber', async (req,res) => {
-    let num = req.params.courseNumber
-    num = num.toUpperCase();
-    num = num.replace(/([A-Z]+)([0-9]+)/, '$1 $2');
-    //Number is now in form like such that cs180 -> CS 180
-    try {
-        const course = await Course.findOne({number: num}).populate({
-            path: 'reviews',
-            populate: {
-                path: 'instructor',
-                select: 'name'
-            }
-        })
-        .populate('instructors', 'name')
-        if (!course) {
-            return res.status(404).json({message: "Course Not Found"});
-        }
-        res.status(200).json(course)
-    }
-    catch( error ) {
-        res.status(400).json({error: "Invalid Course Number"})
-    }
-})
-
 // favorite a course
 courseRouter.put('/favorite/:id', async (req,res) => {
     const { userId } = req.body;
@@ -119,45 +95,6 @@ courseRouter.put('/prerequisite/:id', async (req, res) => {
         res.status(200).json(course)
     }
     catch(e) {
-        res.status(500).json({error: 'server error'})
-    }
-})
-
-// delete a course
-courseRouter.delete('/:id', async(req, res) => {
-    // needs to delete the course and all references of it which are in the following objects:
-    // degreeplans/savedCourses/index/_id, 
-    // instructors/courses/index, 
-    // pagereports/page/(string/course number) *I CHANGED MY MIND I'M NOT DELETING THESE BC THEY ARE REPORTS, 
-    // requirements/subrequirements/index/courses/index/(string/course number), 
-    // reviews/course
-
-    // delete from all degree plans
-    try {
-        const course = await Course.findById(req.params.id)
-        if (course === null) {
-            return res.status(404).json({error: 'course not found'})
-        }
-        await DegreePlan.updateMany(
-            {"savedCourses.course": course._id}, 
-            {$pull: {"savedCourses": {"course": course._id}}}
-        )
-        await Instructor.updateMany({ 
-            "courses": {
-                $elemMatch: {$eq: course._id}
-            },
-        }, {$pull: {"courses": course._id}})
-        await Requirement.updateMany({
-                "subrequirements.courses": course.number
-            },
-            { $pull: { "subrequirements.$[].courses": course.number } }
-        )
-        await Review.deleteMany({ "course": course._id })
-        await Course.findByIdAndDelete(req.params.id)
-        res.status(204).end()
-    }
-    catch(e) {
-        console.error(e)
         res.status(500).json({error: 'server error'})
     }
 })
@@ -259,6 +196,69 @@ courseRouter.put('/:id', async (req, res) => {
       });
     }
   });
+
+  // delete a course
+    courseRouter.delete('/:id', async(req, res) => {
+        // needs to delete the course and all references of it which are in the following objects:
+        // degreeplans/savedCourses/index/_id, 
+        // instructors/courses/index, 
+        // pagereports/page/(string/course number) *I CHANGED MY MIND I'M NOT DELETING THESE BC THEY ARE REPORTS, 
+        // requirements/subrequirements/index/courses/index/(string/course number), 
+        // reviews/course
+
+        // delete from all degree plans
+        try {
+            const course = await Course.findById(req.params.id)
+            if (course === null) {
+                return res.status(404).json({error: 'course not found'})
+            }
+            await DegreePlan.updateMany(
+                {"savedCourses.course": course._id}, 
+                {$pull: {"savedCourses": {"course": course._id}}}
+            )
+            await Instructor.updateMany({ 
+                "courses": {
+                    $elemMatch: {$eq: course._id}
+                },
+            }, {$pull: {"courses": course._id}})
+            await Requirement.updateMany({
+                    "subrequirements.courses": course.number
+                },
+                { $pull: { "subrequirements.$[].courses": course.number } }
+            )
+            await Review.deleteMany({ "course": course._id })
+            await Course.findByIdAndDelete(req.params.id)
+            res.status(204).end()
+        }
+        catch(e) {
+            console.error(e)
+            res.status(500).json({error: 'server error'})
+        }
+    })
+
+    courseRouter.get('/:courseNumber', async (req,res) => {
+        let num = req.params.courseNumber
+        num = num.toUpperCase();
+        num = num.replace(/([A-Z]+)([0-9]+)/, '$1 $2');
+        //Number is now in form like such that cs180 -> CS 180
+        try {
+            const course = await Course.findOne({number: num}).populate({
+                path: 'reviews',
+                populate: {
+                    path: 'instructor',
+                    select: 'name'
+                }
+            })
+            .populate('instructors', 'name')
+            if (!course) {
+                return res.status(404).json({message: "Course Not Found"});
+            }
+            res.status(200).json(course)
+        }
+        catch( error ) {
+            res.status(400).json({error: "Invalid Course Number"})
+        }
+    })
 
 
 // courseRouter.post('/groupadd', async (req, res) => {

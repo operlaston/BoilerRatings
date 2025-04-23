@@ -7,6 +7,7 @@ import {
   ArrowBigLeftDash,
   Plus,
   PencilLine,
+  MessageSquare,
 } from "lucide-react";
 
 import RequirementForm from "../components/RequirementForm";
@@ -15,9 +16,10 @@ import ReviewTimeForm from "../components/ReviewTimeForm";
 import ManageCourseForm from "../components/ManageCourseForm";
 import EditInstructorForm from "../components/EditInstructorForm";
 import { addInstructor, getInstructors } from "../services/instructor.service";
-
+import { updateCourse, getCourses } from "../services/course.service";
 
 import { AdminReports } from "../components/AdminReports";
+import ReviewManagement from "../components/ReviewManagement";
 
 function EditCourseForm({ courses, setCourses }) {
   const [selectedCourseName, setSelectedCourseName] = useState("");
@@ -35,7 +37,7 @@ function EditCourseForm({ courses, setCourses }) {
   const handleCourseChange = (e) => {
     const courseName = e.target.value;
     setSelectedCourseName(courseName);
-    
+
     if (!courseName) {
       setCourseData({
         name: "",
@@ -49,7 +51,7 @@ function EditCourseForm({ courses, setCourses }) {
 
     // Find course in local state by name - JUST LIKE REVIEWTIMEFORM
     const course = courses.find(c => c.name === courseName);
-    
+
     if (course) {
       setCourseData({
         name: course.name,
@@ -95,13 +97,13 @@ function EditCourseForm({ courses, setCourses }) {
     try {
       // Find the full course object to get its ID
       const course = courses.find(c => c.name === selectedCourseName);
-      
-      await updateCourse(course._id, {
+
+      await updateCourse(course.id, {
         ...courseData,
         // Ensure instructors are sent as array of strings/IDs
         instructors: courseData.instructors
       });
-      
+
       setSuccess("Course updated successfully!");
       const updatedCourses = await getCourses();
       setCourses(updatedCourses);
@@ -123,7 +125,7 @@ function EditCourseForm({ courses, setCourses }) {
         >
           <option value="">Choose a Course</option>
           {courses.map(course => (
-            <option key={course._id} value={course.name}>
+            <option key={course.id} value={course.name}>
               {course.name} ({course.number})
             </option>
           ))}
@@ -134,28 +136,23 @@ function EditCourseForm({ courses, setCourses }) {
         <div className="w-full max-w-2xl dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             <div className="space-y-4">
+              {/* Read-only Course Name */}
               <div>
                 <label className="block text-sm font-medium mb-1">Course Name</label>
-                <input
-                  name="name"
-                  value={courseData.name}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                  required
-                />
+                <div className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white">
+                  {courseData.name}
+                </div>
               </div>
 
+              {/* Read-only Course Number */}
               <div>
                 <label className="block text-sm font-medium mb-1">Course Number</label>
-                <input
-                  name="number"
-                  value={courseData.number}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                  required
-                />
+                <div className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white">
+                  {courseData.number}
+                </div>
               </div>
 
+              {/* Editable Description */}
               <div>
                 <label className="block text-sm font-medium mb-1">Description</label>
                 <textarea
@@ -167,19 +164,7 @@ function EditCourseForm({ courses, setCourses }) {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Credit Hours</label>
-                <input
-                  name="creditHours"
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={courseData.creditHours}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-600 rounded-md bg-gray-700 text-white"
-                />
-              </div>
-
+              {/* Instructors Section (remains editable) */}
               <div>
                 <label className="block text-sm font-medium mb-1">Instructors</label>
                 <div className="flex gap-2">
@@ -198,7 +183,7 @@ function EditCourseForm({ courses, setCourses }) {
                     Add
                   </button>
                 </div>
-                
+
                 {courseData.instructors.length > 0 && (
                   <div className="mt-2 space-y-1">
                     {courseData.instructors.map((instructor, index) => (
@@ -218,6 +203,7 @@ function EditCourseForm({ courses, setCourses }) {
               </div>
             </div>
 
+            {/* Error/Success messages and submit button remain the same */}
             {error && <div className="text-red-400">{error}</div>}
             {success && <div className="text-green-400">{success}</div>}
 
@@ -327,7 +313,7 @@ useEffect(() => {
       const instructors = await getInstructors();
       setInstructorData(instructors); // assuming instructors is the data you want to set
     };
-  
+
     fetchInstructors();
   }, []);
   const [expandedPanel, setExpandedPanel] = useState("");
@@ -355,7 +341,7 @@ useEffect(() => {
         <div className="relative">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
             Admin Dashboard
-          </h1>
+            </h1>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <AdminPanel
               title="Manage Instructors"
@@ -425,6 +411,15 @@ useEffect(() => {
               statLabel="Courses available"
               onExpand={() => setExpandedPanel("editCourses")}
             />
+             {/* New AdminPanel for Review Management */}
+             <AdminPanel
+              title="Review Management"
+              description="View and delete user reviews"
+              icon={<MessageSquare className="h-5 w-5 text-gray-600 dark:text-gray-300" />}
+              stat="View"
+              statLabel="Manage Reviews"
+              onExpand={() => setExpandedPanel("reviews")}
+            />
           </div>
         </div>
         {/* Expanded Panels */}
@@ -452,7 +447,7 @@ useEffect(() => {
                       placeholder="Enter instructor name"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="instructorGPA" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       GPA
@@ -469,7 +464,7 @@ useEffect(() => {
                       placeholder="Enter GPA (0-4)"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="instructorRMP" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       RateMyProfessor Rating
@@ -486,7 +481,7 @@ useEffect(() => {
                       placeholder="Enter RMP rating (0-5)"
                     />
                   </div>
-                  
+
                   <div>
                     <label htmlFor="instructorRMPLink" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       RateMyProfessor Link
@@ -500,7 +495,7 @@ useEffect(() => {
                       placeholder="Enter RMP profile URL"
                     />
                   </div>
-                  
+
                   <div className="flex justify-end">
                     <button
                       type="button"
@@ -606,6 +601,15 @@ useEffect(() => {
             <div className="space-y-6">
               <EditCourseForm courses={courses} setCourses={setCourses} />
             </div>
+          </ExpandedPanel>
+        )}
+        {/* New Expanded Panel for Review Management */}
+        {expandedPanel === "reviews" && (
+          <ExpandedPanel
+            title="Review Management"
+            onClose={() => setExpandedPanel(null)}
+          >
+            <ReviewManagement />
           </ExpandedPanel>
         )}
       </div>
