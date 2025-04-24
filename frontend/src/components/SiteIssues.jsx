@@ -54,6 +54,11 @@ export function SiteIssues() {
 
   const handleIgnoreReport = (reportId) => {
     console.log('Ignore report:', reportId)
+    setReports((current) =>
+      current.map((r) =>
+        r.id === reportId ? { ...r, isResolved: true } : r
+      )
+    );
     deletePageReport(reportId)
     //We should add optimistic updates but rn I want to get everything else working
     // Implement ignore report logic
