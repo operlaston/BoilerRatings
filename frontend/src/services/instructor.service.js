@@ -20,5 +20,9 @@ const saveInstructor = async (id, name, gpa, rmp, rmpLink, courses) => {
     const res = await axios.put(`${baseurl}/api/instructors/${id}/save`, {name, gpa, rmp, rmpLink, courses})
     return res.data
 }
+const deleteInstructor = async (id) => {
+    const res = await axios.delete(`${baseurl}/api/instructors/${id}`)
+    return res.data
+}
 
-export { calculateDifficulty, addInstructor, getInstructors, saveInstructor }
+export { calculateDifficulty, addInstructor, getInstructors, saveInstructor, deleteInstructor }

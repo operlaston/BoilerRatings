@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { IoMdClose } from "react-icons/io";
-import { getInstructors, saveInstructor } from "../services/instructor.service";
+import {
+  getInstructors,
+  saveInstructor,
+  deleteInstructor,
+} from "../services/instructor.service";
 import { getCourseByName } from "../services/course.service";
 
 /**
@@ -16,14 +20,14 @@ import { getCourseByName } from "../services/course.service";
  * 6. All network operations are mocked with console.log calls.
  */
 
- 
-
 const EditInstructorForm = (instructors) => {
   const [searchName, setSearchName] = useState("");
-  const [instructorList, setInstructorList] = useState(instructors)
+  const [instructorList, setInstructorList] = useState(
+    instructors?.instructors || []
+  );
   const [instructorData, setInstructorData] = useState(null);
   const [error, setError] = useState("");
-  console.log("InstructorList", instructorList)
+  console.log("InstructorList", instructorList);
   // editable form values
   const [formData, setFormData] = useState({
     name: "",
@@ -38,9 +42,7 @@ const EditInstructorForm = (instructors) => {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
 
   const parseCourses = (input) =>
-    input
-      .split(",")
-      .filter((group) => group.length);
+    input.split(",").filter((group) => group.length);
 
   const isDisabled =
     !formData.name.trim() ||
@@ -53,15 +55,16 @@ const EditInstructorForm = (instructors) => {
     setError("");
 
     try {
-      const match = instructorList.instructors.find(
+      const match = instructorList.find(
         (instructor) =>
-          instructor.name.toLowerCase().trim() === searchName.toLowerCase().trim()
+          instructor.name.toLowerCase().trim() ===
+          searchName.toLowerCase().trim()
       );
-  
+
       if (!match) {
         throw new Error("Instructor not found");
       }
-  
+
       setInstructorData(match);
     } catch (err) {
       setError(err.message || "Failed to fetch instructor");
@@ -81,12 +84,19 @@ const EditInstructorForm = (instructors) => {
     // also prefill delete input with instructor name for convenience
     setInstructorToDelete(instructorData.name || "");
   }, [instructorData]);
-  console.log("Instructor Data", instructorData)
+
+  const fetchInstructors = async () => {
+    const instructors = await getInstructors();
+    setInstructorList(instructors); // assuming instructors is the data you want to set
+  };
+
+  console.log("Instructor Data", instructorData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isDisabled) return;
-    const courses = parseCourses(formData.coursesRaw).map(course =>
-      course.replace(/\s+/g, '').toLowerCase()
+    const courses = parseCourses(formData.coursesRaw).map((course) =>
+      course.replace(/\s+/g, "").toLowerCase()
     );
     const courseIds = (
       await Promise.all(
@@ -96,25 +106,41 @@ const EditInstructorForm = (instructors) => {
         })
       )
     ).filter(Boolean);
-    console.log(courses)
-    console.log(courseIds)
+    console.log(courses);
+    console.log(courseIds);
     const instructor = {
+      id: instructorData.id,
       name: formData.name.trim(),
       gpa: Number(formData.gpa),
       rmp: Number(formData.rmp),
       rmpLink: formData.rmpLink.trim(),
       courses: parseCourses(formData.coursesRaw),
     };
+    console.log(
+      "new instructor courses parsed",
+      parseCourses(formData.coursesRaw)
+    );
 
-    saveInstructor(instructorData.id, instructor.name, instructor.gpa, instructor.rmp, instructor.rmpLink, courseIds)
-    console.log("[MOCK] Save instructor:", instructor);
-    setInstructorData(null);
+    await saveInstructor(
+      instructorData.id,
+      instructor.name,
+      instructor.gpa,
+      instructor.rmp,
+      instructor.rmpLink,
+      courseIds
+    );
+    console.log("Save instructor:", instructor);
+    fetchInstructors();
+    console.log("Instructor list:", instructorList);
     setFormData({ name: "", gpa: "", rmp: "", rmpLink: "", coursesRaw: "" });
   };
 
   // Delete instructor
   const handleDeleteInstructor = async () => {
-    console.log(`[MOCK] Would delete instructor: ${instructorToDelete}`);
+    console.log("delete instructor:", instructorData);
+
+    await deleteInstructor(instructorData.id);
+    fetchInstructors();
     setInstructorToDelete("");
     setShowDeletePopup(false);
     setInstructorData(null);

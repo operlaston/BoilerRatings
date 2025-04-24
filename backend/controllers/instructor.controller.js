@@ -75,6 +75,34 @@ instructorRouter.put('/:id/save', async (req, res) => {
     console.log("Error: ", error)
   }
 })
+// Remove instructor from all courses
+instructorRouter.delete('/:id', async (req, res) => {
+  try {
+    const instructorId = req.params.id;
+
+    // Optional: check if the instructor exists
+    const instructor = await Instructor.findById(instructorId);
+    if (!instructor) {
+      return res.status(404).json({ error: 'Instructor not found' });
+    }
+
+    // Remove the instructor from all courses
+    await Course.updateMany(
+      { instructors: instructorId },
+      { $pull: { instructors: instructorId } }
+    );
+
+    // Delete the instructor
+    await Instructor.findByIdAndDelete(instructorId);
+
+    res.json({ message: 'Instructor deleted successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
 instructorRouter.patch('/:id/remove-from-courses', async (req, res) => {
   try {
     const instructorId = req.params.id;
