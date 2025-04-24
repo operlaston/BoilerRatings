@@ -113,6 +113,9 @@ const ReviewPage = ({
 
   const [reason, setReason] = useState("");
   const [flaggedReview, setFlagedReview] = useState(null);
+  const [reviewersById, setReviewersById] = useState({});
+
+
 
   // Filter options
   const semesterOptions = [
@@ -216,6 +219,19 @@ const ReviewPage = ({
         };
       });
   }, [filteredReviews, userMap, majorMap, majorNameMap, currentUser?.isAdmin]);
+  useEffect(() => {
+    const loadReviewers = async () => {
+      const uniqueUserIds = [...new Set(processedReviews.map(r => r.user))];
+      const users = await Promise.all(uniqueUserIds.map(id => getUserById(id)));
+      const lookup = {};
+      users.forEach(user => {
+        lookup[user.id] = user;
+      });
+      setReviewersById(lookup);
+    };
+  
+    loadReviewers();
+  }, [processedReviews]);
 
   useEffect(() => {
     if (!user) {
@@ -434,7 +450,7 @@ const ReviewPage = ({
     // Implement flag user logic
   }
 
-
+  console.log(processedReviews)
   return (
     <div className="min-h-screen">
       {/* Success message for reports */}
@@ -566,7 +582,15 @@ const ReviewPage = ({
                 <div>
                 <h3 className="font-medium text-gray-900 dark:text-white cursor-pointer"
                   onClick={() => (review.username != "[deleted]" && review.username != "Anonymous")? navigate(`/user/${review.username}`) : ""}>
-                  {review.username} {review.majorDisplay} {review.instructor?.name && ` • ${review.instructor.name}`}
+                  {review.username} {review.majorDisplay}
+                  {review.instructor?.name && (
+                  <>
+                  {" • "}{review.instructor.name}
+                  {currentUser?.admin && reviewersById[review.user]?.flag && (
+                  <span className="text-red-600 ml-2">(Flagged: {reviewersById[review.user].flagReason})</span>
+                  )}
+                  </>
+                  )}
                 </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {new Date(review.date).toLocaleDateString()} •{" "}
