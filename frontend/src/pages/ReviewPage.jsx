@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, use } from "react";
 import { useParams } from "react-router-dom";
 import AddReviewForm from "../components/AddReviewForm.jsx";
 import BaseReviewForm from "../components/BaseReviewForm.jsx";
@@ -24,8 +24,63 @@ import {
   getReviewsForACourse,
 } from "../services/review.service.js";
 import { getMajorById, getMajors } from "../services/major.service.js";
-import { getUserById, getUserByUsername } from "../services/user.service.js";
+import { getUserById, getUserByUsername, flagUser } from "../services/user.service.js";
 import { getCourseByName, getCourses } from "../services/course.service.js";
+function ReportFormModal({ isOpen, onClose, onSubmit, reason, setReason }) {
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+  {/* Background overlay click to close */}
+  <div
+    className="absolute inset-0 z-0"
+    onClick={onClose}
+  />
+
+  {/* Modal content */}
+  <div className="relative z-10 bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full">
+    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+      Flag User
+    </h2>
+    <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+      Please enter a reason for flagging this user:
+    </p>
+    <textarea
+      value={reason}
+      onChange={(e) => setReason(e.target.value)}
+      placeholder="Write your reason here..."
+      rows={4}
+      className="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
+    />
+    <div className="mt-6 flex justify-end gap-3">
+      <button
+        onClick={onClose}
+        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+      >
+        Cancel
+      </button>
+      <button
+        onClick={() => {
+          onSubmit();
+          onClose();
+        }}
+        className="px-4 py-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 rounded-lg"
+      >
+        Submit Report
+      </button>
+    </div>
+  </div>
+</div>
+  );
+}
 
 const ReviewPage = ({
   user,
@@ -55,6 +110,9 @@ const ReviewPage = ({
   const [selectedFilter, setSelectedFilter] = useState(null);
   const [filteredReviews, setFilteredReviews] = useState(course.reviews || []);
   const navigate = useNavigate();
+
+  const [reason, setReason] = useState("");
+  const [flaggedReview, setFlagedReview] = useState(null);
 
   // Filter options
   const semesterOptions = [
@@ -369,10 +427,11 @@ const ReviewPage = ({
   const handleCancelReport = () => {
     setReportingReview(null);
   };
-
-  const handleFlagUser = (userId) => {
-    // Implement flag user logic here
-    console.log("Flag user with ID:", userId);
+  const [showFlagModal, setShowFlagModal] = useState(false)
+  const handleFlagUser = (userId, reason) => {
+    console.log('Flag user:', userId, 'with reason:', reason);
+    flagUser(userId, true, reason)
+    // Implement flag user logic
   }
 
 
@@ -491,6 +550,13 @@ const ReviewPage = ({
               <p>All reviews for these filters are currently hidden due to reports</p>
           </div>
           )}
+          <ReportFormModal
+                      isOpen={showFlagModal}
+                      onClose={() => setShowFlagModal(false)}
+                      onSubmit={() => handleFlagUser(flaggedReview.user, reason)}
+                      reason={reason}
+                      setReason={setReason}
+                      />
           {processedReviews.map((review) => (
             <div
               className="group relative p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm hover:shadow-md transition-shadow"
@@ -564,7 +630,9 @@ const ReviewPage = ({
                     )}
                     {currentUser?.id && currentUser?.admin === true && (
                       <button
-                        onClick={() => handleFlagUser(review.user)}
+                        onClick={() => {
+                          setShowFlagModal(true)
+                          setFlagedReview(review)}}
                         className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
                         title="Flag This Guy"
                       >

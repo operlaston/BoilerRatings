@@ -134,7 +134,7 @@ export function ReviewReports() {
     </div>
   )
 }
-export default function ReportFormModal({ isOpen, onClose, onSubmit, reason, setReason }) {
+function ReportFormModal({ isOpen, onClose, onSubmit, reason, setReason }) {
   useEffect(() => {
     const handleEscape = (e) => {
       if (e.key === "Escape") onClose();
