@@ -15,7 +15,8 @@ const calamityRouter = require('./controllers/thegreatcalamity')
 const pageReportRouter = require('./controllers/pageReport.controller')
 const { requestLogger, unknownEndpoint } = require('./utils/middleware')
 const app = express()
-
+const cron = require('node-cron');
+const axios = require('axios');
 // connect to database
 mongoose.connect(config.MONGODB_URI)
   .then(() => {
@@ -39,6 +40,16 @@ app.use('/api/instructors', instructorRouter)
 app.use('/api/requirements', requirementRouter)
 app.use('/api/pagereports', pageReportRouter)
 // app.use('/api/intercontinentalballisticmissile', calamityRouter)
+//5 second testing string */5 * * * * *
+//Normal string 1 0 * * *
+cron.schedule('1 0 * * *', async () => {
+  try {
+    console.log('Running inactive user email task at 12:01 AM');
+    await axios.get('http://localhost:3000/api/users/inactive'); // or your full production URL
+  } catch (err) {
+    console.error('Failed to trigger inactive user route:', err.message);
+  }
+});
 
 app.use(unknownEndpoint)
 
