@@ -28,7 +28,8 @@ majorsRouter.post('/', async (req, res) => {
   })
   try {
     const savedMajor = await major.save()
-    res.status(201).json(savedMajor)
+    const populatedMajor = await Major.findById(savedMajor._id).populate('requirements')
+    res.status(201).json(populatedMajor)
   }
   catch(e) {
     console.error(e)
@@ -45,6 +46,21 @@ majorsRouter.put('/addrequirement/:id', async (req, res) => {
   }
   catch(e) {
     console.error(e)
+    res.status(500).json({error: 'server error'})
+  }
+})
+
+majorsRouter.put('/editname/:id', async (req, res) => {
+  const { newName } = req.body
+  const majorId = req.params.id
+  try {
+    const major = await Major.findByIdAndUpdate(majorId, { name: newName }, {new: true}).populate('requirements')
+    if (major === null) {
+      return res.status(404).json({error: 'not found'})
+    }
+    res.status(200).json(major)
+  }
+  catch(e) {
     res.status(500).json({error: 'server error'})
   }
 })

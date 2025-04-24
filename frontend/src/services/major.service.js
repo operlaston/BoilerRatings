@@ -16,4 +16,18 @@ const addRequirementToMajor = async (newRequirementId, majorId) => {
   return res.data
 }
 
-export { getMajors, getMajorById, addRequirementToMajor }
+const changeMajorName = async (majorId, newName) => {
+  const res = await axios.put(`${baseurl}/api/majors/editname/${majorId}`, {newName})
+  return res.data
+}
+
+const createMajor = async ({name, requirements}) => {
+  const res = await axios.post(`${baseurl}/api/majors`, {name, requirements})
+  return res.data
+}
+
+const deleteMajor = async (majorId) => {
+  await axios.delete(`${baseurl}/api/majors/${majorId}`)
+}
+
+export { getMajors, getMajorById, addRequirementToMajor, changeMajorName, createMajor, deleteMajor }

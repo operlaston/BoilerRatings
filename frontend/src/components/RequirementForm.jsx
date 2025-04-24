@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
 import { createRequirement, deleteRequirement } from "../services/requirement.service"
-import { addRequirementToMajor, getMajors } from "../services/major.service"
+import { addRequirementToMajor, getMajors, changeMajorName, createMajor, deleteMajor } from "../services/major.service"
 
 const RequirementForm = ({majors, setMajors, courses}) => {
   const [selectedMajor, setSelectedMajor] = useState("")
+  const [majorName, setMajorName] = useState("")
   const [requirements, setRequirements] = useState(null)
   const [requirementName, setRequirementName] = useState("")
   const [subrequirements, setSubrequirements] = useState([])
   const [error, setError] = useState("")
+  const [newMajorName, setNewMajorName] = useState("")
 
   const handleMajorChange = (e) => {
     setSelectedMajor(e.target.value)
@@ -16,6 +18,7 @@ const RequirementForm = ({majors, setMajors, courses}) => {
       setError("")
       return;
     }
+    setMajorName("")
     setRequirements(majors.find(major => major.name === e.target.value).requirements)
     setError("")
   }
@@ -69,11 +72,72 @@ const RequirementForm = ({majors, setMajors, courses}) => {
     }
   }
 
+  const handleNameChange = async () => {
+    try {
+      const majorId = majors.find(major => major.name === selectedMajor).id
+      await changeMajorName(majorId, majorName)
+      const newMajors = majors.map(major => major.id === majorId ? {...major, name: majorName} : major)
+      setMajors(newMajors)
+      setMajorName("")
+      setSelectedMajor(majorName)
+    }
+    catch(e) {
+      console.error("an error occurred while trying to change a major's name", e)
+    }
+  }
+
+  const handleCreateMajor = async () => {
+    try {
+      const returnedMajor = await createMajor({name: newMajorName, requirements: []})
+      setMajors([...majors, returnedMajor])
+      setNewMajorName("")
+    }
+    catch(e) {
+      console.error("an error occurred while creating new major")
+    }
+  }
+
+  const handleDeleteMajor = async () => {
+    if (window.confirm("Delete the selected major?")) {
+      const majorId = majors.find(major => major.name === selectedMajor).id
+      try {
+        await deleteMajor(majorId)
+        setMajors(majors.filter(major => major.id !== majorId))
+        setSelectedMajor("")
+        setRequirements(null)
+      }
+      catch(e) {
+        console.error("couldn't delete major", e)
+      }
+    }
+  }
+
   return (
     <div className="flex flex-col items-center gap-6 min-h-screen text-white p-4">
+      <div className="flex flex-col items-center gap-2">
+        <div className="text-lg">Create a new major in the database</div>
+        <div className="text-white flex flex-col
+          dark:bg-gray-800 rounded-lg shadow-sm border border-gray-700 dark:hover:border-gray-600 transition-all py-3 px-4 min-w-80">
+            <input
+              type="text"
+              id="majorName"
+              value={newMajorName}
+              placeholder="New major name"
+              onChange={(e) => {setNewMajorName(e.target.value)}}
+              className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1 w-full mb-4"
+            />
+            <button
+              className="cursor-pointer bg-white text-gray-900 rounded-lg p-[0.35rem] font-semibold"
+              onClick={handleCreateMajor}
+            >
+              Create Major
+            </button>
+        </div>
+      </div>
+      <div className="text-lg">or</div>
       <div className="text-lg">
         <label htmlFor="majors-dropdown">
-          Select a major to change the degree requirements of: &nbsp;
+          Select a major to modify its name or requirements: &nbsp;
         </label>
         <select
           id="majors-dropdown"
@@ -89,7 +153,26 @@ const RequirementForm = ({majors, setMajors, courses}) => {
       </div>
       {requirements === null ?
         "" :
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2"
+        >
+          <div className="text-white flex flex-col
+          dark:bg-gray-800 rounded-lg shadow-sm border border-gray-700 dark:hover:border-gray-600 transition-all py-3 px-4">
+            <div className="text-lg font-bold">Major Name</div>
+            <input
+              type="text"
+              id="majorName"
+              value={majorName}
+              placeholder={selectedMajor}
+              onChange={(e) => {setMajorName(e.target.value)}}
+              className="border-solid border-gray-500 border-b-1 placeholder-gray-500 focus:outline-none focus:border-white py-1 w-full mb-4"
+            />
+            <button
+              className="cursor-pointer bg-white text-gray-900 rounded-lg p-2 font-semibold"
+              onClick={handleNameChange}
+            >
+              Change Name
+            </button>
+          </div>
           {requirements.map(req =>
             <Requirement requirement={req} handleDeleteRequirement={handleDelete}/>
           )}
@@ -97,8 +180,8 @@ const RequirementForm = ({majors, setMajors, courses}) => {
             <form onSubmit={handleSubmit} className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
                 <div className="text-lg">
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Requirement Name"
                     value={requirementName}
                     onChange={(e) => {setRequirementName(e.target.value);setError("")}}
@@ -135,6 +218,13 @@ const RequirementForm = ({majors, setMajors, courses}) => {
               <button className="cursor-pointer bg-white text-gray-900 rounded-lg p-2 font-semibold" type="submit">Add Requirement</button>
             </form>
           </div>
+          <button
+            onClick={handleDeleteMajor}
+            className="cursor-pointer bg-red-900 rounded-lg p-2"
+            type="button"
+          >
+            Delete Major
+          </button>
         </div>
       }
     </div>
