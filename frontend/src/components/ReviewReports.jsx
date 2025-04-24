@@ -335,6 +335,11 @@ function ReportCard({
                 </div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   {report.review.user.username}
+                  {report.review.user.flag && (
+                  <span className="ml-2 text-red-600 dark:text-red-400 font-semibold">
+                    (Flagged: {report.review.user.flagReason})
+                  </span>
+                  )}
                 </span>
               </div>
               <div className="flex items-center space-x-2">

@@ -26,7 +26,7 @@ reviewRouter.get('/reports', async(req,res) => {
       path: "review",
       populate: {
         path: "user",
-        select: "username" // only populate the name field of the user
+        select: "username flag flagReason" // only populate the name field of the user
       }
     });
     res.status(201).json(reports)
