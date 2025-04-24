@@ -102,6 +102,16 @@ beforeEach(async () => {
   console.log('cleared')
 })
 
+test('a major can be edited', async () => {
+  let res = await api.post(`/api/majors`).send(newMajor)
+  const returnedMajor = res.body
+  assert(returnedMajor.name === 'testmajor')
+  await api.put(`/api/majors/editname/${returnedMajor.id}`).send({newName: "a new name"})
+  res = await api.get(`/api/majors/${returnedMajor.id}`)
+  const modifiedMajor = res.body
+  assert(modifiedMajor.name === "a new name")
+})
+
 test('a valid course can be added', async () => {
 
   const coursesBefore = await Course.find({})
@@ -657,6 +667,8 @@ test('instructor difficulty can be correctly calculated', async() => {
 
   assert(res.body == 3)
 })
+
+
 
 after(async () => {
   await mongoose.connection.close()
