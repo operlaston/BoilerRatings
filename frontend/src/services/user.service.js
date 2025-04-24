@@ -36,4 +36,8 @@ const banUser = async (userId) => {
   return res.data;
 }
 
-export { getUserByUsername, getUserById, deleteUser, updateUser, isCourseFavorited, banUser }
+const flagUser = async (userid, flag, reason) => {
+  const res = await axios.put(`${baseurl}/flags/${userid}`, {flag, reason})
+}
+
+export { getUserByUsername, getUserById, deleteUser, updateUser, isCourseFavorited, banUser,flagUser }

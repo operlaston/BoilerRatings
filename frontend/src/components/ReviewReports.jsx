@@ -11,7 +11,7 @@ import {
   X
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { banUser } from '../services/user.service'
+import { banUser, flagUser } from '../services/user.service'
 import { deleteReview, resolveReport, getReports } from '../services/review.service'
 
 const MOCK_REPORTS = [
@@ -61,8 +61,9 @@ export function ReviewReports() {
 
 
 
-  const handleFlagUser = (userId) => {
-    console.log('Flag user:', userId.id)
+  const handleFlagUser = (userId, reason) => {
+    console.log('Flag user:', userId.id, 'with reason:', reason);
+    flagUser(userId.id, true, reason)
     // Implement flag user logic
   }
 
@@ -133,7 +134,61 @@ export function ReviewReports() {
     </div>
   )
 }
+export default function ReportFormModal({ isOpen, onClose, onSubmit, reason, setReason }) {
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+      {/* Background overlay click to close */}
+      <div
+        className="absolute inset-0"
+        onClick={onClose}
+      />
+      
+      {/* Modal content */}
+      <div className="relative bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg max-w-md w-full z-10">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+          Flag User
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+          Please enter a reason for flagging this user:
+        </p>
+        <textarea
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          placeholder="Write your reason here..."
+          rows={4}
+          className="w-full border border-gray-300 dark:border-gray-700 rounded-md p-2 text-sm text-gray-900 dark:text-white bg-gray-50 dark:bg-gray-700"
+        />
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onSubmit();
+              onClose();
+            }}
+            className="px-4 py-2 text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-500 dark:hover:bg-yellow-600 rounded-lg"
+          >
+            Submit Report
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function ConfirmationModal({
   isOpen,
@@ -223,6 +278,7 @@ function ReportCard({
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showBanModal, setShowBanModal] = useState(false)
   const [showFlagModal, setShowFlagModal] = useState(false)
+  const [reason, setReason] = useState("");
 
 
   return (
@@ -310,7 +366,7 @@ function ReportCard({
                   <span>Delete Review</span>
                 </button>
                 <button
-                  onClick={() => onFlagUser(report.review.user)}
+                  onClick={() => setShowFlagModal(true)}
                   className="px-3 py-2 text-sm rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400 hover:bg-yellow-100 dark:hover:bg-yellow-900/40 transition-colors flex items-center space-x-2 cursor-pointer"
                 >
                   <Flag className="h-4 w-4" />
@@ -340,6 +396,13 @@ function ReportCard({
         message={`Are you sure you want to ban ${report.review.user.username}? This will prevent them from submitting new reviews.`}
         confirmText="Ban User"
         variant="ban"
+      />
+      <ReportFormModal
+        isOpen={showFlagModal}
+        onClose={() => setShowFlagModal(false)}
+        onSubmit={() => onFlagUser(report.review.user, reason)}
+        reason={reason}
+        setReason={setReason}
       />
     </>
   )
