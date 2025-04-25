@@ -1,8 +1,18 @@
 import { useState } from "react";
 import { IoMdClose } from "react-icons/io";
-import { deleteCourse, getCourses, createCourse, updateCourse } from "../services/course.service";
+import {
+  deleteCourse,
+  getCourses,
+  createCourse,
+  updateCourse,
+} from "../services/course.service";
 
-const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses, onSubmit }) => {
+const ManageCourseForm = ({
+  submitButtonText = "Add Course",
+  courses,
+  setCourses,
+  onSubmit,
+}) => {
   const [formData, setFormData] = useState({
     name: "",
     number: "",
@@ -18,80 +28,82 @@ const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses
   const handleDeleteCourse = async () => {
     try {
       // Find course by name or number
-      const course = courses.find(c => 
-        c.name === courseToDelete || c.number === courseToDelete
+      const course = courses.find(
+        (c) => c.name === courseToDelete || c.number === courseToDelete
       );
-      
+
       if (!course) {
-        alert('Course not found');
+        alert("Course not found");
         return;
       }
 
       await deleteCourse(course.id);
-      
+
       // Refresh course list
       const updatedCourses = await getCourses();
       setCourses(updatedCourses);
-      
+
       setCourseToDelete("");
       setShowDeletePopup(false);
     } catch (err) {
-      console.error('Delete error:', err);
-      alert('Failed to delete course');
+      console.error("Delete error:", err);
+      alert("Failed to delete course");
     }
   };
 
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setFormData({
+      name: "",
+      number: "",
+      description: "",
+      creditHours: "",
+      prerequisites: "",
+    });
+
     try {
-      
-        const processedPrerequisites = formData.prerequisites
-            .split(/[;,]/)
-            .map(item => item.trim())
-            .filter(item => item);
+      const processedPrerequisites = formData.prerequisites
+        .split(/[;,]/)
+        .map((item) => item.trim())
+        .filter((item) => item);
 
-      
-        const formattedNumber = formData.number
-            .toUpperCase()
-            .replace(/([A-Z]+)(\d+)/, "$1 $2")
-            .replace(/\s+/g, ' ');
+      const formattedNumber = formData.number
+        .toUpperCase()
+        .replace(/([A-Z]+)(\d+)/, "$1 $2")
+        .replace(/\s+/g, " ");
 
-        // Validate number format
-        if (!/^[A-Z]+\s\d+[A-Z]*$/.test(formattedNumber)) {
-            alert('Invalid course number format (e.g. "CS 180")');
-            return;
-        }
+      // Validate number format
+      if (!/^[A-Z]+\s\d+[A-Z]*$/.test(formattedNumber)) {
+        alert('Invalid course number format (e.g. "CS 180")');
+        return;
+      }
 
-        // Prepare course data
-        const courseData = {
-            number: formattedNumber,
-            name: formData.name.trim(),
-            description: formData.description.trim(),
-            creditHours: Number(formData.creditHours) || 3,
-            prerequisites: processedPrerequisites
-        };
+      // Prepare course data
+      const courseData = {
+        number: formattedNumber,
+        name: formData.name.trim(),
+        description: formData.description.trim(),
+        creditHours: Number(formData.creditHours) || 3,
+        prerequisites: processedPrerequisites,
+      };
 
-        // Create course
-        await createCourse(courseData);
-        
-       
-        const updatedCourses = await getCourses();
-        setCourses(updatedCourses);
-        setFormData({
-            name: "",
-            number: "",
-            description: "",
-            creditHours: "",
-            prerequisites: ""
-        });
+      // Create course
+      await createCourse(courseData);
 
+      const updatedCourses = await getCourses();
+      setCourses(updatedCourses);
+      setFormData({
+        name: "",
+        number: "",
+        description: "",
+        creditHours: "",
+        prerequisites: "",
+      });
     } catch (err) {
-        console.error('Error:', err);
-        alert(`Error: ${err.response?.data?.error || 'Failed to create course'}`);
+      console.error("Error:", err);
+      alert(`Error: ${err.response?.data?.error || "Failed to create course"}`);
     }
-};
+  };
 
   return (
     <div className="max-w-1/2  p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm mt-4">
@@ -194,76 +206,77 @@ const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses
               !formData.creditHours
             }
             className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 
-                    p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors 
-                    disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2"
+          p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 
+          active:scale-95 active:opacity-80
+          transition-all duration-150 ease-in-out
+          disabled:bg-gray-300 dark:disabled:bg-gray-600 
+          flex items-center justify-center gap-2"
           >
             {submitButtonText}
           </button>
         </div>
       </form>
 
-
-
       {/* Delete Course Section */}
       <div className="mt-6">
-          <div className="flex gap-4 items-center">
-            <input
-              type="text"
-              value={courseToDelete}
-              onChange={(e) => setCourseToDelete(e.target.value)}
-              placeholder="Enter course name to delete"
-              className="flex-1 p-2 border rounded-lg bg-white dark:bg-gray-800 
+        <div className="flex gap-4 items-center">
+          <input
+            type="text"
+            value={courseToDelete}
+            onChange={(e) => setCourseToDelete(e.target.value)}
+            placeholder="Enter course name to delete"
+            className="flex-1 p-2 border rounded-lg bg-white dark:bg-gray-800 
                      dark:text-gray-200 focus:outline-none focus:ring-2 
                      focus:ring-orange-500"
-            />
-            <button
-              onClick={() => courseToDelete && setShowDeletePopup(true)}
-              disabled={!courseToDelete}
-              className="bg-red-600 text-white px-4 py-2 rounded-lg
+          />
+          <button
+            onClick={() => courseToDelete && setShowDeletePopup(true)}
+            disabled={!courseToDelete}
+            className="bg-red-600 text-white px-4 py-2 rounded-lg
                      hover:bg-red-700 transition-colors disabled:opacity-50
                      disabled:cursor-not-allowed"
-            >
-              Delete Course
-            </button>
-          </div>
+          >
+            Delete Course
+          </button>
         </div>
+      </div>
 
-        {/* Delete Confirmation Popup */}
-        {showDeletePopup && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-gray-800 p-6 rounded-lg border border-red-600 w-full max-w-md">
-              <div
-                className="absolute top-3 right-3 cursor-pointer text-gray-400 hover:text-white"
-                onClick={() => setShowDeletePopup(false)}
+      {/* Delete Confirmation Popup */}
+      {showDeletePopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <div className="bg-gray-800 p-6 rounded-lg border border-red-600 w-full max-w-md">
+            <div
+              className="absolute top-3 right-3 cursor-pointer text-gray-400 hover:text-white"
+              onClick={() => setShowDeletePopup(false)}
+            >
+              <IoMdClose className="h-6 w-6" />
+            </div>
+            <div className="mb-4">
+              <h3 className="text-lg font-medium text-gray-200">
+                Confirm deletion of course:
+                <span className="text-red-400 ml-2">{courseToDelete}</span>
+              </h3>
+              <p className="mt-2 text-red-500 text-sm">
+                Warning: This action cannot be undone
+              </p>
+            </div>
+            <div className="flex justify-end gap-4">
+              <button
+                onClick={handleDeleteCourse}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
               >
-                <IoMdClose className="h-6 w-6" />
-              </div>
-              <div className="mb-4">
-                <h3 className="text-lg font-medium text-gray-200">
-                  Confirm deletion of course:
-                  <span className="text-red-400 ml-2">{courseToDelete}</span>
-                </h3>
-                <p className="mt-2 text-red-500 text-sm">
-                  Warning: This action cannot be undone
-                </p>
-              </div>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={handleDeleteCourse}
-                  className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                >
-                  Confirm Delete
-                </button>
-                <button
-                  onClick={() => setShowDeletePopup(false)}
-                  className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+                Confirm Delete
+              </button>
+              <button
+                onClick={() => setShowDeletePopup(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 };
