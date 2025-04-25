@@ -49,4 +49,9 @@ const deleteCourse = async (courseId) => {
   }
 };
 
-export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview, deleteCourse }
+const createCourse = async (courseData) => {
+  const response = await axios.post(`${baseurl}/api/courses`, courseData);
+  return response.data;
+};
+
+export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview, deleteCourse, createCourse }
