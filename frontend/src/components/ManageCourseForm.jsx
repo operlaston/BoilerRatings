@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IoMdClose } from "react-icons/io";
-import { deleteCourse, getCourses } from "../services/course.service";
+import { deleteCourse, getCourses, createCourse, updateCourse } from "../services/course.service";
 
 const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -44,33 +44,54 @@ const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    try {
+      
+        const processedPrerequisites = formData.prerequisites
+            .split(/[;,]/)
+            .map(item => item.trim())
+            .filter(item => item);
 
-    // Convert prerequisites input to [[String]]
-    const processedPrerequisites = formData.prerequisites
-      .split(";")
-      .map((group) =>
-        group
-          .split(",")
-          .map((item) => item.trim())
-          .filter((item) => item)
-      )
-      .filter((group) => group.length > 0);
+      
+        const formattedNumber = formData.number
+            .toUpperCase()
+            .replace(/([A-Z]+)(\d+)/, "$1 $2")
+            .replace(/\s+/g, ' ');
 
-    await onSubmit({
-      ...formData,
-      creditHours: Number(formData.creditHours),
-      prerequisites: processedPrerequisites,
-    });
+        // Validate number format
+        if (!/^[A-Z]+\s\d+[A-Z]*$/.test(formattedNumber)) {
+            alert('Invalid course number format (e.g. "CS 180")');
+            return;
+        }
 
-    // Reset form
-    setFormData({
-      name: "",
-      number: "",
-      description: "",
-      creditHours: "",
-      prerequisites: "",
-    });
-  };
+        // Prepare course data
+        const courseData = {
+            number: formattedNumber,
+            name: formData.name.trim(),
+            description: formData.description.trim(),
+            creditHours: Number(formData.creditHours) || 3,
+            prerequisites: processedPrerequisites
+        };
+
+        // Create course
+        await createCourse(courseData);
+        
+       
+        const updatedCourses = await getCourses();
+        setCourses(updatedCourses);
+        setFormData({
+            name: "",
+            number: "",
+            description: "",
+            creditHours: "",
+            prerequisites: ""
+        });
+
+    } catch (err) {
+        console.error('Error:', err);
+        alert(`Error: ${err.response?.data?.error || 'Failed to create course'}`);
+    }
+};
 
   return (
     <div className="max-w-1/2  p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-gray-700/50 backdrop-blur-sm mt-4">

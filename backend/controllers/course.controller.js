@@ -41,17 +41,56 @@ courseRouter.get('/', async (req, res) => {
     }
 })
 
-courseRouter.post('/', async (req,res) => {
-    const course = new Course(req.body)
-    
+courseRouter.post('/', async (req, res) => {
     try {
-        const savedCourse = await course.save()
-        res.status(201).json(savedCourse)
+        const { number, name, description, creditHours, prerequisites } = req.body;
+
+        const formattedNumber = number
+            .toUpperCase()
+            .replace(/([A-Z]+)(\d+)/, "$1 $2")
+            .replace(/\s+/g, ' ');
+
+        // Check for existing course
+        const existingCourse = await Course.findOne({ number: formattedNumber });
+        if (existingCourse) {
+            return res.status(409).json({ error: 'Course already exists' });
+        }
+
+        // Process prerequisites
+        const prerequisiteIds = [];
+        if (prerequisites && prerequisites.length > 0) {
+            for (const prereq of prerequisites) {
+                const formattedPrereq = prereq
+                    .toUpperCase()
+                    .replace(/([A-Z]+)(\d+)/, "$1 $2")
+                    .replace(/\s+/g, ' ');
+                
+                const foundCourse = await Course.findOne({ number: formattedPrereq });
+                if (foundCourse) prerequisiteIds.push(foundCourse._id);
+            }
+        }
+
+        // Create new course
+        const newCourse = new Course({
+            number: formattedNumber,
+            name: name.trim(),
+            description: description.trim(),
+            creditHours: creditHours || 3,
+            prerequisites: prerequisiteIds,
+            instructors: [] // Temporarily empty
+        });
+
+        const savedCourse = await newCourse.save();
+        res.status(201).json(savedCourse);
+
     } catch (error) {
-        console.log(error)
-        res.status(400).json({error: 'Invalid Course Data'})
+        console.error('Course creation error:', error);
+        res.status(400).json({ 
+            error: 'Invalid course data',
+            details: error.message 
+        });
     }
-})
+});
 
 // favorite a course
 courseRouter.put('/favorite/:id', async (req,res) => {
