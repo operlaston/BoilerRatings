@@ -234,46 +234,46 @@ courseRouter.put('/:id', async (req, res) => {
         details: err.message 
       });
     }
-  });
+});
 
-  // delete a course
-    courseRouter.delete('/:id', async(req, res) => {
-        // needs to delete the course and all references of it which are in the following objects:
-        // degreeplans/savedCourses/index/_id, 
-        // instructors/courses/index, 
-        // pagereports/page/(string/course number) *I CHANGED MY MIND I'M NOT DELETING THESE BC THEY ARE REPORTS, 
-        // requirements/subrequirements/index/courses/index/(string/course number), 
-        // reviews/course
+// delete a course
+courseRouter.delete('/:id', async(req, res) => {
+    // needs to delete the course and all references of it which are in the following objects:
+    // degreeplans/savedCourses/index/_id, 
+    // instructors/courses/index, 
+    // pagereports/page/(string/course number) *I CHANGED MY MIND I'M NOT DELETING THESE BC THEY ARE REPORTS, 
+    // requirements/subrequirements/index/courses/index/(string/course number), 
+    // reviews/course
 
-        // delete from all degree plans
-        try {
-            const course = await Course.findById(req.params.id)
-            if (course === null) {
-                return res.status(404).json({error: 'course not found'})
-            }
-            await DegreePlan.updateMany(
-                {"savedCourses.course": course._id}, 
-                {$pull: {"savedCourses": {"course": course._id}}}
-            )
-            await Instructor.updateMany({ 
-                "courses": {
-                    $elemMatch: {$eq: course._id}
-                },
-            }, {$pull: {"courses": course._id}})
-            await Requirement.updateMany({
-                    "subrequirements.courses": course.number
-                },
-                { $pull: { "subrequirements.$[].courses": course.number } }
-            )
-            await Review.deleteMany({ "course": course._id })
-            await Course.findByIdAndDelete(req.params.id)
-            res.status(204).end()
+    // delete from all degree plans
+    try {
+        const course = await Course.findById(req.params.id)
+        if (course === null) {
+            return res.status(404).json({error: 'course not found'})
         }
-        catch(e) {
-            console.error(e)
-            res.status(500).json({error: 'server error'})
-        }
-    })
+        await DegreePlan.updateMany(
+            {"savedCourses.course": course._id}, 
+            {$pull: {"savedCourses": {"course": course._id}}}
+        )
+        await Instructor.updateMany({ 
+            "courses": {
+                $elemMatch: {$eq: course._id}
+            },
+        }, {$pull: {"courses": course._id}})
+        await Requirement.updateMany({
+                "subrequirements.courses": course.number
+            },
+            { $pull: { "subrequirements.$[].courses": course.number } }
+        )
+        await Review.deleteMany({ "course": course._id })
+        await Course.findByIdAndDelete(req.params.id)
+        res.status(204).end()
+    }
+    catch(e) {
+        console.error(e)
+        res.status(500).json({error: 'server error'})
+    }
+})
 
     courseRouter.get('/:courseNumber', async (req,res) => {
         let num = req.params.courseNumber
