@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { IoMdClose } from "react-icons/io";
+import { deleteCourse, getCourses } from "../services/course.service";
 
-const ManageCourseForm = ({ submitButtonText = "Add Course" }) => {
+const ManageCourseForm = ({ submitButtonText = "Add Course", courses, setCourses, onSubmit }) => {
   const [formData, setFormData] = useState({
     name: "",
     number: "",
@@ -15,10 +16,31 @@ const ManageCourseForm = ({ submitButtonText = "Add Course" }) => {
 
   // temp delete handler
   const handleDeleteCourse = async () => {
-    console.log(`Would delete course: ${courseToDelete}`);
-    setCourseToDelete("");
-    setShowDeletePopup(false);
+    try {
+      // Find course by name or number
+      const course = courses.find(c => 
+        c.name === courseToDelete || c.number === courseToDelete
+      );
+      
+      if (!course) {
+        alert('Course not found');
+        return;
+      }
+
+      await deleteCourse(course.id);
+      
+      // Refresh course list
+      const updatedCourses = await getCourses();
+      setCourses(updatedCourses);
+      
+      setCourseToDelete("");
+      setShowDeletePopup(false);
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete course');
+    }
   };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

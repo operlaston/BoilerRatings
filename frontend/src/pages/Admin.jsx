@@ -578,7 +578,14 @@ useEffect(() => {
             onClose={() => setExpandedPanel(null)}
           >
             <div className="space-y-6">
-              <ManageCourseForm />
+              <ManageCourseForm 
+                courses={courses}
+                setCourses={setCourses}
+                onSubmit={async (newCourse) => {
+                  const updated = await getCourses();
+                  setCourses(updated);
+                }}
+              />
             </div>
           </ExpandedPanel>
         )}
