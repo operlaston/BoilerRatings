@@ -34,16 +34,18 @@ const MOCK_REPORTS = [
 
 export function ReviewReports() {
   const [reports, setReports] = useState(MOCK_REPORTS)
+  const fetchReports = async () => {
+    try {
+      const data = await getReports()
+      setReports(data)
+    } catch (error) {
+      console.error('Error fetching reports:', error)
+    }
+  }
+  useEffect(() => {
+    console.log("Reports updated:", reports);
+  }, [reports]);
     useEffect(() => {
-      const fetchReports = async () => {
-        try {
-          const data = await getReports()
-          setReports(data)
-        } catch (error) {
-          console.error('Error fetching reports:', error)
-        }
-      }
-  
       fetchReports()
     }, [])
     console.log("reports", reports)
@@ -61,20 +63,23 @@ export function ReviewReports() {
 
 
 
-  const handleFlagUser = (userId, reason) => {
+  const handleFlagUser = async (userId, reason) => {
     console.log('Flag user:', userId.id, 'with reason:', reason);
-    flagUser(userId.id, true, reason)
+    await flagUser(userId.id, true, reason)
+    await fetchReports()
     // Implement flag user logic
   }
 
-  const handleDeleteReview = ( review ) => {
+  const handleDeleteReview = async ( review ) => {
     console.log('Delete review from author:', review)
-    deleteReview(review.id)
+    await deleteReview(review.id)
+    await fetchReports()
     // Implement delete review logic
   }
-  const handleIgnoreReport = (reportId) => {
+  const handleIgnoreReport = async (reportId) => {
     console.log('Ignore report:', reportId)
-    resolveReport(reportId)
+    await resolveReport(reportId)
+    await fetchReports()
     //No optomistic update but is functional
     // Implement ignore report logic
   }
