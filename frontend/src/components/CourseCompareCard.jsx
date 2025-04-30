@@ -1,16 +1,27 @@
+import { useNavigate } from "react-router-dom";
 import { getCourseByName } from "../services/course.service"
 
 const CourseCard = ({name, number, credits, enjoyment, difficulty, reviews, numReviews}) => {
+    const navigate = useNavigate();
+  
     const calcRecommendedScore = () => {
       let totalRecommended = 0;
       reviews.forEach(review => review.recommend ? totalRecommended += 1 : '')
       return Math.round((totalRecommended / numReviews) * 100)
     }
+
+    const onClick = async () => {
+      console.log("navigate");
+      let num = number;
+      num = num.toLowerCase().replace(/\s+/g, '');
+      navigate(`/course/${num}`);
+    }
   
     return (
-      <div className="bg-gray-800 text-white py-4 px-5 rounded-lg cursor-pointer
-        hover:scale-102 transition-all h-full flex flex-col
-      "
+      <div 
+        onClick={() => onClick()}
+        className="bg-gray-800 text-white py-4 px-5 rounded-lg cursor-pointer
+        hover:scale-102 transition-all h-full flex flex-col"
       >
         <div
           className="text-2xl font-bold pb-1 flex flex-col items-center"
@@ -18,7 +29,7 @@ const CourseCard = ({name, number, credits, enjoyment, difficulty, reviews, numR
           {number}
         </div>
         <div
-          className="text-2xl font-bold pb-1 flex flex-col items-center"
+          className="text-2xl font-bold text-sm pb-1 flex flex-col items-center"
         >
           {name}
         </div>
