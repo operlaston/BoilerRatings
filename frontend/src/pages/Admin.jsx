@@ -291,8 +291,9 @@ const [instructorName, setInstructorName] = useState('');
 const [instructorGPA, setInstructorGPA] = useState('');
 const [instructorRMP, setInstructorRMP] = useState('');
 const [instructorRMPLink, setInstructorRMPLink] = useState('');
+const [instructorData, setInstructorData] = useState(null);
 
-const handleAddInstructor = (e) => {
+const handleAddInstructor = async (e) => {
   e.preventDefault();
 
   const newInstructor = {
@@ -305,11 +306,21 @@ const handleAddInstructor = (e) => {
   console.log("Submitting instructor:", newInstructor);
   try {
     addInstructor(instructorName, instructorGPA, instructorRMP, instructorRMPLink)
+    window.alert("Instructor added successfully!");
+
+    // Clear input fields
+    setInstructorName('');
+    setInstructorGPA('');
+    setInstructorRMP('');
+    setInstructorRMPLink('');
+    const updatedInstructors = await getInstructors();
+    setInstructorData(updatedInstructors);
   } catch (error) {
+    window.alert("Failed to add instructor. Please try again.");
     console.log("Error", error)
   }
 }
-const [instructorData, setInstructorData] = useState(null);
+
 useEffect(() => {
     const fetchInstructors = async () => {
       const instructors = await getInstructors();
