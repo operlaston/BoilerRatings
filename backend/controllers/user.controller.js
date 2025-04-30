@@ -69,7 +69,7 @@ usersRouter.get('/inactive', async (req, res) => {
       await inactiveEmail(
         user.email,
         "Inactive Account: Boiler Ratings",
-        "Your account has been inactive for over a year. Please log in to reactivate your account. If you do not log in within 30 days, your account will be deleted.\n\n" +
+        `Your account, ${user.username}, has been inactive for over a year. Please log in to reactivate your account. If you do not log in within 30 days, your account will be deleted.\n\n` +
         "If you have any questions, please contact us at: testadmin@purdue.edu"
       )
     }

@@ -411,8 +411,11 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
   
     // Match any course that includes any term
     let matchedCourses = availableCourses.concat(courses).filter(course => {
-      const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
-      return allTerms.some(term => normalizedName.includes(term));
+      const normalizedCourse = course.name.replace(/\s+/g, '').toLowerCase();
+      return allTerms.some(term => {
+        const normalizedTerm = term.replace(/\s+/g, '').toLowerCase();
+        return normalizedCourse.startsWith(normalizedTerm);
+      });
     });
     
     if (searchQuery.includes("OR")) {
@@ -422,9 +425,12 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           const normalizedName = course.name.replace(/\s+/g, '').toLowerCase();
           return group.some(term => normalizedName.includes(term));
         });
-
-        if (matches.length > 0) {
-          const easiest = matches.reduce((a, b) =>
+        if (matches.length == 1) {
+          matches[0].suggested = true;
+        }
+        else if (matches.length > 0) {
+          const matchesWithReviews = matches.filter(course => course.numReviews > 0);
+          const easiest = matchesWithReviews.reduce((a, b) =>
             a.difficulty < b.difficulty ? a : b
           );
           easiest.suggested = true;
@@ -453,7 +459,6 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
     return matchedCourses.slice(0, 20);
   })();
 
-  
 
   const closePopup = () => {
     setIsPopupVisible(false);
@@ -645,7 +650,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         }
         requirement.subrequirements.forEach(subreq => {
           if (!courses.some(course => subreq.courses.includes(course.name))) {
-            missingRequirement.courses.push([subreq.courses]);
+            missingRequirement.courses.push(subreq.courses);
           }
         })
         if (missingRequirement.courses.length > 0) {
@@ -653,6 +658,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         }
       });
     })
+    console.log(arr);
     setMissingRequirements(arr);
   }, [courses, majors]);
   const handleErrorClick = (requirement) => {
@@ -1057,7 +1063,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                     missingRequirements.map((r, index) => (
                       <p
                         key={index}
-                        className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer"
+                        className="flex items-start gap-2 text-sm text-red-700 dark:text-red-300 underline cursor-pointer mt-2"
                         onClick={() => handleErrorClick(r)}
                       >
                         {"Missing requirement: " + r.name + " (" + r.courses.map(group => group.join(" OR ")).join(" AND ") + ")"}

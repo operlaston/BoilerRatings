@@ -39,4 +39,19 @@ export const getCourseById = async (id) => {
   return res.data;
 };
 
-export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview }
+
+const deleteCourse = async (courseId) => {
+  try {
+    const response = await axios.delete(`${baseurl}/api/courses/${courseId}`);
+    return response.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.error || 'Failed to delete course');
+  }
+};
+
+const createCourse = async (courseData) => {
+  const response = await axios.post(`${baseurl}/api/courses`, courseData);
+  return response.data;
+};
+
+export { getCourses, getCourseByName, favoriteCourse, updatePrerequisites, updateTimeToReview, deleteCourse, createCourse }

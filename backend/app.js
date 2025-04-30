@@ -15,7 +15,6 @@ const calamityRouter = require('./controllers/thegreatcalamity')
 const pageReportRouter = require('./controllers/pageReport.controller')
 const { requestLogger, unknownEndpoint } = require('./utils/middleware')
 const app = express()
-
 // connect to database
 mongoose.connect(config.MONGODB_URI)
   .then(() => {
