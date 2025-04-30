@@ -47,13 +47,13 @@ const RequirementForm = ({majors, setMajors, courses}) => {
     // send request to backend to create new requirement for selected major
     try {
       const addRequirement = {name: requirementName, subrequirements: subrequirements}
+      const newRequirement = await createRequirement(addRequirement)
       const majorId = majors.find(major => major.name === selectedMajor).id
-      setRequirements([...requirements, addRequirement])
-      setMajors(majors.map(major => major.id === majorId ? {...major, requirements: [...major.requirements, addRequirement]} : major))
+      const newMajor = await addRequirementToMajor(newRequirement.id, majorId)
+      setRequirements([...requirements, newRequirement])
+      setMajors(majors.map(major => major.id === majorId ? {...major, requirements: [...major.requirements, newRequirement]} : major))
       setRequirementName("")
       setSubrequirements([])
-      const newRequirement = await createRequirement(addRequirement)
-      const newMajor = await addRequirementToMajor(newRequirement.id, majorId)
     }
     catch(e) {
       console.error("an error occurred while creating a new requirement", e)
@@ -238,6 +238,7 @@ const Requirement = ({requirement, handleDeleteRequirement}) => {
   const handleDelete = async () => {
     let confirmation = confirm("Are you sure you want to delete this?")
     if (confirmation) {
+      console.log("requirement", requirement)
       await handleDeleteRequirement(requirement.id)
     }
   }
