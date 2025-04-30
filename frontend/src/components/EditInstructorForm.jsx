@@ -27,7 +27,7 @@ const EditInstructorForm = (instructors) => {
   );
   const [instructorData, setInstructorData] = useState(null);
   const [error, setError] = useState("");
-  console.log("InstructorList", instructorList);
+  console.log("InstructorList Inside edit instructor form", instructorList);
   // editable form values
   const [formData, setFormData] = useState({
     name: "",
