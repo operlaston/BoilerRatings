@@ -212,7 +212,10 @@ const ReviewPage = ({
         
         return {
           ...review,
-          username: review.anon ? "Anonymous" : userMap[review.user] || "[deleted]",
+          username: review.anon ? "Anonymous" : (
+            userMap[review.user] || 
+            (review.user === currentUser?.id ? currentUser.username : "[deleted]")
+          ),
           majorDisplay: majorNames.length > 0 
             ? `• Majoring in ${majorNames.join(" + ")}` 
             : ""
