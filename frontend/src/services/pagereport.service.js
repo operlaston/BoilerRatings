@@ -7,7 +7,7 @@ const sendReport = async (page, reportContent) => {
     return response.data
 }
 
-const getReports = async () => {
+const getPageReports = async () => {
     const response = await axios.get(`${baseurl}/api/pagereports/`)
     return response.data
 }
@@ -17,4 +17,4 @@ const deletePageReport = async(id) => {
     return response.data
 }
 
-export { sendReport, getReports, deletePageReport }
+export { sendReport, getPageReports, deletePageReport }
