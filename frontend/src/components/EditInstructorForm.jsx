@@ -20,14 +20,17 @@ import { getCourseByName } from "../services/course.service";
  * 6. All network operations are mocked with console.log calls.
  */
 
-const EditInstructorForm = (instructors) => {
+const EditInstructorForm = ({instructors}) => {
   const [searchName, setSearchName] = useState("");
-  const [instructorList, setInstructorList] = useState(
-    instructors?.instructors || []
-  );
+  const [instructorList, setInstructorList] = useState({});
   const [instructorData, setInstructorData] = useState(null);
   const [error, setError] = useState("");
-  console.log("InstructorList", instructorList);
+  useEffect(() => {
+    if (instructors) {
+      setInstructorList(instructors);
+    }
+  }, [instructors]);
+  console.log("InstructorList Inside edit instructor form", instructorList);
   // editable form values
   const [formData, setFormData] = useState({
     name: "",

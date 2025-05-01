@@ -217,7 +217,7 @@ const ReviewPage = ({
             (review.user === currentUser?.id ? currentUser.username : "[deleted]")
           ),
           majorDisplay: majorNames.length > 0 
-            ? `• Majoring in ${majorNames.join(" + ")}` 
+            ? `• ${majorNames.join(" + ")}` 
             : ""
         };
       });
@@ -602,13 +602,6 @@ const ReviewPage = ({
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center space-x-1">
-                    <Star className="w-5 h-5 text-yellow-400 fill-current" />
-                    <span className="text-gray-900 dark:text-white">
-                      {review.enjoyment || 0}
-                    </span>
-                  </div>
-
                   {selectedReviewId === review.id && (
                     <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
                       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl">
@@ -651,7 +644,7 @@ const ReviewPage = ({
                         className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
                         title="Report this review"
                       >
-                        <Flag className="w-5 h-5" />
+                        <Flag className="w-5 h-5 dark:text-gray-400" />
                         <span className="sr-only">Report</span>
                       </button>
                     )}
@@ -663,7 +656,7 @@ const ReviewPage = ({
                         className="p-1 hover:text-orange-500 transition-colors cursor-pointer"
                         title="Flag This Guy"
                       >
-                        <Ban className="w-5 h-5" />
+                        <Ban className="w-5 h-5 dark:text-gray-400" />
                         <span className="sr-only">Flag This Guy</span>
                       </button>
                     )}
@@ -673,7 +666,7 @@ const ReviewPage = ({
                         className="p-1 hover:text-blue-500 transition-colors cursor-pointer"
                         title="Edit this review"
                       >
-                        <Pencil className="w-5 h-5" />
+                        <Pencil className="w-5 h-5 dark:text-gray-400" />
                         <span className="sr-only">Edit</span>
                       </button>
                     )}
@@ -686,7 +679,7 @@ const ReviewPage = ({
                         className="p-1 hover:text-red-500 transition-colors cursor-pointer"
                         title="Delete this review"
                       >
-                        <Trash2 className="w-5 h-5" />
+                        <Trash2 className="w-5 h-5 dark:text-gray-400" />
                         <span className="sr-only">Delete</span>
                       </button>
                     )}

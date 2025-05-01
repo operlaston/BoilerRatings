@@ -22,6 +22,9 @@ import { updateCourse, getCourses } from "../services/course.service";
 import { ReviewReports } from "../components/ReviewReports";
 import { SiteIssues } from "../components/SiteIssues";
 import ReviewManagement from "../components/ReviewManagement";
+import { getReports, getReviews } from "../services/review.service";
+import { getPageReports } from "../services/pagereport.service";
+import { getMajors } from "../services/major.service";
 
 function EditCourseForm({ courses, setCourses }) {
   const [selectedCourseName, setSelectedCourseName] = useState("");
@@ -291,8 +294,9 @@ const [instructorName, setInstructorName] = useState('');
 const [instructorGPA, setInstructorGPA] = useState('');
 const [instructorRMP, setInstructorRMP] = useState('');
 const [instructorRMPLink, setInstructorRMPLink] = useState('');
+const [instructorData, setInstructorData] = useState(null);
 
-const handleAddInstructor = (e) => {
+const handleAddInstructor = async (e) => {
   e.preventDefault();
 
   const newInstructor = {
@@ -304,26 +308,50 @@ const handleAddInstructor = (e) => {
 
   console.log("Submitting instructor:", newInstructor);
   try {
-    addInstructor(instructorName, instructorGPA, instructorRMP, instructorRMPLink)
+    const newInstructor = await addInstructor(instructorName, instructorGPA, instructorRMP, instructorRMPLink)
+    console.log("Pushed")
+    console.log(newInstructor)
+    window.alert("Instructor added successfully!");
+    setInstructorData(prev => [...(prev || []), newInstructor]);
+    // Clear input fields
+    setInstructorName('');
+    setInstructorGPA('');
+    setInstructorRMP('');
+    setInstructorRMPLink('');
+    const updatedInstructors = await getInstructors();
+    setInstructorNum(updatedInstructors.length)
+    setInstructorData(updatedInstructors);
   } catch (error) {
+    window.alert("Failed to add instructor. Please try again.");
     console.log("Error", error)
   }
 }
-const [instructorData, setInstructorData] = useState(null);
+console.log("Instructor data admin", instructorData)
+
 useEffect(() => {
     const fetchInstructors = async () => {
       const instructors = await getInstructors();
+      setInstructorNum(instructors.length)
       setInstructorData(instructors); // assuming instructors is the data you want to set
     };
 
     fetchInstructors();
   }, []);
   const [expandedPanel, setExpandedPanel] = useState("");
-  const mockData = {
-    instructors: 42,
-    reports: 7,
-    majors: 24,
-  };
+  const [instructorNum, setInstructorNum] = useState(0)
+  const [reviewReports, setReviewReports] = useState(0)
+  const [pageIssues, setPageIssues] = useState(0)
+  useEffect(() => {
+    const getData = async () => {
+      //Instructors already set
+      const reports = await getReports();
+      setReviewReports(reports.length)
+      const issues = await getPageReports()
+      setPageIssues(issues.length)
+    }
+    getData();
+  },[])
+
   if (!activeUser || !activeUser.admin) {
     return <div>Access forbidden: You are not an admin</div>;
   }
@@ -351,7 +379,7 @@ useEffect(() => {
               icon={
                 <Users className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               }
-              stat={mockData.instructors}
+              stat={instructorNum}
               statLabel="Total Instructors"
               onExpand={() => setExpandedPanel("instructors")}
             />
@@ -361,7 +389,7 @@ useEffect(() => {
               icon={
                 <Flag className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               }
-              stat={mockData.reports}
+              stat={reviewReports}
               statLabel="Unresolved Reports"
               onExpand={() => setExpandedPanel("reports")}
             />
@@ -371,7 +399,7 @@ useEffect(() => {
               icon={
                 <Bug className="h-5 w-5 text-gray-600 dark:text-gray-300" />
               }
-              stat={mockData.reports}
+              stat={pageIssues}
               statLabel="Unresolved Reports"
               onExpand={() => setExpandedPanel("issues")}
             />

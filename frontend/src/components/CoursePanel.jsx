@@ -31,7 +31,11 @@ function CoursePanel({ course, user, setIsPopupVisible, refreshCourses }) {
   const [courseData, setCourseData] = useState(COURSE_DATA);
   const [favorited, setFavorited] = useState(false);
   const [canFavorite, setCanFavorite] = useState(false);
-
+  let preqreqString = "N/A";
+  if (course.prerequisites.length > 0) {
+    preqreqString = course.prerequisites.map(row => row.join(", ")).join("; ")
+    console.log(preqreqString)
+  }
   useEffect(() => {
     const fetchFavorite = async () => {
       setFavorited(await isCourseFavorited(user.id, course.id));
@@ -139,7 +143,7 @@ function CoursePanel({ course, user, setIsPopupVisible, refreshCourses }) {
                 Prerequisites
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                {courseData.prerequisites ? "N/A" : courseData.prerequisites}
+                {preqreqString}
               </p>
             </div>
             <div className="flex items-center gap-4">

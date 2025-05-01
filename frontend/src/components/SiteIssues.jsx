@@ -10,7 +10,7 @@ import {
   X
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { deletePageReport, getReports } from '../services/pagereport.service'
+import { deletePageReport, getPageReports } from '../services/pagereport.service'
 
 const MOCK_REPORTS = [
   {
@@ -30,7 +30,7 @@ export function SiteIssues() {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const data = await getReports()
+        const data = await getPageReports()
         setReports(data)
       } catch (error) {
         console.error('Error fetching reports:', error)

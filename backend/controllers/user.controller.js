@@ -5,8 +5,8 @@ const Major = require('../models/major')
 const Review = require('../models/review')
 const Course = require('../models/course')
 const Report = require('../models/report')
-const sendEmail = require('../utils/email')
-const { findById, findByIdAndUpdate } = require('../models/course')
+const { sendEmail, inactiveEmail } = require('../utils/email')
+// const { findById, findByIdAndUpdate } = require('../models/course')
 const {to} = require('await-to-js')
 
 
@@ -66,7 +66,7 @@ usersRouter.get('/inactive', async (req, res) => {
       banned: false,
     })
     for (const user of inactive) {
-      await sendEmail.inactiveEmail(
+      await inactiveEmail(
         user.email,
         "Inactive Account: Boiler Ratings",
         `Your account, ${user.username}, has been inactive for over a year. Please log in to reactivate your account. If you do not log in within 30 days, your account will be deleted.\n\n` +
