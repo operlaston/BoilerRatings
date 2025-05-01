@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import StarRating from "../assets/StarRating.jsx";
+import StarRating from "./StarRating.jsx";
 import { Loader2, Star } from "lucide-react";
 
 const BaseReviewForm = ({
@@ -138,7 +138,7 @@ const BaseReviewForm = ({
             onChange={(e) =>
               setFormData({ ...formData, recommend: e.target.checked })
             }
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+            className="w-4 h-4 cursor-pointer"
           />
           <label
             htmlFor="recommend"
@@ -157,7 +157,7 @@ const BaseReviewForm = ({
             onChange={(e) =>
               setFormData({ ...formData, anon: e.target.checked })
             }
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+            className="w-4 h-4 cursor-pointer"
           />
           <label
             htmlFor="anon"
@@ -176,7 +176,7 @@ const BaseReviewForm = ({
           placeholder="Leave a review... (20 characters minimum)"
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                 bg-white/90 dark:bg-gray-800/80 placeholder-gray-400 dark:placeholder-gray-100 
-                focus:outline-none focus:ring-2 focus:ring-orange-500 
+                focus:outline-none focus:ring-2 focus:ring-gray-400 
                 text-gray-900 dark:text-gray-200 resize-none transition-all duration-200"
           rows={4}
           required
@@ -207,7 +207,7 @@ const BaseReviewForm = ({
             }
             className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                     p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors 
-                    disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2"
+                    disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>

@@ -25,7 +25,7 @@ const StarRating = ({ initialRating = 0, onRatingChange }) => {
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
             onClick={() => handleClick(star)}
-            className="relative transition-transform duration-200 hover:scale-110"
+            className="relative transition-transform duration-200 hover:scale-110 cursor-pointer"
           >
             <Star
               className={`w-6 h-6 ${
