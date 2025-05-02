@@ -27,10 +27,10 @@ export function Navbar({user, onLogout}) {
       name: 'Degree',
       href: '/degree',
     },
-    {
+    /*{
       name: 'Saved Degrees',
       href: '/saved-degree',
-    },
+    },*/
     {
       name: 'Compare Classes',
       href: '/compare'
