@@ -966,16 +966,17 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
 
-          <button className="p-2 cursor-pointer" onClick={handleAutoSuggestClick}>
+          {/* <button className="p-2 cursor-pointer" onClick={handleAutoSuggestClick}>
             <CalendarHeart className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" /> */}
+          
+          <button className="p-2 cursor-pointer" onClick={handleReportClick}>
+            <Flag className="text-gray-300 h-8 w-8" />
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8" />
-          </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className="p-2 cursor-pointer" onClick={handleReportClick}>
-            <Flag className="text-gray-300 h-8 w-8" />
           </button>
         </div>
 
