@@ -1044,7 +1044,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 <div
                   className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
                   style={{
-                    height: "33vh",
+                    height: "37vh",
                   }}
                 >
                   <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
