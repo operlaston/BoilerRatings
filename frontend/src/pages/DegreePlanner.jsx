@@ -971,16 +971,17 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
 
-          <button className="p-2 cursor-pointer" onClick={handleAutoSuggestClick}>
+          {/* <button className="p-2 cursor-pointer" onClick={handleAutoSuggestClick}>
             <CalendarHeart className="text-gray-300 h-8 w-8" />
+          </button>
+          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" /> */}
+          
+          <button className="p-2 cursor-pointer" onClick={handleReportClick}>
+            <Flag className="text-gray-300 h-8 w-8" />
           </button>
           <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
           <button className="p-2 cursor-pointer" onClick={handleSettingsClick}>
             <Settings2 className="text-gray-300 h-8 w-8" />
-          </button>
-          <div className="my-0.5 h-0.25 w-3/5 bg-gray-400" />
-          <button className="p-2 cursor-pointer" onClick={handleReportClick}>
-            <Flag className="text-gray-300 h-8 w-8" />
           </button>
         </div>
 
@@ -1049,7 +1050,7 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
                 <div
                   className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800 overflow-y-auto errorContainer"
                   style={{
-                    height: "33vh",
+                    height: "37vh",
                   }}
                 >
                   <div className="flex items-center gap-2 text-red-800 dark:text-red-200 mb-2">
