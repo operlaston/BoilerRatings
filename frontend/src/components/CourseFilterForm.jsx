@@ -73,14 +73,14 @@ const CourseFilterForm = ({ onClose, selectedMajor, setSelectedMajor,
               ))}
             </select>
           </div>
-          {
+          {/* {
             user ?
             <div className="text-l font-semibold mb-4 text-gray-900 dark:text-white flex gap-4 items-center">
               Only Show Favorited Courses
               <input type="checkbox" checked={showFavorited} onChange={() => setShowFavorited(!showFavorited)} />
             </div> :
             ''
-          }
+          } */}
           {/* Action Buttons */}
           <div className="flex items-center justify-center gap-2">
             <button
