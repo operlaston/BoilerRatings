@@ -352,6 +352,11 @@ export default function DegreePlanner({ user, setUser, degreePlan }) {
         (async () => {
           if (user) {
             let majorIds = user.major;
+            if (majorIds.length > 0) {
+              if (typeof majorIds[0] !== "string") {
+                majorIds = majorIds.map(majorObj => majorObj.id)
+              }
+            }
             const promises = [];
             for (const id of majorIds) {
               promises.push(getMajorById(id));
