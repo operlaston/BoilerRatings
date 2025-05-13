@@ -15,7 +15,7 @@ degreePlanRouter.post('/', async (req, res) => {
         return {
             semester: savedCourses.semester,
             semesterIndex: savedCourses.semesterIndex,
-            courseID: savedCourses.courseID
+            course: savedCourses.courseID
         }
     })
     console.log(newSavedCourses)
@@ -76,7 +76,7 @@ degreePlanRouter.get('/:id', async (req, res) => {
             userID: userID
         })
         .populate({
-            path: 'savedCourses.courseID'
+            path: 'savedCourses.course'
         })
         res.status(200).json(plans)
     } catch (error) {

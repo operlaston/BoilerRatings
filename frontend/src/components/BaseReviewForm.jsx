@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import StarRating from "../assets/StarRating.jsx";
+import StarRating from "./StarRating.jsx";
 import { Loader2, Star } from "lucide-react";
 
 const BaseReviewForm = ({
@@ -7,13 +7,16 @@ const BaseReviewForm = ({
     semesterTaken: "",
     reviewContent: "",
     recommend: false,
+    anon: false,
     difficulty: 0,
     enjoyment: 0,
+    instructor: "",
   },
   onSubmit,
   isSubmitting = false,
   onCancel,
   submitButtonText = "Submit Review",
+  instructorOptions,
 }) => {
   // Initialize state
   const [formData, setFormData] = useState(() => ({
@@ -23,6 +26,7 @@ const BaseReviewForm = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
     await onSubmit({
       ...formData,
       // Preserve existing metadata when editing
@@ -38,8 +42,10 @@ const BaseReviewForm = ({
         semesterTaken: "",
         reviewContent: "",
         recommend: false,
+        anon: false,
         difficulty: 0,
         enjoyment: 0,
+        instructor: null,
       });
     }
   };
@@ -70,6 +76,28 @@ const BaseReviewForm = ({
                 </option>
               );
             })}
+          </select>
+        </div>
+
+        {/* Instructor Dropdown */}
+        <div className="flex flex-col space-y-2">
+          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Instructor *
+          </label>
+          <select
+            value={formData.instructor ?? ""}
+            onChange={(e) =>
+              setFormData({ ...formData, instructor: e.target.value })
+            }
+            className="w-full p-2 border rounded-lg bg-white dark:bg-gray-800 dark:text-gray-200"
+          >
+            <option value="">Select Instructor</option>
+            {/* {console.log(instructorOptions)} */}
+            {instructorOptions.map((instructor) => (
+              <option key={instructor.id} value={instructor.id}>
+                {instructor.name}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -110,13 +138,32 @@ const BaseReviewForm = ({
             onChange={(e) =>
               setFormData({ ...formData, recommend: e.target.checked })
             }
-            className="w-4 h-4 text-orange-500 rounded focus:ring-orange-500"
+            className="w-4 h-4 cursor-pointer"
           />
           <label
             htmlFor="recommend"
             className="text-sm font-medium text-gray-700 dark:text-gray-300"
           >
             Would you recommend this course?
+          </label>
+        </div>
+
+        {/* Anonymous Toggle */}
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            id="anon"
+            checked={formData.anon}
+            onChange={(e) =>
+              setFormData({ ...formData, anon: e.target.checked })
+            }
+            className="w-4 h-4 cursor-pointer"
+          />
+          <label
+            htmlFor="anon"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
+            Would you like this review to be anonymous?
           </label>
         </div>
 
@@ -129,7 +176,7 @@ const BaseReviewForm = ({
           placeholder="Leave a review... (20 characters minimum)"
           className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
                 bg-white/90 dark:bg-gray-800/80 placeholder-gray-400 dark:placeholder-gray-100 
-                focus:outline-none focus:ring-2 focus:ring-orange-500 
+                focus:outline-none focus:ring-2 focus:ring-gray-400 
                 text-gray-900 dark:text-gray-200 resize-none transition-all duration-200"
           rows={4}
           required
@@ -155,11 +202,12 @@ const BaseReviewForm = ({
               !formData.semesterTaken ||
               formData.difficulty === 0 ||
               formData.enjoyment === 0 ||
-              formData.reviewContent.trim().length < 20
+              formData.reviewContent.trim().length < 20 ||
+              !formData.instructor
             }
             className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 
                     p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors 
-                    disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2"
+                    disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center gap-2 cursor-pointer"
           >
             {isSubmitting ? (
               <>

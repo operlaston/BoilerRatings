@@ -12,6 +12,11 @@ loginRouter.post('/', async (req, res) => {
       res.status(401).json({"error": "email is not registered"})
       return
     }
+    if (user.banned) {
+      console.log("Login failed: user is banned");
+      res.status(401).json({"error": "This account is banned"});
+      return;
+    }
     if (await bcrypt.compare(userCredentials.password, user.passwordHash)) {
       console.log("Login success:", userEmail)
       // res.status(200).json({
@@ -25,10 +30,21 @@ loginRouter.post('/', async (req, res) => {
       //   likedReviews: user.likedReviews,
       //   plans: user.plans
       // })
-      res.status(200).json(user)
+
+      const now = new Date();
+      const inactiveThreshold = 3600000;
+      const isInactive = user.lastLogin && (now - user.lastLogin) > inactiveThreshold;
+
+      user.lastLogin = now;
+      await user.save();
+
+      res.status(200).json({
+        user: user, 
+        isInactive 
+      })
     }
     else {
-      console.log("Login failed")
+      console.log("Login failed: bad credentials")
       res.status(401).json({"error": "incorrect password"})
     }
   }

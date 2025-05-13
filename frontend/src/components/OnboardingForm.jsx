@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { User, ChevronDown, X } from "lucide-react";
-import { getMajors } from "../services/majors";
-import { onboard } from "../services/signup";
+import { getMajors } from "../services/major.service";
+import { onboard } from "../services/signup.service";
 import { useNavigate } from "react-router-dom";
 
 const MAJORS = [
@@ -65,6 +65,10 @@ function OnboardingForm({user, setUser}) {
       setError("Please enter a display name");
       return;
     }
+    if (!(/^[a-zA-Z0-9_-]+$/.test(displayName))) {
+      setError("Display name must only contain alphanumeric characters, dashes, or underscores")
+      return;
+    }
     if ( selectedMajors.length == 0) {
       setError("Please select at least one major");
       return;
@@ -84,10 +88,11 @@ function OnboardingForm({user, setUser}) {
     //TODO: rig form submission to backend.
     console.log(displayName, selectedMajors, selectedMinors, graduationSemester)
     try {
-      await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      const newUser = await onboard(user, displayName, selectedMajors, selectedMinors, graduationSemester)
+      setUser(newUser)
       navigate('/')
     } catch (error) {
-      console.log("Error onboarding")
+      setError("this username is already in use")
     }
     setTimeout(() => setIsLoading(false), 1500);
   };
@@ -262,7 +267,7 @@ function OnboardingForm({user, setUser}) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center"
+          className="w-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 p-2 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors disabled:bg-gray-300 dark:disabled:bg-gray-600 flex items-center justify-center cursor-pointer"
         >
           {isLoading ? "Saving..." : "Complete Profile"}
         </button>

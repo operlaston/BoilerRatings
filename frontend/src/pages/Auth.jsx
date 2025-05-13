@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useLocation } from "react";
 import { Mail, Lock, Loader2, RotateCcw} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { login } from '../services/login'
-import { signup } from '../services/signup'
+import { login } from '../services/login.service'
+import { signup } from '../services/signup.service'
 
-function Auth({user, setUser}) {
+function Auth({onLogin}) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +29,6 @@ function Auth({user, setUser}) {
       setError("Please fill in your password.");
       return;
     }
-    //TODO: Verify password is strong enough and display according error message
     if (password.length < 8) {
       setError(`Password not secure enough. Password must include:
         At least 8 characters
@@ -65,11 +64,11 @@ function Auth({user, setUser}) {
     try {
       const newUser = await signup(email, password)
       console.log("Signed up user: ", newUser);
-      setUser(newUser)
+      onLogin(newUser)
       navigate('/onboarding')
     } catch (error) {
       console.error("Signup error", error);
-      setError("Signup failed");
+      setError("this email is already registered with a different account");
     } finally {
       setIsLoading(false)
     }
@@ -91,14 +90,17 @@ function Auth({user, setUser}) {
       return;
     }
     try {
-      const loggedInUser = await login(email, password)
-      setUser(loggedInUser)
-      navigate('/')
+      const { user:loggedInUser, isInactive } = await login(email, password);
+      console.log("isInactive ",isInactive)
+      onLogin(loggedInUser)
+      navigate('/', {
+        state: {warning: isInactive }
+      });
     }
     catch (e) {
       setError(e.response.data.error)
       console.log("error occurred while logging in", e)
-    }
+    } 
   }
 
   return (

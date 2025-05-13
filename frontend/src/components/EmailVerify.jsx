@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MailCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { verify } from "../services/signup"
+import { verify } from "../services/signup.service"
 
 function EmailVerify({user, setUser}) {
   const [verificationCode, setVerifcationCode] = useState("")

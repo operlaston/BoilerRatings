@@ -1,4 +1,3 @@
-require('dotenv').config()
 const ReviewManager = require('../controllers/reviewManager')
 const Review = require('../models/review')
 const User = require('../models/user');

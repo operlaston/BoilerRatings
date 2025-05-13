@@ -1,11 +1,14 @@
 const mongoose = require('mongoose')
 
 const instructorSchema = new mongoose.Schema({
-    instructorID: Number,
-    instructorName: String,
+    name: String,
     gpa: Number,
     rmp: Number,
-    rmpLin: String
+    rmpLink: String,
+    courses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course"
+    }]
 })
 
 instructorSchema.set('toJSON', {

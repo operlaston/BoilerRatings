@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
   verificationCode: String,
   codeExpires: Date,
   graduationSemester: String,
+  banned: {
+    type: Boolean,
+    default: false
+  },
   major: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Major'
@@ -24,6 +28,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DegreePlan'
   }],
+  favorited: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Course'
+  }],
   likedReviews: [
       {
           review: {
@@ -32,7 +40,23 @@ const userSchema = new mongoose.Schema({
           },
           favorability: Number
       }
-  ]
+  ],
+  flag: {
+    type: Boolean,
+    default: false
+  },
+  flagReason: {
+    type: String,
+    default: ""
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
+  admin: {
+    type: Boolean,
+    default: false
+  }
 })
 
 userSchema.set('toJSON', {
